@@ -1,0 +1,117 @@
+{
+  "suite": "transaction-providers/1",
+  "deliveryTarget": "non-deploying",
+  "localVerification": {
+    "fullRuntime": {
+      "passed": 996,
+      "skipped": 130,
+      "note": "Full suite before adding one final structural guard regression; final focused suites pass114."
+    },
+    "focusedRuntimePassed": 114,
+    "runtimeTypecheck": "passed",
+    "runtimeBuild": "passed"
+  },
+  "providers": [
+    {
+      "suite": "transaction-providers/1",
+      "provider": "d1",
+      "topology": "cloudflare-d1-hosted",
+      "targetHash": "76a3e5a9b43d29a32892c27abb4531459ab4034c7d9540c7d039a1bd27935ac2",
+      "runId": "706baeb7-0247-4133-b93b-6637f919403e",
+      "status": "passing",
+      "runtimeSourceSha256": "3fde8fb0d6f8dff62f68bfde625649cb6c5b2c6e128a27312193df6514480eee",
+      "bundleSha256": "019c9f000886a574afdca7b73faf79a7b3d2dfca1e47a58d2f344fac2991e9f3",
+      "verifiedAt": "2026-10-15T03:24:07.512Z",
+      "reportSha256": "daef992a5553ddba731e0b026b62b0804723a566751a472ccdad67ad347428b5",
+      "identitySha256": "798b640863add7c4c9532c9129cfa88b867575daad0457a86409f2ad545b71fc",
+      "requiredTraces": [
+        "staged-parent-query",
+        "predicate-phantom-rollback",
+        "read-only-snapshot-conflict",
+        "declared-function-receipt",
+        "competing-transaction-guards"
+      ],
+      "scope": "staged references/queries, phantom and read-only guards, function receipts and competing transactions; existing dedicated database only; no production activation",
+      "identity": {
+        "provider": "d1",
+        "runId": "706baeb7-0247-4133-b93b-6637f919403e",
+        "tenantPrefix": "foundation-cert-706baeb7-0247-4133-b93b-6637f919403e",
+        "observed": {
+          "protocol": "foundation-d1/1",
+          "provider": "cloudflare-d1-hosted",
+          "bundleSha256": "019c9f000886a574afdca7b73faf79a7b3d2dfca1e47a58d2f344fac2991e9f3",
+          "harnessSha256": "0924dd9bc7e6e4c6bdee7975967f7c9c523dcea62a78f6b1543b1a43421a5225",
+          "colo": "ORD"
+        },
+        "objectStore": "memory object-store test double; database durability only",
+        "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+      }
+    },
+    {
+      "suite": "transaction-providers/1",
+      "provider": "dynamodb",
+      "topology": "aws-dynamodb-hosted",
+      "targetHash": "380543ad99767b65a3cd10264cced50ffb8b1c66d4ad94d848ea0b63367eb7ca",
+      "runId": "2d55582c-67ff-41dd-a35b-6f5c97a2bc87",
+      "status": "passing",
+      "runtimeSourceSha256": "3fde8fb0d6f8dff62f68bfde625649cb6c5b2c6e128a27312193df6514480eee",
+      "bundleSha256": "019c9f000886a574afdca7b73faf79a7b3d2dfca1e47a58d2f344fac2991e9f3",
+      "verifiedAt": "2026-10-15T03:24:38.974Z",
+      "reportSha256": "f60336666ebec35596e216e777633b6b0387cf4cb1f6c99c1e5c3b8bf34f2e40",
+      "identitySha256": "ba52cf9654e2637682412f0222595f160003fa9b279650038b439891a4fef893",
+      "requiredTraces": [
+        "staged-parent-query",
+        "predicate-phantom-rollback",
+        "read-only-snapshot-conflict",
+        "declared-function-receipt",
+        "competing-transaction-guards"
+      ],
+      "scope": "staged references/queries, phantom and read-only guards, function receipts and competing transactions; existing dedicated database only; no production activation",
+      "identity": {
+        "provider": "dynamodb",
+        "runId": "2d55582c-67ff-41dd-a35b-6f5c97a2bc87",
+        "tenantPrefix": "foundation-cert-2d55582c-67ff-41dd-a35b-6f5c97a2bc87",
+        "observed": {
+          "service": "aws-dynamodb",
+          "region": "us-east-1",
+          "tableArnHash": "4533bd47347adeab5d65519501ed371f6e9ad6ff482d6eda89b949285c0806e4",
+          "tableStatus": "ACTIVE"
+        },
+        "objectStore": "memory object-store test double; database durability only",
+        "retainedData": "unique test tenants retained; no cleanup or provisioning performed"
+      }
+    },
+    {
+      "suite": "transaction-providers/1",
+      "provider": "postgres",
+      "topology": "native-postgres-local",
+      "targetHash": "739090c2c588a57cb9e58152ff163f647dce1007473b8166b199eeead17b281a",
+      "runId": "6a5cabf6-c5ea-4286-81fc-78ec75aef44b",
+      "status": "passing",
+      "runtimeSourceSha256": "3fde8fb0d6f8dff62f68bfde625649cb6c5b2c6e128a27312193df6514480eee",
+      "bundleSha256": "019c9f000886a574afdca7b73faf79a7b3d2dfca1e47a58d2f344fac2991e9f3",
+      "verifiedAt": "2026-10-15T03:23:58.968Z",
+      "reportSha256": "a1c2884d7ab5aa1f45f4765e9108ce51fcaa8409eb26db40f9bdc0b1c265de29",
+      "identitySha256": "40a640027d836f55d9b384e877262ffb5cec19f4fc1ce7ea594721549ef76f91",
+      "requiredTraces": [
+        "staged-parent-query",
+        "predicate-phantom-rollback",
+        "read-only-snapshot-conflict",
+        "declared-function-receipt",
+        "competing-transaction-guards"
+      ],
+      "scope": "staged references/queries, phantom and read-only guards, function receipts and competing transactions; existing dedicated database only; no production activation",
+      "identity": {
+        "provider": "postgres",
+        "runId": "6a5cabf6-c5ea-4286-81fc-78ec75aef44b",
+        "tenantPrefix": "foundation-cert-6a5cabf6-c5ea-4286-81fc-78ec75aef44b",
+        "observed": {
+          "driver": "pg",
+          "serverVersion": "17.11 (Debian 17.11-1.pgdg13+2)"
+        },
+        "objectStore": "memory object-store test double; database durability only",
+        "retainedData": "isolated test schema removed on close"
+      }
+    }
+  ]
+}

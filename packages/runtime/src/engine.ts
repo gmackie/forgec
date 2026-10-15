@@ -297,7 +297,7 @@ export class Engine {
     return Effect.gen(function* () {
       if (ctx.idempotencyKey) return yield* Effect.fail(err("ValidationFailed", "Transactions require a durable application command key, not a per-operation receipt"));
       const storage = yield* Storage;
-      if (!storage.atomicComposition) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support transaction composition"));
+      if (!storage.atomicComposition || !storage.atomicReadSet) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support transaction composition"));
       const view = new TransactionView(storage);
       let active = true, busy = false;
       const tx: TransactionContext = {
@@ -313,7 +313,7 @@ export class Engine {
           const call = ["get", "find", "list"].includes(op.kind) ? self.callInternal(operation, input, ctx) : Effect.gen(function* () {
             const { plan, result } = yield* self.planAuthorizedCall(operation, input, ctx);
             if (!active) return yield* Effect.fail(err("ValidationFailed", "Transaction body has completed"));
-            view.stage(plan);
+            yield* view.stage(plan);
             return result;
           });
           return call.pipe(Effect.provideService(Storage, view.storage), Effect.provide(self.layer), Effect.ensuring(Effect.sync(() => { busy = false; })));
@@ -321,11 +321,11 @@ export class Engine {
       };
       const result = yield* body(tx).pipe(Effect.ensuring(Effect.sync(() => { active = false; })));
       if (busy) return yield* Effect.fail(err("ValidationFailed", "Transaction body must await every resource call"));
-      if (view.plans.length) {
-        const plans = yield* lowerTransaction(view.plans);
-        const budget = storage.budget(plans);
+      if (view.plans.length || view.reads.length) {
+        const plans = yield* lowerTransaction(view.plans, !!storage.atomicReadSet);
+        const budget = storage.budget(plans, [], view.reads);
         if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Transaction exceeds provider action budget"));
-        yield* storage.commitAll(plans);
+        yield* storage.commitAll(plans, [], view.reads);
       }
       return result;
     }).pipe(Effect.provide(self.layer));
@@ -890,6 +890,7 @@ export class Engine {
         const wrapped: StorageAdapter = {
           name: storage.name,
           ...(storage.atomicComposition ? { atomicComposition: true as const } : {}),
+          ...(storage.atomicReadSet ? { atomicReadSet: true as const } : {}),
           ...(storage.atomicAbsenceGuards ? { atomicAbsenceGuards: true as const } : {}),
           get: (...a) => storage.get(...a),
           findUnique: (...a) => storage.findUnique(...a),

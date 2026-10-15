@@ -72,7 +72,7 @@ export class Functions {
     return Effect.gen(function* () {
       // A function's writes, receipt and publications form ONE final commit.
       const storage = yield* Storage;
-      if (impl.transactional && !storage.atomicComposition) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support transactional functions"));
+      if (impl.transactional && (!storage.atomicComposition || !storage.atomicReadSet)) return yield* Effect.fail(err("ValidationFailed", "Storage profile does not support transactional functions"));
       const view = impl.transactional ? new TransactionView(storage) : undefined;
       const pending: OutboxEntry[] = [];
       let plans: CommitPlan[] = view?.plans ?? [];
@@ -80,7 +80,7 @@ export class Functions {
       const deps = self.context(decl, input, ctx, pending, plans, delivery, view, lifecycle);
       const result = yield* impl.body(deps).pipe(Effect.provide(self.engine.layer), Effect.ensuring(Effect.sync(() => { lifecycle.active = false; })));
       if (view && lifecycle.busy) return yield* Effect.fail(err("ValidationFailed", "Function body must await every resource call"));
-      if (view) plans = yield* lowerTransaction(plans);
+      if (view) plans = yield* lowerTransaction(plans, !!storage.atomicReadSet);
       if (plans.length || pending.length || delivery || (view && ctx.idempotencyKey)) {
         const now = (yield* Clock).now();
         const opId = plans[0]?.opId ?? (yield* IdGen).opId();
@@ -94,13 +94,18 @@ export class Functions {
             : {};
           plans[0] = { ...host, outbox: [...host.outbox, ...outbox], ...receipt, ...(delivery ? { completion: delivery.completion() } : {}) };
           if (view) {
-            const budget = storage.budget(plans);
+            const budget = storage.budget(plans, [], view.reads);
             if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Transactional function exceeds provider action budget"));
           }
-          yield* storage.commitAll(plans);
+          yield* storage.commitAll(plans, [], view?.reads);
         } else {
-          yield* self.commitOutboxOnly(decl, ctx, outbox, opId, now, delivery, view ? { result: (result ?? {}) as Wire, input: (input ?? {}) as Wire } : undefined);
+          yield* self.commitOutboxOnly(decl, ctx, outbox, opId, now, delivery, view ? { result: (result ?? {}) as Wire, input: (input ?? {}) as Wire, reads: view.reads } : undefined);
         }
+      }
+      if (view && !plans.length && !pending.length && !delivery && !ctx.idempotencyKey && view.reads.length) {
+        const budget = storage.budget([], [], view.reads);
+        if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Transactional function exceeds provider action budget"));
+        yield* storage.commitAll([], [], view.reads);
       }
       return (result ?? {}) as Wire;
     });
@@ -127,7 +132,7 @@ export class Functions {
             if (plans.length >= 32) return yield* Effect.fail(err("BudgetExceeded", "Transactional functions support at most 32 mutations"));
             const { plan, result } = yield* engine.planAuthorizedCall(op, body, ctx);
             if (!lifecycle!.active) return yield* Effect.fail(err("ValidationFailed", "Function body has completed"));
-            view.stage(plan);
+            yield* view.stage(plan);
             return result;
           }
           const plan = yield* engine.planFor(op, body, ctx);
@@ -196,7 +201,7 @@ export class Functions {
     };
   }
 
-  private commitOutboxOnly(decl: FunctionDecl, ctx: CallContext, outbox: OutboxEntry[], opId: string, at: string, delivery?: SubscriptionDelivery, transaction?: { input: Wire; result: Wire }): Effect.Effect<void, ForgeError, RuntimeServices> {
+  private commitOutboxOnly(decl: FunctionDecl, ctx: CallContext, outbox: OutboxEntry[], opId: string, at: string, delivery?: SubscriptionDelivery, transaction?: { input: Wire; result: Wire; reads: import("./services.js").ResourceReadGuard[] }): Effect.Effect<void, ForgeError, RuntimeServices> {
     const engine = this.engine;
     return Effect.gen(function* () {
       const storage = yield* Storage;
@@ -211,9 +216,9 @@ export class Functions {
         ...(transaction && ctx.idempotencyKey ? { receipt: { tenant: ctx.tenant, operation: decl.id, key: ctx.idempotencyKey, requestHash: yield* Effect.promise(() => sha256(stableJson(transaction.input))), status: 200, response: transaction.result, createdAt: at } } : {}),
       };
       if (transaction) {
-        const budget = storage.budget([plan]);
+        const budget = storage.budget([plan], [], transaction.reads);
         if (budget.actions > budget.limit) return yield* Effect.fail(err("BudgetExceeded", "Transactional function exceeds provider action budget"));
-        return yield* storage.commitAll([plan]);
+        return yield* storage.commitAll([plan], [], transaction.reads);
       }
       yield* storage.commit(plan);
     });

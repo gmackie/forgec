@@ -7,7 +7,8 @@ import { Effect } from "effect";
 import { absenceWriteConflict } from "../atomic-guards.js";
 import { err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
-import type { AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import { RESOURCE_REVISION } from "../services.js";
+import type { ResourceReadGuard, AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 import { SqlMapping } from "./sql-mapping.js";
 import { rawD1Executor, type SqlExecutor, type SqlStatement } from "./sql-executor.js";
 
@@ -33,6 +34,7 @@ const D1_BATCH_STATEMENT_LIMIT = 100;
 
 export class D1Storage implements StorageAdapter {
   readonly atomicComposition = true;
+  readonly atomicReadSet = true;
   readonly name: string;
   readonly atomicAbsenceGuards = true;
   readonly atomicCompletion = true;
@@ -246,8 +248,8 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
-  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
-    return { actions: absent.length * 2 + plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
+  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = [], reads: readonly ResourceReadGuard[] = []): { actions: number; limit: number } {
+    return { actions: reads.length * 2 + new Set(plans.filter(p => p.kind !== "publish").map(p => JSON.stringify([p.tenant, p.resource.id]))).size + absent.length * 2 + plans.reduce((n, p) => n + this.statementsFor(p).length, 0), limit: D1_BATCH_STATEMENT_LIMIT };
   }
 
   exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
@@ -319,13 +321,13 @@ export class D1Storage implements StorageAdapter {
     return Math.floor(Math.random() * 25 * attempt);
   }
 
-  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): Effect.Effect<void, ForgeError> {
+  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = [], reads: readonly ResourceReadGuard[] = []): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
       const conflict = absenceWriteConflict(plans, absent);
       if (conflict) return yield* Effect.fail(conflict);
       for (let attempt = 1; ; attempt++) {
-        const outcome = yield* self.commitOnce(plans, absent);
+        const outcome = yield* self.commitOnce(plans, absent, reads);
         if (outcome === "ok") return;
         if (outcome.code !== "TransientConflict" || attempt >= self.retryAttempts) return yield* Effect.fail(outcome);
         yield* Effect.sleep(self.retryDelayMs(attempt));
@@ -333,20 +335,38 @@ export class D1Storage implements StorageAdapter {
     });
   }
 
-  private commitOnce(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[]): Effect.Effect<"ok" | ForgeError, never> {
+  private commitOnce(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[], reads: readonly ResourceReadGuard[]): Effect.Effect<"ok" | ForgeError, never> {
     const stmts: SqlStatement[] = [];
+    const readIds = reads.map(() => crypto.randomUUID());
+    for (const [index, guard] of reads.entries()) {
+      const predicate = guard.revision === null
+        ? "NOT EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?)"
+        : "EXISTS (SELECT 1 FROM forge_document WHERE tenant = ? AND kind = ? AND id = ? AND version = ?)";
+      stmts.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, ${predicate}`, readIds[index], guard.tenant, RESOURCE_REVISION, guard.resource.id, ...(guard.revision === null ? [] : [guard.revision])));
+    }
     const guardIds = absent.map(() => crypto.randomUUID());
     for (const [index, guard] of absent.entries()) {
       const query = this.absenceQuery(guard);
       stmts.push(st(`INSERT INTO _forge_assert (op_id, satisfied) SELECT ?, NOT EXISTS (${query.sql})`, guardIds[index], ...query.params));
     }
     stmts.push(...plans.flatMap(p => this.statementsFor(p)));
-    for (const id of guardIds) stmts.push(st("DELETE FROM _forge_assert WHERE op_id = ?", id));
+    const revised = new Set<string>();
+    for (const plan of plans) if (plan.kind !== "publish") {
+      const key = JSON.stringify([plan.tenant, plan.resource.id]);
+      if (revised.has(key)) continue;
+      revised.add(key);
+      stmts.push(st("INSERT INTO forge_document (tenant, kind, id, version, body) VALUES (?, ?, ?, 1, '{}') ON CONFLICT (tenant, kind, id) DO UPDATE SET version = forge_document.version + 1", plan.resource.decorators.tenant ? plan.tenant : "", RESOURCE_REVISION, plan.resource.id));
+    }
+    for (const id of [...guardIds, ...readIds]) stmts.push(st("DELETE FROM _forge_assert WHERE op_id = ?", id));
     return Effect.promise(async () => {
       try {
         await this.db.batch(stmts);
         return "ok" as const;
       } catch (e) {
+        for (const guard of reads) {
+          const revision = await this.db.first<{version: number}>(st("SELECT version FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", guard.tenant, RESOURCE_REVISION, guard.resource.id));
+          if ((revision?.version ?? null) !== guard.revision) return err("VersionConflict", "Transaction read set changed");
+        }
         if (/CHECK constraint failed: forge_precondition/.test(String((e as Error)?.message ?? e))) {
           for (const guard of absent) {
             const found = await this.db.first(this.absenceQuery(guard)).catch(() => null);

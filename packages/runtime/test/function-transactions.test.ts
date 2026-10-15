@@ -346,17 +346,15 @@ it("does not stage an unexecuted send Effect", async () => {
   expect((await storage.dump(ctx.tenant)).outbox).toHaveLength(0);
 });
 
-it("rejects queries of touched resources and rolls back the writes", async () => {
+it("queries touched resources through the staged snapshot", async () => {
   const { engine, storage } = fixture((d) =>
     Effect.gen(function* () {
       yield* d.resources.Customer!.create({ code: "QUERY", name: "query" });
-      yield* d.resources.Customer!.find("byCode", { code: "QUERY" });
+      return yield* d.resources.Customer!.find("byCode", { code: "QUERY" });
     }),
   );
-  await expect(run(engine.call(fn, {}, ctx))).rejects.toMatchObject({
-    code: "ValidationFailed",
-  });
-  expect((await storage.dump(ctx.tenant)).audit).toHaveLength(0);
+  expect(await run(engine.call(fn, {}, ctx))).toMatchObject({ code: "QUERY", name: "query" });
+  expect((await storage.dump(ctx.tenant)).audit).toHaveLength(1);
 });
 
 it("runs authorization on staged mutations before committing", async () => {

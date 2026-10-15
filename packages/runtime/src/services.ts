@@ -123,10 +123,19 @@ export interface AtomicAbsenceGuard {
   values: Record<string, unknown>;
 }
 
+/** Conservative predicate guard: every resource mutation advances this revision. */
+export interface ResourceReadGuard {
+  tenant: string;
+  resource: Resource;
+  revision: number | null;
+}
+export const RESOURCE_REVISION = "forge-resource-revision-v1";
+
 export interface StorageAdapter {
   readonly name: string;
   /** Ordered grouped writes with references to earlier newly created records. */
   readonly atomicComposition?: true;
+  readonly atomicReadSet?: true;
   readonly atomicAbsenceGuards?: true;
   readonly atomicCompletion?: true;
   get(tenant: string, resource: Resource, id: string): Effect.Effect<StoredRecord | null, ForgeError>;
@@ -144,9 +153,9 @@ export interface StorageAdapter {
   /** Atomic: record + claims + reference guards + audit + outbox + receipt, or nothing. */
   commit(plan: CommitPlan): Effect.Effect<void, ForgeError>;
   /** Atomic across several plans (a changeset within the physical budget). Adapters report their budget. */
-  commitAll(plans: CommitPlan[], absent?: readonly AtomicAbsenceGuard[]): Effect.Effect<void, ForgeError>;
+  commitAll(plans: CommitPlan[], absent?: readonly AtomicAbsenceGuard[], reads?: readonly ResourceReadGuard[]): Effect.Effect<void, ForgeError>;
   /** Physical actions one plan will consume, and the adapter's per-transaction ceiling. */
-  budget(plans: CommitPlan[], absent?: readonly AtomicAbsenceGuard[]): { actions: number; limit: number };
+  budget(plans: CommitPlan[], absent?: readonly AtomicAbsenceGuard[], reads?: readonly ResourceReadGuard[]): { actions: number; limit: number };
   // ---- outbox dispatch (plan §14); claim/complete are conditional and fenced by lease owner ----
   outboxSweep(tenant: string, now: number, limit: number): Effect.Effect<OutboxRow[], ForgeError>;
   /** Tenants that currently have pending outbox rows (bounded). */

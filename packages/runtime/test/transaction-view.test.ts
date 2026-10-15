@@ -36,7 +36,7 @@ const cleanup: (() => void)[] = [];
 afterEach(() => {
   for (const close of cleanup.splice(0)) close();
 });
-async function fixture(adapter = "memory") {
+async function fixture(adapter = "memory", testModel = model) {
   let storage: StorageAdapter = new MemoryStorage();
   let audit = async () =>
     (await (storage as MemoryStorage).dump(ctx.tenant)).audit!;
@@ -84,14 +84,14 @@ async function fixture(adapter = "memory") {
         },
       };
     }
-    storage = new D1Storage(sql, model);
+    storage = new D1Storage(sql, testModel);
     audit = () =>
       sql.all<Record<string, unknown>>({
         sql: "SELECT * FROM forge_audit WHERE tenant = ?",
         params: [ctx.tenant],
       });
   }
-  const engine = new Engine(model, testLayer(storage));
+  const engine = new Engine(testModel, testLayer(storage));
   return {
     storage,
     audit,
@@ -308,8 +308,8 @@ it("fails closed for unsupported adapters, stale staged versions, queries and es
       ),
     ),
   ).rejects.toMatchObject({ code: "VersionConflict" });
-  await expect(
-    run(
+  expect(
+    await run(
       engine.transaction(
         (tx) =>
           Effect.gen(function* () {
@@ -325,10 +325,10 @@ it("fails closed for unsupported adapters, stale staged versions, queries and es
         ctx,
       ),
     ),
-  ).rejects.toMatchObject({ code: "ValidationFailed" });
+  ).toMatchObject({ name: "staged", version: 2 });
   expect(await call("Customer.get", { id: record.id })).toMatchObject({
-    version: 1,
-    name: "before",
+    version: 2,
+    name: "staged",
   });
   Object.defineProperty(storage, "atomicComposition", { value: false });
   await expect(
@@ -438,7 +438,7 @@ it("rejects immutable unique-key changes and more than 32 mutations without writ
   });
 });
 
-it("rejects folding a mutable unique key and preserves the original record", async () => {
+it("folds a mutable unique key and releases the original claim", async () => {
   const bundle = JSON.parse(
     readFileSync(
       resolve(
@@ -457,8 +457,8 @@ it("rejects folding a mutable unique key and preserves the original record", asy
   const record = await run(
     engine.call(p + "Customer.create", { code: "BEFORE", name: "before" }, ctx),
   );
-  await expect(
-    run(
+  expect(
+    await run(
       engine.transaction(
         (tx) =>
           Effect.gen(function* () {
@@ -476,10 +476,10 @@ it("rejects folding a mutable unique key and preserves the original record", asy
         ctx,
       ),
     ),
-  ).rejects.toMatchObject({ code: "ValidationFailed" });
+  ).toMatchObject({ code: "AFTER", version: 3 });
   expect(
     await run(engine.call(p + "Customer.get", { id: record.id }, ctx)),
-  ).toMatchObject({ code: "BEFORE", name: "before", version: 1 });
+  ).toMatchObject({ code: "AFTER", name: "staged", version: 3 });
 });
 
 it("preserves purpose projection, suppression and write fencing for composed calls", async () => {
@@ -590,4 +590,356 @@ it("preserves purpose projection, suppression and write fencing for composed cal
       ),
     ),
   ).rejects.toMatchObject({ code: "Suppressed" });
+});
+
+for (const adapter of ["memory", "sqlite", "libsql"]) {
+  it(`${adapter}: overlays filtering, ordering and pagination after staged changes`, async () => {
+    const { engine, call } = await fixture(adapter);
+    const a = await call("Customer.create", { code: "AAA", name: "A" });
+    await call("Customer.create", { code: "CCC", name: "C" });
+    const result = await run(
+      engine.transaction(
+        (tx) =>
+          Effect.gen(function* () {
+            yield* tx.call(p + "Customer.update", {
+              id: a.id,
+              expectedVersion: 1,
+              patch: { name: "Z" },
+            });
+            yield* tx.call(p + "Customer.create", { code: "BBB", name: "B" });
+            return yield* tx.call(p + "Customer.list.byTier", {
+              params: { tier: "standard" },
+              limit: 2,
+            });
+          }),
+        ctx,
+      ),
+    );
+    expect((result.items as { name: string }[]).map((r) => r.name)).toEqual([
+      "B",
+      "C",
+    ]);
+    expect(await call("Customer.get", { id: a.id })).toMatchObject({
+      name: "Z",
+    });
+  });
+
+  it(`${adapter}: an empty query is fenced against a concurrent insertion`, async () => {
+    const { engine, storage, call } = await fixture(adapter);
+    const commit = storage.commitAll.bind(storage);
+    let injected = false;
+    storage.commitAll = (plans, absent, reads) =>
+      Effect.gen(function* () {
+        if (reads?.length && !injected) {
+          injected = true;
+          yield* Effect.promise(() =>
+            call("Customer.create", { code: "PHANTOM", name: "competing" }),
+          );
+        }
+        return yield* commit(plans, absent, reads);
+      });
+    await expect(
+      run(
+        engine.transaction(
+          (tx) =>
+            Effect.gen(function* () {
+              expect(
+                (yield* tx.call(p + "Customer.list.all", { params: {} })).items,
+              ).toEqual([]);
+              yield* tx.call(p + "Customer.create", {
+                code: "MUST-NOT-LEAK",
+                name: "loser",
+              });
+            }),
+          ctx,
+        ),
+      ),
+    ).rejects.toMatchObject({ code: "VersionConflict" });
+    await expect(
+      call("Customer.find.byCode", { params: { code: "MUST-NOT-LEAK" } }),
+    ).rejects.toMatchObject({ code: "NotFound" });
+    expect(
+      await call("Customer.find.byCode", { params: { code: "PHANTOM" } }),
+    ).toMatchObject({ name: "competing" });
+  });
+
+  it(`${adapter}: a read-only transaction validates its snapshot without adding an audit`, async () => {
+    const { engine, storage, audit, call } = await fixture(adapter);
+    const record = await call("Customer.create", {
+      code: "READ",
+      name: "before",
+    });
+    const before = await audit();
+    expect(
+      await run(
+        engine.transaction(
+          (tx) => tx.call(p + "Customer.get", { id: record.id }),
+          ctx,
+        ),
+      ),
+    ).toMatchObject({ name: "before" });
+    expect(await audit()).toEqual(before);
+    const commit = storage.commitAll.bind(storage);
+    let injected = false;
+    storage.commitAll = (plans, absent, reads) =>
+      Effect.gen(function* () {
+        if (reads?.length && !injected) {
+          injected = true;
+          yield* Effect.promise(() =>
+            call("Customer.update", {
+              id: record.id,
+              expectedVersion: 1,
+              patch: { name: "concurrent" },
+            }),
+          );
+        }
+        return yield* commit(plans, absent, reads);
+      });
+    await expect(
+      run(
+        engine.transaction(
+          (tx) => tx.call(p + "Customer.get", { id: record.id }),
+          ctx,
+        ),
+      ),
+    ).rejects.toMatchObject({ code: "VersionConflict" });
+  });
+
+  it(`${adapter}: lowers soft delete and restore while retaining every audit`, async () => {
+    const { engine, audit, call } = await fixture(adapter);
+    const record = await call("Customer.create", {
+      code: "RESTORE",
+      name: "before",
+    });
+    await run(
+      engine.transaction(
+        (tx) =>
+          Effect.gen(function* () {
+            yield* tx.call(p + "Customer.delete", {
+              id: record.id,
+              expectedVersion: 1,
+            });
+            yield* tx.call(p + "Customer.restore", {
+              id: record.id,
+              expectedVersion: 2,
+            });
+            yield* tx.call(p + "Customer.update", {
+              id: record.id,
+              expectedVersion: 3,
+              patch: { name: "after" },
+            });
+          }),
+        ctx,
+      ),
+    );
+    expect(await call("Customer.get", { id: record.id })).toMatchObject({
+      name: "after",
+      deletedAt: null,
+      version: 4,
+    });
+    expect(await audit()).toHaveLength(4);
+  });
+
+  it(`${adapter}: lowers staged create/update/hard-delete to audit-only work`, async () => {
+    const { engine, audit, call } = await fixture(adapter);
+    const parent = await call("Customer.create", {
+      code: "PARENT-DELETE",
+      name: "parent",
+    });
+    let id: unknown;
+    await run(
+      engine.transaction(
+        (tx) =>
+          Effect.gen(function* () {
+            const child = yield* tx.call(p + "Site.create", {
+              customer: parent.id,
+              code: "GONE",
+              name: "before",
+              timezone: "UTC",
+            });
+            id = child.id;
+            yield* tx.call(p + "Site.update", {
+              id,
+              expectedVersion: 1,
+              patch: { name: "after" },
+            });
+            yield* tx.call(p + "Site.delete", { id, expectedVersion: 2 });
+          }),
+        ctx,
+      ),
+    );
+    await expect(call("Site.get", { id })).rejects.toMatchObject({
+      code: "NotFound",
+    });
+    expect(await audit()).toHaveLength(4);
+  });
+}
+
+for (const adapter of ["memory", "sqlite", "libsql"]) {
+  it(`${adapter}: a changed reference can target a parent created after the child's first mutation`, async () => {
+    const mutable = new Model(structuredClone(model.bundle));
+    mutable
+      .resource(p + "Site")
+      .fields.find((field) => field.name === "customer")!.immutable = false;
+    const { engine, call } = await fixture(adapter, mutable);
+    const first = await call("Customer.create", {
+      code: "FIRST",
+      name: "first",
+    });
+    const child = await run(
+      engine.transaction(
+        (tx) =>
+          Effect.gen(function* () {
+            const site = yield* tx.call(p + "Site.create", {
+              customer: first.id,
+              code: "MOVING",
+              name: "site",
+              timezone: "UTC",
+            });
+            const second = yield* tx.call(p + "Customer.create", {
+              code: "SECOND",
+              name: "second",
+            });
+            yield* tx.call(p + "Site.update", {
+              id: site.id,
+              expectedVersion: 1,
+              patch: { customer: second.id },
+            });
+            return yield* tx.call(p + "Site.update", {
+              id: site.id,
+              expectedVersion: 2,
+              patch: { name: "moved" },
+            });
+          }),
+        ctx,
+      ),
+    );
+    expect(await call("Site.get", { id: child.id })).toMatchObject({
+      customer: child.customer,
+      name: "moved",
+      version: 3,
+    });
+    expect(await call("Customer.get", { id: child.customer })).toMatchObject({
+      code: "SECOND",
+    });
+  });
+
+  it(`${adapter}: rejects transient duplicate unique keys even when later changed away`, async () => {
+    const { engine, call } = await fixture(adapter);
+    await call("Customer.create", { code: "TAKEN", name: "holder" });
+    await expect(
+      run(
+        engine.transaction(
+          (tx) =>
+            Effect.gen(function* () {
+              yield* tx.call(p + "Customer.create", {
+                code: "FRESH",
+                name: "must roll back",
+              });
+              yield* tx.call(p + "Customer.create", {
+                code: "TAKEN",
+                name: "temporary duplicate",
+              });
+            }),
+          ctx,
+        ),
+      ),
+    ).rejects.toMatchObject({ code: "UniqueConflict" });
+    await expect(
+      call("Customer.find.byCode", { params: { code: "FRESH" } }),
+    ).rejects.toMatchObject({ code: "NotFound" });
+  });
+
+  it(`${adapter}: update then hard delete preserves the original durable guard`, async () => {
+    const { engine, call, audit } = await fixture(adapter);
+    const parent = await call("Customer.create", {
+      code: "HARD-PARENT",
+      name: "parent",
+    });
+    const site = await call("Site.create", {
+      customer: parent.id,
+      code: "DURABLE",
+      name: "before",
+      timezone: "UTC",
+    });
+    await run(
+      engine.transaction(
+        (tx) =>
+          Effect.gen(function* () {
+            yield* tx.call(p + "Site.update", {
+              id: site.id,
+              expectedVersion: 1,
+              patch: { name: "after" },
+            });
+            yield* tx.call(p + "Site.delete", {
+              id: site.id,
+              expectedVersion: 2,
+            });
+          }),
+        ctx,
+      ),
+    );
+    await expect(call("Site.get", { id: site.id })).rejects.toMatchObject({
+      code: "NotFound",
+    });
+    expect(await audit()).toHaveLength(4);
+  });
+}
+
+it("rejects a snapshot over the bound and adapters without read-set support before the body", async () => {
+  const { engine, storage } = await fixture();
+  let pages = 0;
+  storage.exportPage = () =>
+    Effect.succeed({ records: [], next: String(++pages) });
+  await expect(
+    run(
+      engine.transaction(
+        (tx) => tx.call(p + "Customer.list.all", { params: {} }),
+        ctx,
+      ),
+    ),
+  ).rejects.toMatchObject({ code: "BudgetExceeded" });
+  Object.defineProperty(storage, "atomicReadSet", { value: undefined });
+  let called = false;
+  await expect(
+    run(
+      engine.transaction(
+        () =>
+          Effect.sync(() => {
+            called = true;
+          }),
+        ctx,
+      ),
+    ),
+  ).rejects.toMatchObject({ code: "ValidationFailed" });
+  expect(called).toBe(false);
+});
+
+it("supports non-versioned repeated mutations using resource revision guards", async () => {
+  const mutable = new Model(structuredClone(model.bundle));
+  mutable.resource(p + "Customer").decorators.versioned = false;
+  const { engine, call } = await fixture("memory", mutable);
+  const record = await call("Customer.create", {
+    code: "NONVERSIONED",
+    name: "before",
+  });
+  await run(
+    engine.transaction(
+      (tx) =>
+        Effect.gen(function* () {
+          yield* tx.call(p + "Customer.update", {
+            id: record.id,
+            patch: { name: "middle" },
+          });
+          yield* tx.call(p + "Customer.update", {
+            id: record.id,
+            patch: { name: "after" },
+          });
+        }),
+      ctx,
+    ),
+  );
+  expect(await call("Customer.get", { id: record.id })).toMatchObject({
+    name: "after",
+  });
 });

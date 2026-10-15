@@ -24,8 +24,9 @@ Update: the explicit experimental `Engine.transaction` API now stages parent
 and child creation with point-read overlays. Memory/SQLite/libSQL regressions
 cover atomic publication and rollback; see [transactions](../transactions.md).
 The original standalone `planFor` and legacy function-body reproductions below retain
-their historical limitations. Query/read-set overlays and deployed provider
-certification remain open.
+their historical limitations. Query overlays and conservative resource-revision read-set guards are now
+implemented. Named provider traces cover native PostgreSQL, hosted D1 and AWS
+DynamoDB; see the scoped transaction verification below.
 
 Desired invariant: a single transaction can create an aggregate and its referenced child without an intermediate committed parent. The current Engine validates child references against durable storage during `planFor`, before either plan reaches `commitAll`.
 
@@ -81,9 +82,12 @@ view, and lowered writes, messages, result receipts and subscription completion
 share a budgeted atomic commit. Tests cover staged updates/references and
 subscription completion on memory, SQLite and native libSQL, plus result replay,
 rollback, authorization, budget rejection and expired/concurrent calls. Legacy
-functions still plan against committed state. General predicate/read-set
-validation, broader repeated mutation lowering, DynamoDB and live provider
-certification remain open. See [transactions](../transactions.md).
+functions still plan against committed state. Resource snapshots now cover predicates and missing reads, with revision guards
+checked in the atomic commit. Repeated mutations can change keys/references or
+include deletes/restores; DynamoDB composes entity/counter and revision actions.
+Verification runs a named live-provider trace set alongside local regression
+coverage. Snapshot size, cyclic references and incompatible physical action
+limits remain explicit; see [transactions](../transactions.md).
 
 ## Implemented since the baseline: immutable facts and sealed content
 
@@ -132,3 +136,19 @@ validation and atomic commit and proves no assignment, accepted outcome or
 capacity debit survives. Existing future-effective terminal facts are immutable and
 can remain eligible for an earlier interval. Dynamo request-shape tests exercise
 guard lowering and budgeting; hosted certification remains separate.
+
+## Transaction read-set and provider verification
+
+`TransactionView` now evaluates bounded complete resource snapshots, including
+staged writes, through the reference query evaluator. A revision read before the
+scan is checked inside the final provider commit, detecting phantoms, stale point
+reads and competing groups. Ordinary adapter commits advance the same revision;
+legacy or raw database writers must be fenced/upgraded before activation.
+
+`node scripts/verify-transaction-providers.mjs` executes five named traces against
+existing dedicated PostgreSQL/D1/DynamoDB targets and emits source-bound receipts.
+The traces cover staged parent references/queries, predicate phantom rollback,
+read-only validation, function receipt replay and competing commits. This is a
+bounded experimental transaction contract, not blanket provider certification
+for all application patterns. See [transactions](../transactions.md) for limits
+and the exact invocation.
