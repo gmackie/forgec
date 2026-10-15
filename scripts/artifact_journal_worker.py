@@ -16,16 +16,27 @@ def ready(send, record, sleep=time.sleep):
         raise RuntimeError("Journal Worker readiness failed")
 
 
-def deploy(root, state_dir, name, database, secret, api, record):
+def deploy(
+    root,
+    state_dir,
+    name,
+    database,
+    secret,
+    api,
+    record,
+    *,
+    entry="conformance/artifacts/journal-worker.ts",
+    extra_bindings=(),
+):
     bundle = state_dir / "journal-worker.mjs"
-    code = "const {createRequire}=require('node:module');const r=createRequire(process.argv[1]);r('esbuild').buildSync({entryPoints:[process.argv[2]],outfile:process.argv[3],bundle:true,format:'esm',platform:'browser',target:'es2022',conditions:['source']});"
+    code = "const {createRequire}=require('node:module');const runtime=createRequire(process.argv[1]);const r=createRequire(runtime.resolve('wrangler/package.json'));r('esbuild').buildSync({entryPoints:[process.argv[2]],outfile:process.argv[3],bundle:true,format:'esm',platform:'browser',target:'es2022',conditions:['source']});"
     run = subprocess.run(
         [
             "node",
             "-e",
             code,
-            str(root / "examples/acme/package.json"),
-            str(root / "conformance/artifacts/journal-worker.ts"),
+            str(root / "packages/runtime/package.json"),
+            str(root / entry),
             str(bundle),
         ],
         capture_output=True,
@@ -39,6 +50,7 @@ def deploy(root, state_dir, name, database, secret, api, record):
         "bindings": [
             {"name": "DB", "type": "d1", "id": database},
             {"name": "QUALIFICATION_SECRET", "type": "secret_text", "text": secret},
+            *extra_bindings,
         ],
     }
     boundary = "forge" + secrets.token_hex(12)

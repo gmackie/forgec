@@ -1,0 +1,105 @@
+{
+  "status": "incomplete",
+  "tests": [],
+  "diagnostics": [
+    {
+      "action": "publish",
+      "status": 200,
+      "transport": [
+        {
+          "method": "GET",
+          "status": 200,
+          "type": "application/x-git-receive-pack-advertisement"
+        },
+        {
+          "method": "POST",
+          "status": 200,
+          "type": "application/x-git-receive-pack-result"
+        }
+      ],
+      "outcome": "accepted"
+    }
+  ],
+  "error": "Workers publication qualification failed",
+  "journalHost": "deployed Workers native D1 binding",
+  "workerSha256": "9b8427b9cf226e82320efdca028ecde57444ee2f2df1b226429c9cc3d5e0187a",
+  "transportEvents": [
+    {
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 1,
+      "retry": true
+    },
+    {
+      "httpStatus": 404,
+      "platformCode": 1042,
+      "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+      "attempt": 2,
+      "retry": true
+    }
+  ],
+  "at": "2026-10-15T22:31:32Z",
+  "scope": "Native Worker preparation and HTTPS Git publication with Artifacts binding and D1 journal",
+  "sourceSha256": {
+    "packages/runtime/src/artifact-publication.ts": "ce5135cebd1893b1d2dbf34ef5ee61e10f720f2129e2a266eb0dcff947df0b8a",
+    "packages/runtime/src/adapters/artifact-publication-git.ts": "a43629153c42df92339ba4055d367b02cc59bf6ca726af1202c828b321a64684",
+    "packages/runtime/src/adapters/artifact-publication-sql.ts": "477e8f152f9523d3e137addbe620a2796c4659e1a6df07d314106b4fa4e66e16",
+    "conformance/artifacts/publish-live.mjs": "0cd8a0b4d3d97260f4061679422d2a2faa358511250da82c3e12cc500a59d23e",
+    "packages/runtime/src/adapters/artifact-publication-workers.ts": "0a35a821076631267dcf8c2ed1c93608dfe673c14bf690b9a53238ea7857e509",
+    "packages/runtime/src/adapters/artifact-workspace-workers.ts": "e8d41b14654adb1ccf6f31ef2e9666f6074462ccf1b2141cafcde333237f1f30",
+    "conformance/artifacts/publication-worker.ts": "5e61196715f5322ff923c8e0905a5acacde4ea83c96d336cc4e8f91d30ade3fa",
+    "conformance/artifacts/publish-workers-live.py": "c21f6967fe932b50feb72cd65699bdf7437e2a89f03fc99fc2c578afc2535b87",
+    "conformance/artifacts/journal-worker.ts": "0c42a4f83b77da360b63d007fde9cf1c5ca792733cc1d18a07826ba528cc1290",
+    "scripts/artifact_journal_worker.py": "5e7b1f0117998fdcfc8d342ab7780abde83d1bb7d6e9540d948c605a6b546bd4"
+  },
+  "cleanup": {
+    "remainingResources": [],
+    "errors": []
+  },
+  "nodeVersion": "v24.14.0",
+  "gitVersion": "git version 2.51.1",
+  "qualificationNote": "The Worker received an explicit accepted receive-pack report, but the first full assertion did not pass. Subsequent ingress failures prevented full replay/conflict/recovery qualification. Not a passing certification. These source hashes describe the attempted revision before later harness changes.",
+  "latestAttempt": {
+    "status": "failed",
+    "tests": [],
+    "diagnostics": [
+      {
+        "action": "publish",
+        "status": 404
+      }
+    ],
+    "error": "Workers publication qualification failed",
+    "journalHost": "deployed Workers native D1 binding",
+    "workerSha256": "9b8427b9cf226e82320efdca028ecde57444ee2f2df1b226429c9cc3d5e0187a",
+    "transportEvents": [
+      {
+        "httpStatus": 404,
+        "platformCode": 1042,
+        "bodySha256": "a4daf148dd64d1a3e8e8101040915e50d12df29153c5936d377cf2260ccc8ba0",
+        "attempt": 1,
+        "retry": true
+      }
+    ],
+    "at": "2026-10-15T22:33:14Z",
+    "scope": "Native Worker preparation and HTTPS Git publication with Artifacts binding and D1 journal",
+    "sourceSha256": {
+      "packages/runtime/src/artifact-publication.ts": "ce5135cebd1893b1d2dbf34ef5ee61e10f720f2129e2a266eb0dcff947df0b8a",
+      "packages/runtime/src/adapters/artifact-publication-git.ts": "a43629153c42df92339ba4055d367b02cc59bf6ca726af1202c828b321a64684",
+      "packages/runtime/src/adapters/artifact-publication-sql.ts": "477e8f152f9523d3e137addbe620a2796c4659e1a6df07d314106b4fa4e66e16",
+      "conformance/artifacts/publish-live.mjs": "0cd8a0b4d3d97260f4061679422d2a2faa358511250da82c3e12cc500a59d23e",
+      "packages/runtime/src/adapters/artifact-publication-workers.ts": "0a35a821076631267dcf8c2ed1c93608dfe673c14bf690b9a53238ea7857e509",
+      "packages/runtime/src/adapters/artifact-workspace-workers.ts": "e8d41b14654adb1ccf6f31ef2e9666f6074462ccf1b2141cafcde333237f1f30",
+      "conformance/artifacts/publication-worker.ts": "5e61196715f5322ff923c8e0905a5acacde4ea83c96d336cc4e8f91d30ade3fa",
+      "conformance/artifacts/publish-workers-live.py": "4d51173fd0119856ab7319deb8d495adfd2abd8776bd1ea4496e762ddf296aff",
+      "conformance/artifacts/journal-worker.ts": "0c42a4f83b77da360b63d007fde9cf1c5ca792733cc1d18a07826ba528cc1290",
+      "scripts/artifact_journal_worker.py": "f2aa5b001f9c2e2ec0aa0f2d47a76a11b5cbbeed0c348be4f766ab2cd7dabe4a"
+    },
+    "cleanup": {
+      "remainingResources": [],
+      "errors": []
+    },
+    "nodeVersion": "v24.14.0",
+    "gitVersion": "git version 2.51.1"
+  }
+}

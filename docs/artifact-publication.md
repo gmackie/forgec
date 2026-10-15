@@ -45,7 +45,8 @@ local repository/config, remote and credentials are trusted composition-root
 inputs, never caller values. The read capability and remote must refer to the
 same stable repository. Use repository-scoped tokens so deletion/recreation
 cannot redirect an in-flight authenticated push to a replacement repository.
-The Workers read binding remains read-only; this is not a Workers-native writer.
+The Artifacts Workers binding remains read-only. The portable writer below uses
+the documented Git HTTPS receive-pack service for mutation.
 
 Publication validates the pinned commit/tree locally before claiming dispatch.
 The prepared pin and application policy determine what may be published. Expected
@@ -115,3 +116,69 @@ after actual provider writes. The injected failures test recovery boundaries;
 they are not observed Cloudflare outages. Cleanup reported no remaining
 disposable resources. Reproduce it using the
 [qualification instructions](../conformance/artifacts/README.md#journaled-publication).
+
+
+## Workers HTTPS transport
+
+`@forgegraph/runtime/artifact-publication-workers` exports
+`workerGitArtifactPublicationProvider`. Compose it with a request-local
+`WorkerGitPackStore`, `WorkerArtifactWorkspace`, the read provider for that same
+repository, and `SqlArtifactPublicationJournal(rawD1Executor(env.DB))`:
+
+```ts
+const provider = workerGitArtifactPublicationProvider({
+  remote: configuredRepositoryRemote,
+  identity: trustedReadProviderForThatSameRemote,
+  prepared: requestLocalPackStore,
+  token: getShortLivedRepositoryScopedWriteToken,
+});
+```
+
+Use this provider in the `ArtifactPublisher` binding above. The application must
+authorize preparation and publication, fix tenant/artifact/generation/repository
+identity in trusted configuration, and obtain the exact remote from Artifacts.
+Neither the URL nor the identity capability may come from a caller. HTTPS alone
+does not establish that they describe the same repository. Credentials travel
+only in Bearer headers; redirects are refused and responses are bounded to 1 MiB.
+The provider supports SHA-1 repositories and protocol-v1 receive-pack with
+`report-status`. It sends one guarded command and one version-2 pack, validating
+the pack header, checksum and size before POST. The server compares the old OID
+atomically, including an all-zero create. A matching advertisement is only an
+optimization; it cannot replace the server guard.
+
+Only explicit `unpack ok` plus an `ok` for the exact requested branch confirms
+acceptance. A matching `ng` records rejection. Missing/malformed reports, network
+failures, HTTP errors and unsupported capabilities throw; the publisher retains
+the durable pending intent. Recovery uses the independent trusted read capability,
+never another write. There is no lease takeover, outbox dispatcher, expiry or
+automatic resend. The pack is request-local; a restarted invocation can replay
+or reconcile a durable intent without retaining that pack.
+
+The portable adapter has no Node imports or subprocesses. Tests drive it against
+real `git http-backend` for create/update, races between advertisement and POST,
+unchanged unrelated refs, corrupt packs and lost acknowledgements with a real
+SQL journal. The workerd probe exercises the same adapter with a protocol mock
+and validates its pack through native Git; this is not live Artifacts evidence.
+
+For disposable live qualification, run:
+
+```sh
+python scripts/qualify-artifact-publication.py \
+  --account "$CF_ACCOUNT_ID" --credential-file /private/wrangler-config.toml \
+  --state-dir /private/new-qualification-state \
+  --evidence /private/workers-publication-evidence.json --workers-transport
+```
+
+This deploys a secret-authenticated, time-limited qualification Worker with native
+Artifacts and D1 bindings. Preparation, Git HTTPS publication, durable replay and
+read-only reconciliation happen inside separate Worker invocations. The runner
+injects a lost acknowledgement and a claim-before-dispatch interruption, checks
+stale preconditions and tenant/policy denial, then removes its owned Worker,
+repository and database. It never activates a production application. A failed
+qualification is not certification; inspect its structured evidence and cleanup.
+
+Current [live attempt evidence](evidence/workers-publication-attempt-2026-10-15.json)
+is **incomplete**. A deployed Worker received an explicit accepted receive-pack
+report, but full readback/replay/conflict/recovery assertions did not pass.
+Subsequent calls encountered non-JSON ingress errors. All owned resources were
+removed. FORG-19 remains open; this evidence does not certify the live composition.
