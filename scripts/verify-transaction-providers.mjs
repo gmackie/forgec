@@ -54,7 +54,7 @@ const source = () =>
         "scripts/run-foundation-providers.mjs",
         "scripts/verify-foundation-providers.mjs",
         "conformance/foundation/providers/d1-worker.mjs",
-        "conformance/transactions",
+        "conformance/transactions/vitest.config.mjs",
       ],
       { cwd: root },
     )
