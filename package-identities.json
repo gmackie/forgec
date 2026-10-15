@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "repository": "git+https://git.forgegraf.com/gmackie/forge.git",
+  "publicPackages": {
+    "@forgegraph/adapters": "packages/adapters",
+    "@forgegraph/capability-manifest": "packages/contracts/capability-manifest",
+    "@forgegraph/governance": "packages/governance",
+    "@forgegraph/interfaces": "packages/interfaces",
+    "@forgegraph/react": "packages/react",
+    "@forgegraph/registry": "packages/registry",
+    "@forgegraph/release-gates": "packages/release-gates",
+    "@forgegraph/runtime": "packages/runtime",
+    "@forgegraph/temporal": "packages/temporal"
+  },
+  "reservedServiceNames": {
+    "@forgegraph/registry-service": {
+      "repository": "gmackie/ForgeGraph",
+      "path": "apps/registry",
+      "private": true
+    }
+  },
+  "note": "@forgegraph/registry is the published Forge language SDK. ForgeGraph registry-service is a private application; never alias it as the SDK."
+}

@@ -1,0 +1,56 @@
+name: Release rehearsal
+
+# Verification only. Registry publication follows current-build certification in FORG-6.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .forgejo/workflows/release-rehearsal.yml
+      - package-identities.json
+      - scripts/check-package-identities.mjs
+      - scripts/test/check-package-identities.test.mjs
+      - packages/*/package.json
+      - packages/contracts/*/package.json
+      - Cargo.toml
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: '2'
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/pnpm/action-setup@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: '24.14.0'
+      - uses: https://github.com/dtolnay/rust-toolchain@master
+        with:
+          toolchain: '1.97.1'
+      - name: Ensure the C toolchain
+        run: |
+          if ! command -v cc >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential pkg-config
+          fi
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/check-release-version.mjs
+      - run: node scripts/check-package-identities.mjs
+      - run: node --test scripts/test/check-package-identities.test.mjs scripts/test/check-crate-names.test.mjs scripts/test/check-workflows.test.mjs
+      - run: node scripts/check-workflows.mjs
+      - run: cargo test --locked -p forgegraph-cli
+      - name: Build every public SDK without deploying the console
+        run: pnpm --filter './packages/**' --filter '!@forgegraph/console' -r --if-present run build
+      - run: node scripts/check-packaging.mjs
+      - name: Check crate ownership without publishing
+        run: node scripts/check-crate-names.mjs
+      - name: Retain the manifest as evidence, not certification
+        run: |
+          mkdir -p release-rehearsal
+          cp RELEASE_MANIFEST.json package-identities.json release-rehearsal/
+          git rev-parse HEAD > release-rehearsal/source-revision.txt
+      - uses: https://code.forgejo.org/forgejo/upload-artifact@v4
+        with:
+          name: release-rehearsal
+          path: release-rehearsal/

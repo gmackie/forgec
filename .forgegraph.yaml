@@ -9,7 +9,7 @@ stages:
 
 # The deployable in this repository is packages/console (@forgegraph/console): the management
 # UI and signed package registry served at forge.gmac.io. The compiler crates and the
-# @forgegraph/* runtime packages ship to crates.io and npm from .github/workflows/release.yml
+# @forgegraph/* runtime packages are prepared for crates.io and npm through Forgejo release verification
 # and are not part of this app.
 #
 # Deploy ONLY via forge, not local wrangler — matching the convention in the other

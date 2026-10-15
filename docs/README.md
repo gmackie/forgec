@@ -3,6 +3,8 @@
 | document | what it covers |
 | --- | --- |
 | [plans/2026-10-15-public-beta.html](plans/2026-10-15-public-beta.html) | beta scope, installation and certification gates, continuing language work |
+| [package-ownership.md](package-ownership.md) | public SDK identities, private registry service distinction and publication checks |
+| [plans/2026-10-15-implementation-review.html](plans/2026-10-15-implementation-review.html) | detailed implementation inventory, evidence limits and beta release blockers |
 | [getting-started.md](getting-started.md) | install the toolchain, build the Acme reference, run it locally on both targets |
 | [language.md](language.md) | every declaration kind with the Acme examples: resources, lifecycle, functions, channels, workflows, views, projections, caches, schedules, realtime |
 | [portable-profile.md](portable-profile.md) | what `portable-v1` guarantees on both clouds, what it refuses, and the declared limits |

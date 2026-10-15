@@ -11,3 +11,7 @@ for(const [label,workflow,status] of [['valid','name: Check\non: push\njobs:\n  
   assert.equal(spawnSync(process.execPath,[script],{cwd:dir,encoding:'utf8'}).status,status);
  });
 }
+test('rejects a GitHub workflow even when Forgejo also exists',t=>{
+ const dir=mkdtempSync(join(tmpdir(),'forge-workflow-owner-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));mkdirSync(join(dir,'.github/workflows'),{recursive:true});writeFileSync(join(dir,'.github/workflows/ci.yml'),'name: CI\non: push\njobs:\n  check:\n    runs-on: ubuntu-latest\n    steps:\n      - run: true\n');
+ assert.equal(spawnSync(process.execPath,[script],{cwd:dir,encoding:'utf8'}).status,1);
+});

@@ -1,5 +1,12 @@
 # Foundation implementation verification
 
+Current scope inventory (2026-10-15): **74 packages, 487 acceptance entries**,
+471 marked locally passing and 16 planned provider entries. All 74 have verifier
+descriptors. The contract-structure suite passes; this count is not a fresh
+execution of all behavior suites. The checkpoints below retain their historical
+counts and source identities. See [the beta review](../plans/2026-10-15-implementation-review.html)
+and [inventory](../beta-inventory.json).
+
 The expanded scope contains 43 packages and 330 acceptance IDs. Each implemented package has a `verification.json` descriptor, typed generated consumer, runtime helper and focused behavior tests. Status is per criterion in `contract.json`; provider requirements are recorded separately in the source-bound provider certification receipt. Package READMEs/contract implementation sections document bounded profiles and durable pending protocols.
 
 Run:
