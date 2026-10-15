@@ -19,11 +19,12 @@ observable semantics everywhere:
 | realtime | Durable Objects | API Gateway WebSocket | in-process hub |
 | schedules | Cron Triggers | EventBridge Scheduler | node-cron |
 
-"Equivalent" is not a design goal here, it is a test result. The same 15
-conformance scenarios (221 steps) run against every profile, and the
-differential harness compares outcomes across them rather than asserting each
-in isolation. Combinations that are *not* certified are listed as not
-certified, with the reason, in [`RELEASE_MANIFEST.json`](RELEASE_MANIFEST.json).
+Equivalent behavior is the contract exercised by 15 conformance scenarios and
+provider differential tests. Certification is revision-specific: the retained
+[`RELEASE_MANIFEST.json`](RELEASE_MANIFEST.json) currently withholds the required
+profile certifications. Recent source features and narrow provider traces do not
+make every current combination certified. See the
+[implementation and beta review](docs/plans/2026-10-15-implementation-review.html).
 
 ## Install
 

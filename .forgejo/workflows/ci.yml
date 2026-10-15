@@ -30,6 +30,10 @@ jobs:
         with:
           toolchain: "1.97.1"
           targets: wasm32-unknown-unknown
+      - name: Verify SDK ownership and release tooling
+        run: |
+          node scripts/check-package-identities.mjs
+          node --test scripts/test/check-package-identities.test.mjs scripts/test/check-workflows.test.mjs
       - name: Compile the README tour and exercise documented CLI commands
         run: cargo test --locked -p forgegraph-cli --test cli
       - name: Verify typed MQTT compiler and planner contracts

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Parse every workflow file and reject the mistakes GitHub only reports *after*
+ * Parse Forgejo workflows and reject the mistakes the runner only reports *after*
  * you push — as a run named after the file path that failed before any job
  * started, with no log to read.
  *
@@ -15,6 +15,10 @@ const dirs = [".github/workflows", ".forgejo/workflows"].filter(existsSync);
 const files = dirs.flatMap(dir => readdirSync(dir).filter(f => /\.ya?ml$/.test(f)).map(name => join(dir, name)));
 
 let failed = false;
+if (existsSync(".github/workflows") && readdirSync(".github/workflows").some(f => /\.ya?ml$/.test(f))) {
+  console.error("::error::GitHub workflows are disabled: execute CI and release verification in Forgejo only");
+  failed = true;
+}
 const fail = (file, line, msg) => {
   console.error(`::error file=${file},line=${line}::${msg}`);
   failed = true;
