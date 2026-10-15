@@ -12,7 +12,8 @@ import { absenceWriteConflict } from "../atomic-guards.js";
 import { encodeIdentity, sortKey } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Resource, type Unique } from "../model.js";
-import type { AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import { RESOURCE_REVISION } from "../services.js";
+import type { ResourceReadGuard, AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export const PENDING_INDEX = "pending-index";
 
@@ -32,7 +33,7 @@ export interface DynamoOptions {
 
 type Item = Record<string, unknown>;
 type TxItem = NonNullable<TransactWriteCommandInput["TransactItems"]>[number];
-type Role = "entity" | "claim" | "access" | "parent" | "audit" | "outbox" | "receipt" | "absence" | "completion";
+type Role = "entity" | "claim" | "access" | "parent" | "audit" | "outbox" | "receipt" | "absence" | "completion" | "readset";
 
 /** Merge only generated additive reference-counter updates, never entity writes,
  * hierarchy checks or effective-date revision SETs. All original guards survive. */
@@ -80,6 +81,67 @@ function mergeReferenceCounters(first: TxItem, second: TxItem): TxItem | null {
     ExpressionAttributeNames: names, ExpressionAttributeValues: values,
     ...(first.Update.ReturnValuesOnConditionCheckFailure || second.Update.ReturnValuesOnConditionCheckFailure ? { ReturnValuesOnConditionCheckFailure: "ALL_OLD" as const } : {}),
   } };
+}
+
+/** Fold generated reference additions into a live entity's final write. The
+ * entity version/absence guard owns concurrency; liveness is checked on its
+ * final staged record. No arbitrary condition or hierarchy pin is discarded. */
+function mergeEntityCounters(entity: TxItem, counter: TxItem, plan: CommitPlan): TxItem | null {
+  const update = counter.Update;
+  if (!update?.UpdateExpression?.startsWith("ADD ") || plan.tree || plan.interval) return null;
+  if (!/^attribute_exists\(PK\)(?: AND deletedAt = :null)?$/.test(update.ConditionExpression ?? "")) return null;
+  const deltas = new Map<string, number>();
+  for (const part of update.UpdateExpression.slice(4).split(",")) {
+    const match = /^\s*(#[A-Za-z0-9_]+)\s+(:[A-Za-z0-9_]+)\s*$/.exec(part);
+    if (!match) return null;
+    const field = update.ExpressionAttributeNames?.[match[1]!], delta = update.ExpressionAttributeValues?.[match[2]!];
+    if (!field?.startsWith("dep#") || !Number.isSafeInteger(delta)) return null;
+    deltas.set(field, Number(delta));
+  }
+  if ((plan.hardDelete || plan.after["deletedAt"]) && [...deltas.values()].some(delta => delta > 0)) return null;
+  if (entity.Delete) {
+    // A removed child decrements the count before a parent disappears. Rewrite
+    // the zero test to its required pre-transaction value; keep version guards.
+    const names = { ...entity.Delete.ExpressionAttributeNames }, values = { ...entity.Delete.ExpressionAttributeValues };
+    let condition = entity.Delete.ConditionExpression ?? "";
+    for (const [field, delta] of deltas) {
+      const token = Object.keys(names).find(token => names[token] === field);
+      if (!token || delta > 0) return null;
+      const suffix = Object.keys(values).length;
+      const value = ":removed" + suffix; values[value] = -delta;
+      const original = `(attribute_not_exists(${token}) OR ${token} = :zero)`;
+      if (!condition.includes(original)) return null;
+      condition = condition.replace(original, `${token} = ${value}`);
+    }
+    if (!condition.includes(":zero")) delete values[":zero"];
+    return { Delete: { ...entity.Delete, ConditionExpression: condition, ExpressionAttributeNames: names, ExpressionAttributeValues: values } };
+  }
+  if (entity.Put) {
+    if ([...deltas.values()].some(delta => delta < 0)) return null;
+    const item = { ...entity.Put.Item };
+    for (const [field, delta] of deltas) item[field] = Number(item[field] ?? 0) + delta;
+    return { Put: { ...entity.Put, Item: item } };
+  }
+  if (!entity.Update) return null;
+  const names = { ...entity.Update.ExpressionAttributeNames }, values = { ...entity.Update.ExpressionAttributeValues };
+  const expression = entity.Update.UpdateExpression!;
+  const [sets, existing] = expression.split(" ADD ");
+  if (existing) for (const part of existing.split(",")) {
+    const match = /^\s*(#[A-Za-z0-9_]+)\s+(:[A-Za-z0-9_]+)\s*$/.exec(part);
+    if (!match) return null;
+    const field = names[match[1]!], delta = values[match[2]!];
+    if (!field?.startsWith("dep#") || !Number.isSafeInteger(delta)) return null;
+    deltas.set(field, (deltas.get(field) ?? 0) + Number(delta));
+    delete names[match[1]!]; delete values[match[2]!];
+  }
+  const adds: string[] = [];
+  for (const [field, delta] of deltas) {
+    const i = adds.length;
+    names["#dep" + i] = field; values[":dep" + i] = delta;
+    adds.push("#dep" + i + " :dep" + i);
+  }
+  return { Update: { ...entity.Update, ExpressionAttributeNames: names, ExpressionAttributeValues: values,
+    UpdateExpression: sets + " ADD " + adds.join(", ") } };
 }
 
 /** Create the single data table + sparse pending index (idempotent). Deployment-time, never request-time. */
@@ -145,6 +207,8 @@ export async function ensureDynamoTable(table: string, region: string): Promise<
 }
 
 export class DynamoStorage implements StorageAdapter {
+  readonly atomicComposition = true;
+  readonly atomicReadSet = true;
   readonly atomicAbsenceGuards = true;
   readonly atomicCompletion = true;
   readonly name = "dynamodb";
@@ -426,8 +490,8 @@ export class DynamoStorage implements StorageAdapter {
     }).pipe(Effect.asVoid);
   }
 
-  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
-    return { actions: this.transaction(plans, absent).items.length, limit: DYNAMO_TX_LIMIT };
+  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = [], reads: readonly ResourceReadGuard[] = []): { actions: number; limit: number } {
+    return { actions: this.transaction(plans, absent, reads).items.length, limit: DYNAMO_TX_LIMIT };
   }
 
   // ------------------------------------------------------------ commit
@@ -438,7 +502,7 @@ export class DynamoStorage implements StorageAdapter {
   /** Assemble the physical transaction once for both budgeting and execution.
    * Shared reference counters commute; preserve every condition while combining
    * their deltas. Any other duplicate physical target is unsupported. */
-  private transaction(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { items: TxItem[]; roles: Role[]; owners: CommitPlan[]; error?: ForgeError } {
+  private transaction(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = [], reads: readonly ResourceReadGuard[] = []): { items: TxItem[]; roles: Role[]; owners: CommitPlan[]; error?: ForgeError } {
     const items: TxItem[] = [], roles: Role[] = [], owners: CommitPlan[] = [];
     const positions = new Map<string, number>();
     let error: ForgeError | undefined;
@@ -448,8 +512,12 @@ export class DynamoStorage implements StorageAdapter {
       const identity = JSON.stringify([action?.TableName, key?.PK, key?.SK]);
       const prior = positions.get(identity);
       if (prior !== undefined) {
-        const merged = roles[prior] === "parent" && role === "parent" ? mergeReferenceCounters(items[prior]!, item) : null;
-        if (merged) { items[prior] = merged; return; }
+        if (roles[prior] === "entity" && role === "parent" && item.ConditionCheck && !owners[prior]!.hardDelete && !owners[prior]!.after["deletedAt"] && !owners[prior]!.tree && /^attribute_exists\(PK\)(?: AND deletedAt = :null)?$/.test(item.ConditionCheck.ConditionExpression ?? "")) return;
+        if (roles[prior] === "parent" && role === "entity" && items[prior]!.ConditionCheck && !owner.hardDelete && !owner.after["deletedAt"] && !owner.tree && /^attribute_exists\(PK\)(?: AND deletedAt = :null)?$/.test(items[prior]!.ConditionCheck!.ConditionExpression ?? "")) { items[prior] = item; roles[prior] = role; owners[prior] = owner; return; }
+        const merged = roles[prior] === "parent" && role === "parent" ? mergeReferenceCounters(items[prior]!, item)
+          : roles[prior] === "entity" && role === "parent" ? mergeEntityCounters(items[prior]!, item, owners[prior]!)
+          : roles[prior] === "parent" && role === "entity" ? mergeEntityCounters(item, items[prior]!, owner) : null;
+        if (merged) { items[prior] = merged; if (role === "entity") { roles[prior] = role; owners[prior] = owner; } return; }
         error ??= err("ValidationFailed", "Atomic DynamoDB mutations contain incompatible actions on the same item");
       } else positions.set(identity, items.length);
       items.push(item); roles.push(role); owners.push(owner);
@@ -465,6 +533,25 @@ export class DynamoStorage implements StorageAdapter {
         ConditionExpression: "attribute_not_exists(PK)",
       } }, "absence", plans[0]!);
     }
+    // Revision CAS and increments share one item per touched resource. Every
+    // writer participates, including ordinary non-transactional commands.
+    const revisions = new Map<string, { tenant: string; resource: Resource; write: boolean; revision?: number | null }>();
+    for (const plan of plans) if (plan.kind !== "publish") revisions.set(JSON.stringify([plan.resource.decorators.tenant ? plan.tenant : "", plan.resource.id]), { tenant: plan.resource.decorators.tenant ? plan.tenant : "", resource: plan.resource, write: true });
+    for (const read of reads) {
+      const key = JSON.stringify([read.tenant, read.resource.id]);
+      const old = revisions.get(key);
+      revisions.set(key, { ...read, write: old?.write ?? false });
+    }
+    for (const revision of revisions.values()) {
+      const condition: { ConditionExpression?: string; ExpressionAttributeValues?: Item } = revision.revision === undefined ? {} : {
+        ConditionExpression: revision.revision === null ? "attribute_not_exists(PK)" : "docVersion = :rv",
+        ...(revision.revision === null ? {} : { ExpressionAttributeValues: { ":rv": revision.revision } }),
+      };
+      const Key = this.documentKey(revision.tenant, RESOURCE_REVISION, revision.resource.id);
+      add(revision.write
+        ? { Update: { TableName: this.table, Key, ...condition, UpdateExpression: "ADD docVersion :inc", ExpressionAttributeValues: { ...condition.ExpressionAttributeValues, ":inc": 1 } } }
+        : { ConditionCheck: { TableName: this.table, Key, ...condition, ConditionExpression: condition.ConditionExpression! } }, "readset", plans[0]!);
+    }
     // One marker per tenant, included in exactly the same budget as the send.
     const marked = new Set<string>();
     for (const plan of plans) if (plan.outbox.length && !marked.has(plan.tenant)) {
@@ -474,15 +561,19 @@ export class DynamoStorage implements StorageAdapter {
     return { items, roles, owners, ...(error ? { error } : {}) };
   }
 
-  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): Effect.Effect<void, ForgeError> {
+  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = [], reads: readonly ResourceReadGuard[] = []): Effect.Effect<void, ForgeError> {
     const self = this;
     return Effect.gen(function* () {
       const conflict = absenceWriteConflict(plans, absent);
       if (conflict) return yield* Effect.fail(conflict);
-      if (!plans.length) return yield* Effect.fail(err("ValidationFailed", "Atomic DynamoDB mutations require at least one plan"));
-      const { items, roles, owners, error } = self.transaction(plans, absent);
+      if (!plans.length && !reads.length) return;
+      const { items, roles, owners, error } = self.transaction(plans, absent, reads);
       if (error) return yield* Effect.fail(error);
+      if (new TextEncoder().encode(JSON.stringify(items)).byteLength > 4 * 1024 * 1024 || items.some(item => item.Put && new TextEncoder().encode(JSON.stringify(item.Put.Item)).byteLength > 400 * 1024)) return yield* Effect.fail(err("BudgetExceeded", "DynamoDB transaction exceeds the conservative serialized size bound"));
       if (items.length > DYNAMO_TX_LIMIT) return yield* Effect.fail(err("BudgetExceeded", `${items.length} physical actions exceed the transaction limit of ${DYNAMO_TX_LIMIT}`));
+      if (!plans.length) {
+        return yield* Effect.tryPromise({ try: async () => { await self.doc.send(new TransactWriteCommand({ TransactItems: items, ClientRequestToken: crypto.randomUUID() })); }, catch: (e) => (e as Error).name === "TransactionCanceledException" ? err("VersionConflict", "Transaction read set changed") : err("StorageUnavailable", "Read-set validation request failed") });
+      }
       for (let attempt = 1; ; attempt++) {
         const outcome = yield* self.send(items, roles, owners, plans[0]!);
         if (outcome === "ok") return;
@@ -712,6 +803,7 @@ export class DynamoStorage implements StorageAdapter {
     const failed = reasons.find((r) => r.code === "ConditionalCheckFailed");
     if (failed) plan = owners[reasons.indexOf(failed)] ?? first;
     switch (failed?.role) {
+      case "readset": return err("VersionConflict", "Transaction read set changed");
       case "completion": return err("VersionConflict", "subscription claim changed");
       case "absence": return err("VersionConflict", "Atomic absence guard failed");
       case "entity": {

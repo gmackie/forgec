@@ -9,10 +9,12 @@ import { absenceWriteConflict } from "../atomic-guards.js";
 import { compareBytes, encodeIdentity } from "../codecs.js";
 import { err, type ForgeError } from "../errors.js";
 import type { List, Resource, Unique } from "../model.js";
-import type { AtomicAbsenceGuard, DocumentWrite, AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
+import { RESOURCE_REVISION } from "../services.js";
+import type { ResourceReadGuard, AtomicAbsenceGuard, DocumentWrite, AuditEntry, CommitPlan, IntervalGuard, ListQuery, OutboxEntry, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
 
 export class MemoryStorage implements StorageAdapter {
   readonly atomicComposition = true;
+  readonly atomicReadSet = true;
   readonly name = "memory";
   readonly atomicAbsenceGuards = true;
   readonly atomicCompletion = true;
@@ -29,6 +31,20 @@ export class MemoryStorage implements StorageAdapter {
     let t = this.tables.get(k);
     if (!t) this.tables.set(k, (t = new Map()));
     return t;
+  }
+
+  /** Invocation-local query evaluator; never used as the durable commit target. */
+  static snapshot(tenant: string, resource: Resource, rows: StoredRecord[]): MemoryStorage {
+    const storage = new MemoryStorage();
+    storage.tables.set(`${tenant}|${resource.id}`, new Map(rows.map(row => [String(row["id"]), structuredClone(row)])));
+    for (const row of rows) for (const unique of resource.uniques) {
+      const values = [...unique.within, ...unique.fields].map(field => row[field]);
+      if ((!unique.condition || unique.condition.values.includes(String(row[unique.condition.field]))) && values.every(value => value !== null && value !== undefined)) {
+        const key = encodeIdentity([resource.id, unique.name, ...values.map(String)]);
+        storage.claims.set(`${tenant}|${key}`, String(row["id"]));
+      }
+    }
+    return storage;
   }
 
   get(tenant: string, r: Resource, id: string): Effect.Effect<StoredRecord | null, ForgeError> {
@@ -155,13 +171,13 @@ export class MemoryStorage implements StorageAdapter {
     return Effect.succeed(true);
   }
 
-  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): { actions: number; limit: number } {
+  budget(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = [], reads: readonly ResourceReadGuard[] = []): { actions: number; limit: number } {
     // The reference model has no physical ceiling; report the portable default so previews are comparable.
-    return { actions: absent.length + plans.reduce((n, p) => n + (p.completion ? 1 : 0) + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
+    return { actions: reads.length + absent.length + plans.reduce((n, p) => n + (p.completion ? 1 : 0) + 1 + p.claims.length + p.references.length + 2, 0), limit: 100 };
   }
 
   exportPage(tenant: string, r: Resource, cursor: string | null, limit: number): Effect.Effect<{ records: StoredRecord[]; next: string | null }, ForgeError> {
-    const rows = [...this.table(tenant, r).values()].sort((a, b) => String(a["id"]).localeCompare(String(b["id"]))).filter((x) => !cursor || String(x["id"]) > cursor);
+    const rows = [...(this.tables.get(`${tenant}|${r.id}`)?.values() ?? [])].sort((a, b) => String(a["id"]).localeCompare(String(b["id"]))).filter((x) => !cursor || String(x["id"]) > cursor);
     const page = rows.slice(0, limit).map((x) => structuredClone(x));
     return Effect.succeed({ records: page, next: rows.length > limit ? String(page[page.length - 1]!["id"]) : null });
   }
@@ -195,8 +211,12 @@ export class MemoryStorage implements StorageAdapter {
   }
 
   /** Validate every plan against durable state first, then apply all: single-threaded, so atomic. */
-  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = []): Effect.Effect<void, ForgeError> {
+  commitAll(plans: CommitPlan[], absent: readonly AtomicAbsenceGuard[] = [], reads: readonly ResourceReadGuard[] = []): Effect.Effect<void, ForgeError> {
     return Effect.suspend(() => {
+      for (const guard of reads) {
+        const revision = this.documents.get(`${guard.tenant}|${RESOURCE_REVISION}|${guard.resource.id}`)?.version ?? null;
+        if (revision !== guard.revision) return Effect.fail(err("VersionConflict", "Transaction read set changed"));
+      }
       const conflict = absenceWriteConflict(plans, absent);
       if (conflict) return Effect.fail(conflict);
       for (const guard of absent) if (this.claims.has(`${guard.tenant}|${guard.claimKey}`)) return Effect.fail(err("VersionConflict", "Atomic absence guard failed"));
@@ -293,6 +313,8 @@ export class MemoryStorage implements StorageAdapter {
     this.audits.push(plan.audit);
     this.outbox.push(...plan.outbox.map((o: OutboxEntry): OutboxRow => ({ ...o, status: "pending", attempts: 0, leaseOwner: null, leaseUntil: null, delivered: [] })));
     if (plan.receipt) this.receipts.set(`${plan.tenant}|${plan.receipt.operation}|${plan.receipt.key}`, plan.receipt);
+    const revisionKey = `${plan.resource.decorators.tenant ? plan.tenant : ""}|${RESOURCE_REVISION}|${plan.resource.id}`;
+    this.documents.set(revisionKey, { version: (this.documents.get(revisionKey)?.version ?? 0) + 1, doc: {} });
     return null;
   }
 
