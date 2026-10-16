@@ -1,0 +1,110 @@
+{
+  "issue": "FORG-22",
+  "date": "2026-10-15",
+  "subject": "Workers incremental preparation, guarded publication, merge and diff on a disposable Cloudflare Artifacts repository",
+  "worker": "conformance/artifacts/incremental-worker.ts",
+  "bundle": "esbuild 0.28.1, esm, neutral platform",
+  "binding": "artifacts namespace (disposable repository forge-incremental-<timestamp>, deleted in the same request)",
+  "status": "passed",
+  "checks": [
+    {
+      "name": "base published",
+      "pass": true,
+      "detail": {
+        "outcome": "accepted",
+        "objects": 8
+      }
+    },
+    {
+      "name": "session commit built incrementally on the remote base",
+      "pass": true,
+      "detail": {
+        "outcome": "accepted",
+        "objects": 4
+      }
+    },
+    {
+      "name": "main advanced with compare-and-swap",
+      "pass": true,
+      "detail": {
+        "outcome": "accepted",
+        "objects": 5
+      }
+    },
+    {
+      "name": "merge prepared without conflicts",
+      "pass": true,
+      "detail": {
+        "status": "prepared",
+        "revision": {
+          "tenant": "qualification",
+          "artifact": "source",
+          "generation": "one",
+          "repositoryId": "z1rhi7js6grd9zvk",
+          "objectFormat": "sha1",
+          "oid": "a02e07a0a115a828254f010b75d33893820d090b",
+          "tree": "317a97179430cd55307c6cb9b70d2444cf60c2f7"
+        }
+      }
+    },
+    {
+      "name": "merge landed on main",
+      "pass": true,
+      "detail": {
+        "outcome": "accepted",
+        "objects": 3
+      }
+    },
+    {
+      "name": "stale expected head is rejected",
+      "pass": true,
+      "detail": {
+        "outcome": "rejected",
+        "objects": 3
+      }
+    },
+    {
+      "name": "same-path edits conflict",
+      "pass": true,
+      "detail": {
+        "status": "conflicted",
+        "paths": [
+          "src/a.ts"
+        ]
+      }
+    },
+    {
+      "name": "diff of the landed merge",
+      "pass": true,
+      "detail": [
+        [
+          "src/a.ts",
+          "modified"
+        ],
+        [
+          "src/deep/d.ts",
+          "added"
+        ]
+      ]
+    },
+    {
+      "name": "binding reads the landed commit",
+      "pass": true,
+      "detail": {
+        "head": "a02e07a0a115a828254f010b75d33893820d090b",
+        "parents": [
+          "f4616d2d3795dba4426449000c5ddf302029de82",
+          "390b809fb739a8cc27ea39c52a0ed7c6dd2bdcaf"
+        ],
+        "author": {
+          "name": "Agent Smith",
+          "email": "agent@loom.invalid"
+        }
+      }
+    },
+    {
+      "name": "repository deleted",
+      "pass": true
+    }
+  ]
+}
