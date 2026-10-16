@@ -111,8 +111,11 @@ are preserved; creating either remains unsupported. Checkout remains Node-only.
 merge is tree-level: a path both sides changed differently is a conflict, as is
 a file on one side replaced by a directory on the other. Unlike
 `git merge-tree`, non-overlapping edits inside one file are **not** combined;
-callers resolve such files and prepare again. Clean merges produce the same
-commit as the Node path. The merge commit's parents are `[left, right]`.
+callers resolve such files with `resolutions`: content (or deletion) for
+conflicting paths, applied in the merge itself. Each resolution must name a path
+the merge reports as conflicting; any other fails with `ValidationFailed`, and
+unresolved conflicts are still returned. Clean merges produce the same commit as
+the Node path. The merge commit's parents are `[left, right]`.
 
 `diff(left, right, { maxEntries? })` matches the Node `diff` (Git `diff-tree -r`
 order, statuses, modes) and skips subtrees whose IDs are equal.

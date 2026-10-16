@@ -566,7 +566,9 @@ export class WorkerArtifactWorkspace {
     );
   }
   /** Three-way tree merge. A path both sides changed differently is a conflict;
-   * unlike `git merge-tree`, edits inside one file are not combined. */
+   * unlike `git merge-tree`, edits inside one file are not combined.
+   * `resolutions` supply content (or deletion) for conflicting paths; each must
+   * name a path the merge reports as conflicting. */
   async merge(
     input: {
       base: ArtifactRevisionPin;
@@ -575,6 +577,7 @@ export class WorkerArtifactWorkspace {
       message: string;
       at: string;
       author?: WorkerGitIdentity;
+      resolutions?: readonly ArtifactFileChange[];
     },
     context: CallContext,
   ): Promise<
@@ -587,6 +590,31 @@ export class WorkerArtifactWorkspace {
       { message, at } = input,
       ctx = Object.freeze({ ...context });
     const author = this.metadata(message, at, input.author);
+    const resolutions = new Map<
+      string,
+      { mode: string; bytes: Uint8Array | null }
+    >();
+    if (input.resolutions !== undefined) {
+      if (!Array.isArray(input.resolutions) || input.resolutions.length > 1024)
+        throw err("BudgetExceeded", "Merge resolution count exceeds budget");
+      let resolvedBytes = 0;
+      for (const r of input.resolutions) {
+        if (
+          !pathValid(r.path) ||
+          resolutions.has(r.path) ||
+          ![undefined, "100644", "100755"].includes(r.mode) ||
+          (r.bytes !== null && !(r.bytes instanceof Uint8Array))
+        )
+          throw err("ValidationFailed", "Invalid merge resolution");
+        resolvedBytes += r.bytes?.length ?? 0;
+        if (resolvedBytes > 32 * 1024 * 1024)
+          throw err("BudgetExceeded", "Merge resolutions exceed byte budget");
+        resolutions.set(r.path, {
+          mode: r.mode ?? "100644",
+          bytes: r.bytes === null ? null : new Uint8Array(r.bytes),
+        });
+      }
+    }
     await this.admit(ctx, "merge");
     for (const pin of [base, left, right]) this.pinned(pin);
     if (left.oid === right.oid)
@@ -609,6 +637,7 @@ export class WorkerArtifactWorkspace {
       return oid;
     };
     const conflicts: string[] = [];
+    const resolved = new Set<string>();
     const same = (a?: Entry, b?: Entry) =>
       a?.mode === b?.mode && a?.oid === b?.oid;
     const entries = async (oid: string | undefined) => {
@@ -633,6 +662,13 @@ export class WorkerArtifactWorkspace {
       if ((l || r) && isTree(b) && isTree(l) && isTree(r) && l && r) {
         const oid = await mergeTree(path, b?.oid, l.oid, r.oid);
         return oid === EMPTY_TREE ? undefined : { mode: "40000", oid };
+      }
+      const resolution = resolutions.get(path);
+      if (resolution) {
+        resolved.add(path);
+        return resolution.bytes === null
+          ? undefined
+          : { mode: resolution.mode, oid: await add("blob", resolution.bytes) };
       }
       if (conflicts.length >= 1024)
         throw err("BudgetExceeded", "Artifact merge exceeds conflict budget");
@@ -664,6 +700,11 @@ export class WorkerArtifactWorkspace {
       return add("tree", encodeWorkerGitTree(out));
     };
     const treeOid = await mergeTree("", base.tree, left.tree, right.tree);
+    if (resolved.size !== resolutions.size)
+      throw err(
+        "ValidationFailed",
+        "Merge resolution names a path that does not conflict",
+      );
     if (conflicts.length)
       return {
         status: "conflicted",

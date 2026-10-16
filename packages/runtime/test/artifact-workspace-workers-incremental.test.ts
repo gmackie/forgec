@@ -513,3 +513,63 @@ it("prepares and merges on an existing branch through the Artifacts binding's ob
     worker.prepare({ base, changes: [], message: "m", at }, context),
   ).rejects.toMatchObject({ code: "ValidationFailed" });
 });
+
+it("applies resolutions to conflicting paths and rejects resolutions for clean paths", async () => {
+  const f = await fixture();
+  const base = await f.prepare(null, {
+    shared: "base\n",
+    other: "o\n",
+    gone: "g\n",
+  });
+  const left = await f.prepare(
+    base,
+    { shared: "left\n", gone: "left\n", l: "l" },
+    "left",
+  );
+  const right = await f.prepare(
+    base,
+    { shared: "right\n", gone: null, r: "r" },
+    "right",
+  );
+  const input = { base, left, right, message: "resolved", at };
+  expect(await f.worker.merge(input, context)).toEqual({
+    status: "conflicted",
+    paths: ["gone", "shared"],
+  });
+  const partial = await f.worker.merge(
+    { ...input, resolutions: [{ path: "shared", bytes: bytes("both\n") }] },
+    context,
+  );
+  expect(partial).toEqual({ status: "conflicted", paths: ["gone"] });
+  const merged = await f.worker.merge(
+    {
+      ...input,
+      resolutions: [
+        { path: "shared", bytes: bytes("both\n") },
+        { path: "gone", bytes: null },
+      ],
+    },
+    context,
+  );
+  if (merged.status !== "prepared") throw new Error("expected a merge");
+  const oid = merged.revision.oid;
+  expect(f.git(["show", "-s", "--format=%P", oid]).toString().trim()).toBe(
+    `${left.oid} ${right.oid}`,
+  );
+  expect(f.git(["show", `${oid}:shared`]).toString()).toBe("both\n");
+  expect(
+    f.git(["ls-tree", "--name-only", oid]).toString().trim().split("\n"),
+  ).toEqual(["l", "other", "r", "shared"]);
+  await expect(
+    f.worker.merge(
+      {
+        ...input,
+        resolutions: [
+          { path: "shared", bytes: bytes("x") },
+          { path: "other", bytes: bytes("x") },
+        ],
+      },
+      context,
+    ),
+  ).rejects.toMatchObject({ code: "ValidationFailed" });
+});

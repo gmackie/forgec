@@ -4,7 +4,8 @@
 
 - Runtime: `WorkerArtifactWorkspace` prepares commits incrementally (only the
   trees on changed paths are read and rebuilt), accepts an `author`, and adds
-  `merge` (tree-level three-way, unique merge base checked) and `diff`.
+  `merge` (tree-level three-way, unique merge base checked, optional
+  `resolutions` for conflicting paths) and `diff`.
   `cloudflareArtifactsObjectSource` supplies base objects from the Artifacts
   Workers binding. Merges in Workers report a conflict for any file both sides
   changed; Git would combine non-overlapping edits. (FORG-22)
