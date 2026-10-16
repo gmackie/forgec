@@ -88,12 +88,56 @@ objects must already exist at the destination. Retries deduplicate identical
 objects. This store is ephemeral: hosts must persist a prepared pack or regenerate
 it from its exact input before acknowledging durable preparation.
 
-Limits: 1,024 changes, 32 MiB changed bytes; at most 1,024 base tree entries,
+Preparation is incremental (FORG-22). It reads the base commit and only the
+trees on changed paths; untouched subtrees keep their IDs and are not re-encoded,
+so the pack holds only new objects. A one-file change to a 1,600-file base reads
+three objects and packs four. `author` sets author and committer (default
+`Forge artifact <artifact@forge.invalid>`); names and emails may not contain
+`<`, `>`, control characters or surrounding spaces.
+
+Limits: 1,024 changes, 32 MiB changed bytes; at most 1,024 tree entries read,
 32 MiB base metadata and 64 tree levels; at most 2,048 prepared tree entries.
+Read limits count only the trees a request loads, not the size of the base.
 The pack store admits 4,096 objects, 32 MiB uncompressed bytes and 30 MiB per
 object. Exceeding a limit fails explicitly. Untouched symlink/gitlink entries
-are preserved; creating either remains unsupported. No merge or checkout API is
-provided by the Workers class; those operations retain the Node path.
+are preserved; creating either remains unsupported. Checkout remains Node-only.
+
+### Merge and diff in Workers
+
+`merge({ base, left, right, message, at, author? })` returns the same
+`prepared`/`conflicted` result as the Node workspace. It first confirms that
+`base` is the unique best common ancestor of both parents, walking at most
+4,096 commits newest first, and fails with `VersionConflict` otherwise. The
+merge is tree-level: a path both sides changed differently is a conflict, as is
+a file on one side replaced by a directory on the other. Unlike
+`git merge-tree`, non-overlapping edits inside one file are **not** combined;
+callers resolve such files and prepare again. Clean merges produce the same
+commit as the Node path. The merge commit's parents are `[left, right]`.
+
+`diff(left, right, { maxEntries? })` matches the Node `diff` (Git `diff-tree -r`
+order, statuses, modes) and skips subtrees whose IDs are equal.
+
+### Base objects from the Artifacts binding
+
+`cloudflareArtifactsObjectSource(repo)` (in `cloudflare-artifacts`) reads base
+objects through an open repo handle's `readCommit`, `readTree` and `readBlob`.
+Wrap it in `WorkerGitPackStore` so prepared objects stay local:
+
+```ts
+using repo = await env.ARTIFACTS.get(name);
+const store = new WorkerGitPackStore(cloudflareArtifactsObjectSource(repo));
+const workspace = new WorkerArtifactWorkspace(binding, store, authorize);
+```
+
+The binding returns parsed commits without timezones, so commit bytes cannot be
+rebuilt. Stores may therefore implement `readCommit(oid)` (tree, parents,
+committer time), and the workspace trusts the binding for its own commit IDs.
+Trees are re-encoded from their entries and blobs read raw; both are still
+checked against their IDs. Live evidence:
+`docs/evidence/forg22-incremental-live-2026-10-15.json` (disposable repository:
+base, incremental session commit of four objects, guarded head move, Worker
+merge landed with compare-and-swap, stale head rejected, same-path conflict,
+diff, binding read-back, deletion).
 
 This is the preparation slice of FORG-19, not live Artifacts publication. The
 Artifacts binding documentation checked on 2026-10-15 exposes read and management

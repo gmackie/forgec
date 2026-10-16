@@ -53,7 +53,7 @@ jobs:
           FORGE_MQTT_TEST=1 pnpm --filter @forgegraph/runtime exec vitest run test/workspace-auth.test.ts test/http.test.ts test/http-streaming.test.ts test/aws-host.test.ts test/webhooks.test.ts test/realtime.test.ts test/realtime-node.test.ts test/mqtt.test.ts test/mqtt-consumer.test.ts test/mqtt-node-consumer.test.ts test/mqtt-live.test.ts test/dispatch.test.ts
       - name: Verify portable Git object and pack preparation
         run: |
-          pnpm --filter @forgegraph/runtime exec vitest run test/artifact-workspace-workers.test.ts test/artifact-workspace.test.ts test/artifact-publication-workers.test.ts test/artifact-publication.test.ts
+          pnpm --filter @forgegraph/runtime exec vitest run test/artifact-workspace-workers.test.ts test/artifact-workspace-workers-incremental.test.ts test/artifact-workspace.test.ts test/artifact-publication-workers.test.ts test/artifact-publication.test.ts
           node scripts/qualify-worker-artifact-preparation.mjs
       - name: Verify transaction composition and guarded rollback
         run: pnpm --filter @forgegraph/runtime exec vitest run test/dynamodb-atomic-composition.test.ts test/function-transactions.test.ts test/transaction-view.test.ts test/foundation-atomicity.test.ts test/functions.test.ts test/foundation-authorized-atomic.test.ts test/atomic-absence-guards.test.ts
