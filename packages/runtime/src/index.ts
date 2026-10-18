@@ -30,6 +30,7 @@ export * from "./portability.js";
 export * from "./governance.js";
 export * from "./scope.js";
 export * from "./gatekeeper.js";
+export * from "./authzen.js";
 export * from "./auth.js";
 export * from "./deployment-ledger.js";
 export * from "./suppression.js";
