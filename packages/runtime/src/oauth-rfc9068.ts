@@ -18,6 +18,7 @@ export interface Rfc9068VerifiedSubject {
   readonly expiresAt: number;
   readonly jwtId: string;
 }
+export type PinnedPublicJwk = JsonWebKey & {kid:string};
 export interface Rfc9068HostOptions {
   /** Exact AS issuer identifier, pre-approved by a trusted operator. */
   readonly issuer: string;
@@ -25,7 +26,7 @@ export interface Rfc9068HostOptions {
   readonly resource: string;
   readonly algorithm: "RS256" | "ES256";
   /** A pinned, bounded public JWKS; no dynamic fetch from JWT headers. */
-  readonly publicKeys: readonly JsonWebKey[];
+  readonly publicKeys: readonly PinnedPublicJwk[];
   readonly allowedClients?: readonly string[];
   readonly maxLifetimeSeconds?: number;
   readonly now?: () => number;
@@ -58,7 +59,7 @@ const decode=(encoded:string):Uint8Array=>{
   return Uint8Array.from(raw,c=>c.charCodeAt(0));
 };
 const json=(encoded:string):unknown=>JSON.parse(new TextDecoder("utf-8",{fatal:true}).decode(decode(encoded)));
-const keyMaterial=(algorithm:"RS256"|"ES256",jwk:JsonWebKey):boolean=>{
+const keyMaterial=(algorithm:"RS256"|"ES256",jwk:PinnedPublicJwk):boolean=>{
   if(!text(jwk.kid,128) || jwk.d!==undefined || jwk.k!==undefined ||
      (jwk.key_ops && (!Array.isArray(jwk.key_ops) || !jwk.key_ops.includes("verify"))) ||
      (jwk.use!==undefined && jwk.use!=="sig") ||
@@ -87,7 +88,7 @@ export function rfc9068AuthHost(options:Rfc9068HostOptions):AuthHost {
   if(options.allowedClients!==undefined &&
      (!Array.isArray(options.allowedClients) || options.allowedClients.length>256 ||
       options.allowedClients.some(c=>!text(c,512)))) throw new Error("invalid OAuth client allowlist");
-  const publicKeys=new Map<string,JsonWebKey>();
+  const publicKeys=new Map<string,PinnedPublicJwk>();
   const imported=new Map<string,Promise<CryptoKey>>();
   for(const jwk of options.publicKeys) {
     if(!keyMaterial(options.algorithm,jwk) || publicKeys.has(jwk.kid!))
@@ -124,7 +125,7 @@ export function rfc9068AuthHost(options:Rfc9068HostOptions):AuthHost {
           imported.set(protectedHeader.kid,promise);
         }
         const verified=await crypto.subtle.verify(algorithmVerify(options.algorithm),await promise,
-          decode(parts[2]!),new TextEncoder().encode(parts[0]+"."+parts[1]));
+          Uint8Array.from(decode(parts[2]!)),new TextEncoder().encode(parts[0]+"."+parts[1]));
         if(!verified) return invalid();
         if(payload.iss!==options.issuer || !text(payload.sub) || !text(payload.client_id) ||
            !text(payload.jti) || payload.nonce!==undefined ||
@@ -140,7 +141,7 @@ export function rfc9068AuthHost(options:Rfc9068HostOptions):AuthHost {
            payload.iat*1000>time+5000 || payload.exp*1000<=time ||
            payload.exp-payload.iat>lifetime ||
            (payload.nbf!==undefined &&
-             (!Number.isSafeInteger(payload.nbf) || payload.nbf*1000>time+5000))) return invalid();
+             (typeof payload.nbf!=="number" || !Number.isSafeInteger(payload.nbf) || payload.nbf*1000>time+5000))) return invalid();
         const rawScope=payload.scope??"";
         if(typeof rawScope!=="string" || rawScope.length>8192) return invalid();
         const scopes=rawScope ? rawScope.split(" ") : [];
