@@ -54,7 +54,7 @@ export function projectOpenApiOAuthSecurity(
   if (Object.keys(descriptions).some(s=>!publication.scopesSupported.includes(s))) return fail("unknown scope description");
   if (Object.values(descriptions).some(v=>typeof v !== "string" || v.length > 512)) return fail("invalid scope description");
   const scopeMap: Record<string,string> = Object.create(null);
-  for(const scope of publication.scopesSupported) scopeMap[scope] = descriptions[scope] ?? "";
+  for(const scope of publication.scopesSupported) scopeMap[scope] = Object.hasOwn(descriptions, scope) ? descriptions[scope]! : "";
   const matched = new Set<string>();
   for(const [path,item] of Object.entries(paths)) {
     if (!obj(item)) return fail("invalid path item " + path);
