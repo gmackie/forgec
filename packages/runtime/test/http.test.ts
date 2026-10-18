@@ -123,6 +123,7 @@ describe("CORS", () => {
     expect(pre.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
     expect(pre.headers.get("access-control-allow-headers")).toContain("if-match");
     expect(pre.headers.get("access-control-expose-headers")).toContain("etag");
+    expect(pre.headers.get("access-control-expose-headers")).toContain("www-authenticate");
     const res = await h(req("POST", "/v1/customers", { code: "acme", name: "A" }, { origin: "http://localhost:5173" }));
     expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
     const other = await h(req("GET", "/v1/customers/x", undefined, { origin: "https://evil.example" }));
@@ -295,11 +296,29 @@ describe("standards-first discovery remains opt-in and read-only", () => {
     expect((await resource.json()).resource).toBe("https://api.test");
     const privateSpec = await protectedHandler(new Request("https://api.test/forge/openapi.json"));
     expect(privateSpec.status).toBe(401);
-    expect(privateSpec.headers.has("www-authenticate")).toBe(false);
+    expect(privateSpec.headers.get("www-authenticate")).toContain("resource_metadata");
     const exactResource = await protectedHandler(new Request("https://api.test/"));
     expect(exactResource.headers.get("www-authenticate")).toBe('Bearer resource_metadata="https://api.test/.well-known/oauth-protected-resource"');
     const denied = await protectedHandler(new Request("https://api.test/v1/orders"));
     expect(denied.status).toBe(401);
+    expect(denied.headers.get("www-authenticate")).toContain("resource_metadata");
+    const invalidBearer = await protectedHandler(new Request("https://api.test/v1/orders",{
+      headers:{authorization:"Bearer invalid-token"},
+    }));
+    expect(invalidBearer.status).toBe(401);
+    expect(invalidBearer.headers.get("www-authenticate")).toContain('error="invalid_token"');
+    expect(invalidBearer.headers.get("www-authenticate")).toContain("resource_metadata");
+  });
+  it("provides a Bearer RFC 6750 challenge without inventing resource metadata",async()=>{
+    const standalone=createHttpHandler(model,new Engine(model,testLayer(new MemoryStorage())),{
+      auth:{scheme:"oauth2",authenticate:async()=>err("Unauthenticated","invalid_token")},
+    });
+    const missing=await standalone(new Request("https://api.test/v1/orders"));
+    expect(missing.headers.get("www-authenticate")).toBe("Bearer");
+    const invalid=await standalone(new Request("https://api.test/v1/orders",{
+      headers:{authorization:"Bearer malformed"}
+    }));
+    expect(invalid.headers.get("www-authenticate")).toBe('Bearer error="invalid_token"');
   });
   it("does not publish any new well-known route unless an operator opted in", async () => {
     expect((await handler(req("GET", "/.well-known/api-catalog"))).status).toBe(404);

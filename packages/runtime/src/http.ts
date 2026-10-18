@@ -250,7 +250,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       "access-control-allow-origin": allowed,
       "access-control-allow-methods": "GET,POST,PATCH,PUT,DELETE,OPTIONS",
       "access-control-allow-headers": "content-type,if-match,idempotency-key,x-forge-tenant,x-forge-actor,x-forge-purpose,authorization",
-      "access-control-expose-headers": "etag,x-request-id",
+      "access-control-expose-headers": "etag,x-request-id,www-authenticate",
       "access-control-max-age": "600",
       vary: "origin",
     };
@@ -280,8 +280,11 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const principal = await options.auth.authenticate(req);
     if (principal instanceof ForgeError) {
       const response = problem(principal, requestId);
-      if (publication && response.status === 401 && options.auth.scheme !== "dev-header" && new URL(req.url).href === new URL(publication.resource).href)
-        response.headers.set("www-authenticate", resourceMetadataChallenge(publication));
+      if (response.status === 401 && options.auth.scheme !== "dev-header") {
+        const base = publication ? resourceMetadataChallenge(publication) : "Bearer";
+        const invalid = req.headers.has("authorization") ? (base === "Bearer" ? ` error="invalid_token"` : `, error="invalid_token"`) : "";
+        response.headers.set("www-authenticate", base + invalid);
+      }
       return response;
     }
     options.observeTenant?.(principal.tenant);
@@ -472,9 +475,12 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         const response = problem(e, requestId);
         if (engine.oauthPublication && e.detail === "insufficient_scope") {
           const scopes = engine.oauthPublication.operations?.[route.ref.op.id]?.scopes ?? [];
-          response.headers.set("www-authenticate", `Bearer error="insufficient_scope", scope="${scopes.join(" ")}"`);
+          const metadata = publication ? resourceMetadataChallenge(publication).slice("Bearer ".length) : "";
+          response.headers.set("www-authenticate", `Bearer error="insufficient_scope", scope="${scopes.join(" ")}"` + (metadata ? ", " + metadata : ""));
         } else if (engine.oauthPublication && e.code === "Unauthenticated") {
-          response.headers.set("www-authenticate", publication ? resourceMetadataChallenge(publication) : "Bearer");
+          const base = publication ? resourceMetadataChallenge(publication) : "Bearer";
+          response.headers.set("www-authenticate", base + (req.headers.has("authorization")
+            ? (base === "Bearer" ? ` error="invalid_token"` : `, error="invalid_token"`) : ""));
         }
         return response;
       }
