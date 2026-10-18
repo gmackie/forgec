@@ -278,7 +278,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const principal = await options.auth.authenticate(req);
     if (principal instanceof ForgeError) {
       const response = problem(principal, requestId);
-      if (publication && response.status === 401 && options.auth.scheme !== "dev-header")
+      if (publication && response.status === 401 && options.auth.scheme !== "dev-header" && new URL(req.url).href === new URL(publication.resource).href)
         response.headers.set("www-authenticate", resourceMetadataChallenge(publication));
       return response;
     }
