@@ -16,6 +16,8 @@ export interface Principal {
   /** Purposes the credential allows; a requested purpose outside this set is refused. */
   purposes?: string[];
   workload?: string;
+  /** Strictly host-verified OAuth access token facts; no untrusted header mapping. */
+  verifiedOAuth?: import("./oauth-operation.js").VerifiedOAuthAccess;
 }
 export interface AuthHost {
   authenticate(req: Request): Promise<Principal | ForgeError>;
@@ -461,11 +463,21 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     if (purposeHeader && principal.purposes && !principal.purposes.includes(purposeHeader)) {
       return problem(err("NotPermitted", "the credential does not allow the requested purpose"), requestId);
     }
-    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace, ...(purposeHeader ? { purpose: purposeHeader } : {}), ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
+    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace,
+      ...(principal.verifiedOAuth ? {verifiedOAuth: principal.verifiedOAuth} : {}), ...(purposeHeader ? { purpose: purposeHeader } : {}), ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
     const exit = await Effect.runPromiseExit(engine.call(route.ref.op.id, input, ctx));
     if (exit._tag === "Failure") {
       const e = Cause.squash(exit.cause);
-      if (e instanceof ForgeError) return problem(e, requestId);
+      if (e instanceof ForgeError) {
+        const response = problem(e, requestId);
+        if (engine.oauthPublication && e.detail === "insufficient_scope") {
+          const scopes = engine.oauthPublication.operations?.[route.ref.op.id]?.scopes ?? [];
+          response.headers.set("www-authenticate", `Bearer error="insufficient_scope", scope="${scopes.join(" ")}"`);
+        } else if (engine.oauthPublication && e.code === "Unauthenticated") {
+          response.headers.set("www-authenticate", publication ? resourceMetadataChallenge(publication) : "Bearer");
+        }
+        return response;
+      }
       console.error("forge: unhandled failure", requestId, e);
       return problem(err("Internal", "unexpected failure"), requestId);
     }
