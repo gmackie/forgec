@@ -282,7 +282,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       const response = problem(principal, requestId);
       if (response.status === 401 && options.auth.scheme !== "dev-header") {
         const base = publication ? resourceMetadataChallenge(publication) : "Bearer";
-        const invalid = req.headers.has("authorization") ? (base === "Bearer" ? " error=\\"invalid_token\\"" : ", error=\\"invalid_token\\"") : "";
+        const invalid = req.headers.has("authorization") ? (base === "Bearer" ? ` error="invalid_token"` : `, error="invalid_token"`) : "";
         response.headers.set("www-authenticate", base + invalid);
       }
       return response;
