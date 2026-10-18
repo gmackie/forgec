@@ -295,7 +295,9 @@ describe("standards-first discovery remains opt-in and read-only", () => {
     expect((await resource.json()).resource).toBe("https://api.test");
     const privateSpec = await protectedHandler(new Request("https://api.test/forge/openapi.json"));
     expect(privateSpec.status).toBe(401);
-    expect(privateSpec.headers.get("www-authenticate")).toBe('Bearer resource_metadata="https://api.test/.well-known/oauth-protected-resource"');
+    expect(privateSpec.headers.has("www-authenticate")).toBe(false, "RFC 9728 challenge must not claim a different resource URL");
+    const exactResource = await protectedHandler(new Request("https://api.test/"));
+    expect(exactResource.headers.get("www-authenticate")).toBe('Bearer resource_metadata="https://api.test/.well-known/oauth-protected-resource"');
     const denied = await protectedHandler(new Request("https://api.test/v1/orders"));
     expect(denied.status).toBe(401, "publication must never authorize actual operations");
   });
