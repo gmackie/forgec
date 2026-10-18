@@ -7,6 +7,8 @@ import { MemoryStorage } from "../src/adapters/memory.js";
 import { testLayer } from "../src/testing.js";
 import { compilePath, createHttpHandler, devHeaderAuth } from "../src/http.js";
 import { defineFunction } from "../src/functions.js";
+import {err} from "../src/errors.js";
+import type {ApiPublicationProfile} from "../src/api-publication.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;
 const model = new Model(bundle);
@@ -265,5 +267,39 @@ describe("compilePath (FORG-4)", () => {
     expect(() => compilePath("/git/{repo.git")).toThrow(/malformed path template/);
     expect(() => compilePath("/git/repo}.git")).toThrow(/malformed path template/);
     expect(() => compilePath("/git/{}")).toThrow(/malformed path template/);
+  });
+});
+
+
+describe("standards-first discovery remains opt-in and read-only", () => {
+  const publication: ApiPublicationProfile = {
+    version: "forge-api-publication/1",
+    resource: "https://api.test",
+    authorizationServers: ["https://auth.example.test"],
+    scopesSupported: ["orders:read"],
+    services: [{endpoint: "https://api.test/v1/orders", serviceDesc: "https://api.test/forge/openapi.json", visibility: "public"}],
+  };
+  it("publishes GET and HEAD before authentication without exposing private contract routes", async () => {
+    const protectedHandler = createHttpHandler(model, new Engine(model, testLayer(new MemoryStorage())), {
+      auth: {scheme: "oauth2", authenticate: async () => err("Unauthenticated", "access token required")},
+      publication,
+    });
+    const catalog = await protectedHandler(new Request("https://api.test/.well-known/api-catalog"));
+    expect(catalog.status).toBe(200);
+    expect(catalog.headers.get("content-type")).toContain("application/linkset+json");
+    expect((await catalog.json()).linkset).toHaveLength(2);
+    const head = await protectedHandler(new Request("https://api.test/.well-known/api-catalog", {method:"HEAD"}));
+    expect(head.status).toBe(200);
+    expect(head.headers.get("link")).toContain("api-catalog");
+    const resource = await protectedHandler(new Request("https://api.test/.well-known/oauth-protected-resource"));
+    expect((await resource.json()).resource).toBe("https://api.test");
+    const privateSpec = await protectedHandler(new Request("https://api.test/forge/openapi.json"));
+    expect(privateSpec.status).toBe(401);
+    expect(privateSpec.headers.get("www-authenticate")).toBe('Bearer resource_metadata="https://api.test/.well-known/oauth-protected-resource"');
+    const denied = await protectedHandler(new Request("https://api.test/v1/orders"));
+    expect(denied.status).toBe(401, "publication must never authorize actual operations");
+  });
+  it("does not publish any new well-known route unless an operator opted in", async () => {
+    expect((await handler(req("GET", "/.well-known/api-catalog"))).status).toBe(404);
   });
 });
