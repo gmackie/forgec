@@ -7,6 +7,7 @@ import type { Engine, CallContext } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
 import { spanFromTraceparent, traceparent } from "./telemetry.js";
 import type { Model, OperationRef } from "./model.js";
+import {validateApiPublication, serveApiPublication, resourceMetadataChallenge, type ApiPublicationProfile} from "./api-publication.js";
 
 export interface Principal {
   tenant: string;
@@ -214,6 +215,8 @@ function match(route: Route, path: string[]): Record<string, string> | null {
 
 export interface HttpOptions {
   auth: AuthHost;
+  /** Explicit, reviewed public RFC 9727/9728 metadata; never grants API permissions. */
+  publication?: ApiPublicationProfile;
   requestId?: (req: Request) => string;
   /** Default 1 MiB; admin import bodies are allowed `adminMaxBodyBytes` (default 64 MiB). */
   maxBodyBytes?: number;
@@ -230,6 +233,7 @@ const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 
 export function createHttpHandler(model: Model, engine: Engine, options: HttpOptions): (req: Request) => Promise<Response> {
   const routes = compile(model);
+  const publication = options.publication ? validateApiPublication(options.publication, new Set(routes.map(r => r.ref.op.id))) : undefined;
   const maxBody = options.maxBodyBytes ?? 1_048_576;
 
   const problem = (e: ForgeError, requestId: string) =>
@@ -265,9 +269,19 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const url = new URL(req.url);
     const path = url.pathname.split("/").filter(Boolean);
 
+    // The only pre-auth routes are explicitly reviewed public discovery metadata.
+    // Existing /forge/discovery and /forge/openapi.json remain authenticated.
+    const publishedResponse = publication ? serveApiPublication(req, publication) : undefined;
+    if (publishedResponse) return publishedResponse;
+
     // authenticate before routing: anonymous callers learn nothing about the API shape
     const principal = await options.auth.authenticate(req);
-    if (principal instanceof ForgeError) return problem(principal, requestId);
+    if (principal instanceof ForgeError) {
+      const response = problem(principal, requestId);
+      if (publication && response.status === 401 && options.auth.scheme !== "dev-header" && new URL(req.url).href === new URL(publication.resource).href)
+        response.headers.set("www-authenticate", resourceMetadataChallenge(publication));
+      return response;
+    }
     options.observeTenant?.(principal.tenant);
 
     if (req.headers.has("x-forge-if-build") && req.headers.get("x-forge-if-build") !== model.bundle.buildHash)
