@@ -128,7 +128,8 @@ export function rfc9068AuthHost(options:Rfc9068HostOptions):AuthHost {
         if(!Array.isArray(audiences) || audiences.length<1 || audiences.length>32 ||
            audiences.some(x=>!text(x,2048)) || !audiences.includes(options.resource)) return invalid();
         const time=now();
-        if(!Number.isFinite(time) || !Number.isSafeInteger(payload.iat) ||
+        if(!Number.isFinite(time) || typeof payload.iat!=="number" ||
+           typeof payload.exp!=="number" || !Number.isSafeInteger(payload.iat) ||
            !Number.isSafeInteger(payload.exp) || payload.exp<=payload.iat ||
            payload.iat*1000>time+5000 || payload.exp*1000<=time ||
            payload.exp-payload.iat>lifetime ||
