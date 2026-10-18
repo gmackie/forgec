@@ -87,12 +87,12 @@ export function rfc9068AuthHost(options:Rfc9068HostOptions):AuthHost {
   if(options.allowedClients!==undefined &&
      (!Array.isArray(options.allowedClients) || options.allowedClients.length>256 ||
       options.allowedClients.some(c=>!text(c,512)))) throw new Error("invalid OAuth client allowlist");
-  const material=new Map<string,Promise<CryptoKey>>();
+  const publicKeys=new Map<string,JsonWebKey>();
+  const imported=new Map<string,Promise<CryptoKey>>();
   for(const jwk of options.publicKeys) {
-    if(!keyMaterial(options.algorithm,jwk) || material.has(jwk.kid!))
+    if(!keyMaterial(options.algorithm,jwk) || publicKeys.has(jwk.kid!))
       throw new Error("invalid or duplicate pinned RFC 9068 public key");
-    const key=crypto.subtle.importKey("jwk",jwk,algorithmImport(options.algorithm),false,["verify"]);
-    material.set(jwk.kid!,key);
+    publicKeys.set(jwk.kid!,{...jwk});
   }
   const now=options.now??Date.now;
   return {
@@ -115,8 +115,14 @@ export function rfc9068AuthHost(options:Rfc9068HostOptions):AuthHost {
            protectedHeader.jwk!==undefined || protectedHeader.jku!==undefined ||
            protectedHeader.x5u!==undefined || protectedHeader.x5c!==undefined ||
            protectedHeader.b64!==undefined) return invalid();
-        const promise=material.get(protectedHeader.kid);
-        if(!promise) return invalid();
+        const selectedKey=publicKeys.get(protectedHeader.kid);
+        if(!selectedKey) return invalid();
+        // Lazy initialization avoids unhandled asynchronous configuration failures.
+        let promise=imported.get(protectedHeader.kid);
+        if(!promise) {
+          promise=crypto.subtle.importKey("jwk",selectedKey,algorithmImport(options.algorithm),false,["verify"]);
+          imported.set(protectedHeader.kid,promise);
+        }
         const verified=await crypto.subtle.verify(algorithmVerify(options.algorithm),await promise,
           decode(parts[2]!),new TextEncoder().encode(parts[0]+"."+parts[1]));
         if(!verified) return invalid();
