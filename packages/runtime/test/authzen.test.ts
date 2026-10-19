@@ -58,6 +58,19 @@ describe("standards-first AuthZEN client",()=>{
     const failed=authzenAuthorizer(opts(async()=>{throw new Error("offline");}));
     await expect(Effect.runPromise(failed.decide(req))).rejects.toBeInstanceOf(ForgeError);
   });
+  it("refuses positive PDP responses with unimplemented authorization obligations",async()=>{
+    const extensions=[
+      {decision:true,obligations:[{kind:"approval"}]},
+      {decision:true,context:{required_approval:true}},
+      {decision:true,advice:[{type:"step_up"}]},
+    ];
+    for(const body of extensions) {
+      const a=authzenAuthorizer(opts(async()=>Response.json(body)));
+      await expect(Effect.runPromise(a.decide(req))).rejects.toBeInstanceOf(ForgeError);
+    }
+    const denial=authzenAuthorizer(opts(async()=>Response.json({decision:false,context:{reason:"denied"}})));
+    expect((await Effect.runPromise(denial.decide(req))).effect).toBe("deny");
+  });
   it("requires explicit, canonical HTTPS PDP endpoint and valid epoch",()=>{
     expect(()=>authzenAuthorizer({...opts(async()=>Response.json({decision:true})),endpoint:"http://pdp.example.test/access/v1/evaluation"})).toThrow(/HTTPS/);
     expect(()=>authzenAuthorizer({...opts(async()=>Response.json({decision:true})),endpoint:"https://pdp.example.test/path?token=secret"})).toThrow(/HTTPS/);
