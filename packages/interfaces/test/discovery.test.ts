@@ -1,5 +1,5 @@
 import {describe,expect,it} from "vitest";
-import {authorizationServerUrl,protectedResourceUrl,discoverApi,DiscoveryError,
+import {authorizationServerUrl,protectedResourceUrl,discoverApi,previewPublicCatalog,DiscoveryError,
   type DiscoveryTrust} from "../src/discovery.js";
 
 const origin="https://api.example.test";
@@ -73,6 +73,26 @@ const rejected=async(p:Promise<unknown>,pattern?:RegExp)=>{
   await expect(p).rejects.toBeInstanceOf(DiscoveryError);
   if(pattern)await expect(p).rejects.toThrow(pattern);
 };
+describe("origin-first public catalog preview",()=>{
+  it("discovers only a public catalog without any issuer pin or credentials",async()=>{
+    const f=fixture();
+    const result=await previewPublicCatalog({
+      origin,allowedLinkOrigins:["https://docs.example.test"],fetcher:f.fetcher,
+    });
+    expect(result.reviewRequired).toBe(true);
+    expect(result.services[0]?.endpoint).toBe(resource);
+    expect(f.paths).toEqual([catalogUrl]);
+    expect(JSON.stringify(result)).not.toContain("authorizationEndpoint");
+  });
+  it("rejects origin URLs, internal hostnames and cross-origin links without review",async()=>{
+    const f=fixture();
+    await rejected(previewPublicCatalog({origin:"https://127.0.0.1",fetcher:f.fetcher}));
+    await rejected(previewPublicCatalog({origin:"http://api.example.test",fetcher:f.fetcher}));
+    expect(f.paths).toEqual([]);
+    await rejected(previewPublicCatalog({origin,fetcher:f.fetcher}),/unreviewed_link_origin/);
+    expect(f.paths).toEqual([catalogUrl]);
+  });
+});
 describe("trust-pinned API and OAuth discovery",()=>{
   it("generates origin-rooted and path-specific well-known locations",()=>{
     expect(protectedResourceUrl(resource)).toBe(resourceUrl);
