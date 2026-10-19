@@ -8,6 +8,8 @@ import { err, ForgeError } from "./errors.js";
 import { spanFromTraceparent, traceparent } from "./telemetry.js";
 import type { Model, OperationRef } from "./model.js";
 import {validateApiPublication, serveApiPublication, resourceMetadataChallenge, type ApiPublicationProfile} from "./api-publication.js";
+import {projectReviewedPublicOpenApi} from "./api-public-openapi.js";
+import type {OAuthServerPublication} from "./api-openapi-security.js";
 
 export interface Principal {
   tenant: string;
@@ -219,6 +221,8 @@ export interface HttpOptions {
   auth: AuthHost;
   /** Explicit, reviewed public RFC 9727/9728 metadata; never grants API permissions. */
   publication?: ApiPublicationProfile;
+  /** Explicitly approved, redacted public OAS projection and pinned AS endpoints. */
+  publicOpenApiServer?: OAuthServerPublication;
   requestId?: (req: Request) => string;
   /** Default 1 MiB; admin import bodies are allowed `adminMaxBodyBytes` (default 64 MiB). */
   maxBodyBytes?: number;
@@ -243,6 +247,13 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
        JSON.stringify(publication.scopesSupported) !== JSON.stringify(engine.oauthPublication.scopesSupported) ||
        JSON.stringify(publication.operations) !== JSON.stringify(engine.oauthPublication.operations)))
     throw new Error("OAuth runtime and published security contracts disagree");
+  const publicSpec = options.publicOpenApiServer
+    ? (publication && engine.oauthPublication && model.bundle.openapi &&
+        publication.services.some(s => s.visibility === "public" &&
+          s.serviceDesc === publication.origin + "/forge/openapi.json")
+        ? projectReviewedPublicOpenApi(model.bundle.openapi,publication,options.publicOpenApiServer)
+        : (() => { throw new Error("Public OpenAPI requires matching enforced OAuth and a reviewed service-desc"); })())
+    : undefined;
   const maxBody = options.maxBodyBytes ?? 1_048_576;
 
   const problem = (e: ForgeError, requestId: string) =>
@@ -282,6 +293,17 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     // Existing /forge/discovery and /forge/openapi.json remain authenticated.
     const publishedResponse = publication ? serveApiPublication(req, publication) : undefined;
     if (publishedResponse) return publishedResponse;
+    if (publicSpec && publication && url.origin === publication.origin &&
+        url.pathname === "/forge/openapi.json" && (req.method === "GET" || req.method === "HEAD")) {
+      return new Response(req.method === "HEAD" ? null : JSON.stringify(publicSpec), {
+        status:200,headers:{
+          "content-type":"application/json",
+          "cache-control":"public, max-age=300",
+          "x-content-type-options":"nosniff",
+          "vary":"Accept",
+        },
+      });
+    }
 
     // authenticate before routing: anonymous callers learn nothing about the API shape
     const principal = await options.auth.authenticate(req);

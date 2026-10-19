@@ -10,6 +10,7 @@ export * from "./http.js";
 export * from "./api-publication.js";
 export * from "./oauth-operation.js";
 export * from "./api-openapi-security.js";
+export * from "./api-public-openapi.js";
 export { MemoryStorage } from "./adapters/memory.js";
 export { D1Storage } from "./adapters/d1.js";
 export { DynamoStorage, ensureDynamoTable } from "./adapters/dynamodb.js";
