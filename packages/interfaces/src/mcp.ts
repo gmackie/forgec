@@ -168,6 +168,7 @@ export function createMcpServer(o: McpServerOptions): McpServer {
 
   /** Visibility = purpose surface permits the operation kind AND the authorizer allows the operation. */
   const visible = async (t: McpTool, ctx: CallContext): Promise<boolean> => {
+    if (engine.oauthPublication && !engine.gatekeeper.authorizer) return false;
     if (engine.oauthPublication && checkPublishedOAuth(engine.oauthPublication, t.operationId, ctx.verifiedOAuth)) return false;
     if (t.resource) {
       const surface = await Effect.runPromiseExit(engine.scope.resolve(t.resource, ctx));
@@ -242,14 +243,18 @@ export function createMcpServer(o: McpServerOptions): McpServer {
           return call(tool.operationId, params["arguments"] ?? {}, principal, purpose, id);
         }
         case "resources/list":
+          if (engine.oauthPublication) return reply(id, { resources: [] });
           return reply(id, { resources: [
             { uri: "forge://discovery", name: "discovery", title: "Deployment discovery", mimeType: "application/json" },
             { uri: "forge://openapi", name: "openapi", title: "OpenAPI projection", mimeType: "application/json" },
           ] });
         case "resources/templates/list":
+          if (engine.oauthPublication) return reply(id, { resourceTemplates: [] });
           return reply(id, { resourceTemplates: resourceTemplates.map((t) => ({ uriTemplate: t.uriTemplate, name: t.name, mimeType: t.mimeType })) });
         case "resources/read": {
           const uri = String(params["uri"] ?? "");
+          if (engine.oauthPublication && (uri === "forge://discovery" || uri === "forge://openapi"))
+            return fail(id, -32001, "private contract discovery requires reviewed projection");
           if (uri === "forge://discovery") return reply(id, { contents: [{ uri, mimeType: "application/json", text: JSON.stringify(discovery(engine.model, { scheme: o.authScheme ?? "bearer", authenticate: async () => principal })) }] });
           if (uri === "forge://openapi") return engine.oauthPublication
             ? fail(id, -32001, "operation schema not available in this authorization profile")
