@@ -93,9 +93,7 @@ export class Engine {
     const self = this;
     // Every public logical operation — generated or handwritten — emits exactly one telemetry event.
     const started = performance.now();
-    const failure = !ctx.maintenance && self.oauthPublication
-      ? checkPublishedOAuth(self.oauthPublication, opId, ctx.verifiedOAuth)
-      : null;
+    const failure = self.oauthGate(opId, ctx);
     return (failure ? Effect.fail(failure) : self.program(opId, input, ctx)).pipe(
       Effect.provide(self.layer),
       Effect.tap(() => Effect.sync(() => self.telemetry.emit(opId, ctx, started, self.successStatus(opId)))),
@@ -107,9 +105,22 @@ export class Engine {
     return k === "create" || k === "changeset.propose" ? 201 : 200;
   }
 
-  /** Same as call() but without providing the layer (for use inside function bodies that share it). */
+  /**
+   * One authorization gate for every external and internal operation. A
+   * publication without a configured PDP is a configuration error, not an
+   * implicit allow. Trusted maintenance jobs remain an explicit exception.
+   */
+  private oauthGate(opId: string, ctx: CallContext): ForgeError | null {
+    if (ctx.maintenance || !this.oauthPublication) return null;
+    if (!this.gatekeeper.authorizer)
+      return err("NotPermitted", "oauth_policy_decision_point_unconfigured");
+    return checkPublishedOAuth(this.oauthPublication, opId, ctx.verifiedOAuth);
+  }
+
+  /** Internal operations inherit the exact same OAuth and PDP requirements. */
   callInternal(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
-    return this.program(opId, input, ctx);
+    const failure = this.oauthGate(opId, ctx);
+    return failure ? Effect.fail(failure) : this.program(opId, input, ctx);
   }
 
   consume(subscription: string, env: Envelope) {
