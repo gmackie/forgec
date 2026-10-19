@@ -13,6 +13,15 @@
  * - missed occurrences are caught up oldest-first, bounded by a window;
  * - overlap policy `skip`: an occurrence due while its predecessor is still
  *   running is recorded as skipped, never queued.
+ *
+ * Which tenants a host tick reaches (FORG-3): a durable schedule index (a
+ * document in the system tenant) maps every tenant that has been seen to its
+ * next due instant. Hosts record tenants with `track` (off the request path)
+ * and call `sweep` on every trigger; a sweep reads the index once and ticks
+ * only the tenants that are due, so idle tenants fire without any outbox rows
+ * and without scanning every tenant on every tick. A package with no `@tenant`
+ * resource is tenant-less: its schedules are global and run once per
+ * occurrence on the system tenant's ledger, whoever triggers them.
  */
 import { Effect } from "effect";
 import type { Wire } from "./decode.js";
@@ -174,11 +183,113 @@ export const DEFAULT_POLICY: SchedulePolicy = { catchUpWindowMs: 3 * 24 * 3600 *
 
 interface Ledger { lastOccurrence: string | null; running: string | null; skipped: string[]; _version?: number }
 export interface TickResult { source: string; occurrence: string; outcome: "ran" | "duplicate" | "skipped-overlap" | "failed"; error?: string }
+export interface SweepResult extends TickResult { tenant: string }
+
+/** System tenant holding the schedule index and, for tenant-less packages, the global ledgers. */
+export const SCHEDULE_SYSTEM_TENANT = "_forge";
+const INDEX_ID = "index";
+/** tenant -> next due instant (ISO). Every tenant ever tracked has an entry. */
+interface ScheduleIndex { due: Record<string, string>; _version?: number }
 
 export class Schedules {
   private readonly recurrences = new Map<string, Recurrence>();
   policy: SchedulePolicy = DEFAULT_POLICY;
   constructor(private readonly engine: Engine) {}
+
+  /** True when the package declares at least one cron schedule. */
+  get active(): boolean {
+    return this.engine.model.sources.some((s) => !!s.cron);
+  }
+
+  /** A package with no `@tenant` resource has global schedules: one ledger, on the system tenant. */
+  get global(): boolean {
+    return !this.engine.model.resources.some((r) => r.decorators.tenant);
+  }
+
+  /** The tenant whose ledger a tick or status for `tenant` reads. */
+  private scope(tenant: string): string {
+    return this.global ? SCHEDULE_SYSTEM_TENANT : tenant;
+  }
+
+  /** Earliest occurrence strictly after `after` across every cron schedule. */
+  private nextDue(after: string): string | null {
+    let best: string | null = null;
+    for (const s of this.engine.model.sources) {
+      if (!s.cron) continue;
+      const n = nextOccurrence(this.recurrence(s), after);
+      if (n && (best === null || n < best)) best = n;
+    }
+    return best;
+  }
+
+  /**
+   * Record that `tenant` exists so the next sweep reaches it even when it is idle. Idempotent: one
+   * point read when already tracked. Hosts call it off the request path and memoise per process.
+   */
+  track(tenant: string): Effect.Effect<void, never, never> {
+    const self = this;
+    if (!this.active || tenant === SCHEDULE_SYSTEM_TENANT || this.global) return Effect.void;
+    return Effect.gen(function* () {
+      const now = (yield* Clock).now();
+      yield* self.updateIndex((due) => {
+        if (due[tenant]) return null;
+        const next = self.nextDue(now);
+        return next ? { ...due, [tenant]: next } : null;
+      });
+    }).pipe(Effect.catch(() => Effect.void), Effect.provide(this.engine.layer));
+  }
+
+  /**
+   * A host trigger at `now`: tick every tracked tenant whose next occurrence is due, then record each
+   * one's next due instant. `seen` are tenants the host already knows about (outbox, workflows); they
+   * are tracked first, so nothing that fired before the index existed stops firing.
+   */
+  sweep(now: string, seen: readonly string[] = []): Effect.Effect<SweepResult[], never, never> {
+    const self = this;
+    if (!this.active) return Effect.succeed([]);
+    return Effect.gen(function* () {
+      const nowIso = new Date(Date.parse(now)).toISOString();
+      const storage = yield* Storage;
+      const index = ((yield* storage.getDocument(SCHEDULE_SYSTEM_TENANT, KIND, INDEX_ID)) ?? { due: {} }) as unknown as ScheduleIndex;
+      const due = { ...index.due };
+      // Untracked tenants start one minute back, like a ledger with no history.
+      const firstSeen = new Date(Date.parse(nowIso) - 60_000).toISOString();
+      const fresh = (self.global ? [SCHEDULE_SYSTEM_TENANT] : seen).filter((t) => !due[t]);
+      for (const t of fresh) {
+        const n = self.nextDue(firstSeen);
+        if (n) due[t] = n;
+      }
+      const ready = Object.entries(due).filter(([, at]) => at <= nowIso);
+      const results: SweepResult[] = [];
+      const updates: Record<string, string> = {};
+      for (const t of fresh) if (due[t] && !ready.some(([r]) => r === t)) updates[t] = due[t]!;
+      for (const [tenant, at] of ready) {
+        // A tenant with no ledger yet catches up from its first due instant, not from "a minute ago".
+        const ticked = yield* self.tickScoped(tenant, nowIso, new Date(Date.parse(at) - 1).toISOString());
+        results.push(...ticked.map((r) => ({ tenant, ...r })));
+        // A failed occurrence is not recorded as done; keep the tenant due so the next sweep retries it.
+        const next = ticked.some((r) => r.outcome === "failed") ? at : self.nextDue(nowIso);
+        if (next) updates[tenant] = next;
+      }
+      if (Object.keys(updates).length) yield* self.updateIndex((cur) => ({ ...cur, ...updates }));
+      return results;
+    }).pipe(Effect.catch(() => Effect.succeed([] as SweepResult[])), Effect.provide(this.engine.layer));
+  }
+
+  /** CAS-update the index; concurrent sweeps and tracks merge (each writes only its own tenants). */
+  private updateIndex(f: (due: Record<string, string>) => Record<string, string> | null): Effect.Effect<void, ForgeError, RuntimeServices> {
+    return Effect.gen(function* () {
+      const storage = yield* Storage;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const cur = ((yield* storage.getDocument(SCHEDULE_SYSTEM_TENANT, KIND, INDEX_ID)) ?? { due: {} }) as unknown as ScheduleIndex;
+        const next = f(cur.due ?? {});
+        if (!next) return;
+        const r = yield* Effect.exit(storage.putDocument(SCHEDULE_SYSTEM_TENANT, KIND, INDEX_ID, { due: next } as Wire, cur._version ?? null));
+        if (r._tag === "Success") return;
+      }
+      return yield* Effect.fail(err("TransientConflict", "schedule index contention"));
+    });
+  }
 
   recurrence(s: SourceDecl): Recurrence {
     let r = this.recurrences.get(s.id);
@@ -188,6 +299,11 @@ export class Schedules {
 
   /** A provider tick at `now`: run every intended occurrence that is due and not yet recorded. */
   tick(tenant: string, now: string): Effect.Effect<TickResult[], never, never> {
+    return this.tickScoped(this.scope(tenant), now).pipe(Effect.provide(this.engine.layer));
+  }
+
+  /** `notBefore`: lower bound (exclusive) for a schedule with no ledger yet; default one minute before `now`. */
+  private tickScoped(tenant: string, now: string, notBefore?: string): Effect.Effect<TickResult[], never, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
       const results: TickResult[] = [];
@@ -200,7 +316,7 @@ export class Schedules {
         const ledger = ((yield* storage.getDocument(tenant, KIND, docId)) ?? { lastOccurrence: null, running: null, skipped: [] }) as unknown as Ledger;
         // Due = occurrences after the last recorded one up to now; older than the window are skipped, not run.
         const windowStart = new Date(Date.parse(nowIso) - self.policy.catchUpWindowMs).toISOString();
-        const from = ledger.lastOccurrence ?? new Date(Date.parse(nowIso) - 60_000).toISOString();
+        const from = ledger.lastOccurrence ?? notBefore ?? new Date(Date.parse(nowIso) - 60_000).toISOString();
         const due = occurrencesBetween(r, from, nowIso, 10_000);
         const tooOld = due.filter((o) => o <= windowStart);
         const toRun = due.filter((o) => o > windowStart);
@@ -238,11 +354,12 @@ export class Schedules {
         }
       }
       return results;
-    }).pipe(Effect.catch(() => Effect.succeed([] as TickResult[])), Effect.provide(this.engine.layer));
+    }).pipe(Effect.catch(() => Effect.succeed([] as TickResult[])));
   }
 
-  status(tenant: string): Effect.Effect<{ source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }[], never, never> {
+  status(caller: string): Effect.Effect<{ source: string; lastOccurrence: string | null; next: string | null; skipped: string[] }[], never, never> {
     const self = this;
+    const tenant = this.scope(caller);
     return Effect.gen(function* () {
       const storage = yield* Storage;
       const now = (yield* Clock).now();

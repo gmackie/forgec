@@ -128,6 +128,15 @@ export channel OrderEvents
 on OrderEvents.OrderSubmitted -> FulfillOrder
 ```
 
+`@http` path parameters bind input fields by name (`E-HTTP-001` if a
+parameter is not an input field). A segment may be a whole parameter
+(`{order}`) or mix literals and parameters, as in git smart HTTP's
+`"/git/{owner}/{repo}.git/info/refs"` (`repo` binds `forgec` from
+`forgec.git`). At one position a literal segment wins over a mixed one, which
+wins over a whole parameter. Unbalanced or nested braces, an empty or
+non-identifier name, and two parameters with no literal between them are
+rejected (`E-HTTP-002`).
+
 The body lives in `impl/` (`defineFunction`) and sees exactly the declared
 capabilities. Writes and `send`s commit together at the end of the body. Each
 subscription is one durable delivery (outbox → Cloudflare Queue / SQS);
@@ -225,6 +234,11 @@ source NightlyReconciliation {
 Cron compiles to an explicit recurrence (0/7 = Sunday, day-of-month OR
 day-of-week, IANA zone). Occurrence identity is schedule + intended instant;
 missed runs catch up in order within a window; overlapping runs are skipped.
+
+Schedules run per tenant, on that tenant's ledger, for every tenant the
+deployment has served, including tenants that are idle. A package with no
+`@tenant` resource is tenant-less: its schedules are global and run once per
+occurrence from the first trigger after deployment.
 
 ## Structural facets (edition 2027)
 

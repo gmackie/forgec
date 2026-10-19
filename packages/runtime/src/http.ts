@@ -7,6 +7,7 @@ import type { Engine, CallContext } from "./engine.js";
 import { err, ForgeError } from "./errors.js";
 import { spanFromTraceparent, traceparent } from "./telemetry.js";
 import type { Model, OperationRef } from "./model.js";
+import {validateApiPublication, serveApiPublication, resourceMetadataChallenge, type ApiPublicationProfile} from "./api-publication.js";
 import { handleSignedWebhook, validateWebhooks, type SignedWebhook } from "./webhooks.js";
 import { compileEndpoints, endpointRequest, type HttpEndpoint } from "./http-endpoints.js";
 export type { HttpEndpoint, HttpEndpointContext } from "./http-endpoints.js";
@@ -19,6 +20,8 @@ export interface Principal {
   /** Purposes the credential allows; a requested purpose outside this set is refused. */
   purposes?: string[];
   workload?: string;
+  /** Strictly host-verified OAuth access token facts; no untrusted header mapping. */
+  verifiedOAuth?: import("./oauth-operation.js").VerifiedOAuthAccess;
 }
 export interface AuthHost {
   authenticate(req: Request): Promise<Principal | ForgeError>;
@@ -38,11 +41,49 @@ export function devHeaderAuth(): AuthHost {
   };
 }
 
+/**
+ * One path segment. `literal` matches exactly; `param` binds the whole segment; `pattern` binds the
+ * parameters of a mixed segment such as `{repo}.git` or `v{major}-{minor}` (FORG-4). Mixed segments
+ * follow the compiler, the OpenAPI projection and the generated client, which all substitute `{name}`
+ * wherever it appears in the template.
+ */
+interface Segment {
+  literal?: string;
+  param?: string;
+  pattern?: { source: string; regex: RegExp; params: string[] };
+}
+
 interface Route {
   method: string;
-  segments: { literal?: string; param?: string }[];
+  segments: Segment[];
   ref: OperationRef;
 }
+
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** Compile a path template into segments. Exported for tests. */
+export function compilePath(path: string): Segment[] {
+  return path.split("/").filter(Boolean).map((s): Segment => {
+    if (!/[{}]/.test(s)) return { literal: s };
+    if (/[{}]/.test(s.replace(/\{\w+\}/g, ""))) throw new Error(`malformed path template segment \`${s}\` in \`${path}\``);
+    const whole = /^\{(\w+)\}$/.exec(s);
+    if (whole) return { param: whole[1]! };
+    const params: string[] = [];
+    let source = "^";
+    let last = 0;
+    for (const m of s.matchAll(/\{(\w+)\}/g)) {
+      source += escapeRegex(s.slice(last, m.index)) + "([^/]+?)";
+      params.push(m[1]!);
+      last = m.index! + m[0].length;
+    }
+    source += escapeRegex(s.slice(last)) + "$";
+    return { pattern: { source: s, regex: new RegExp(source), params } };
+  });
+}
+
+/** Specificity at one position: literal before mixed before a whole-segment parameter. */
+const rank = (s: Segment | undefined) => (s?.literal !== undefined ? 0 : s?.pattern ? 1 : 2);
+const templateOf = (s: Segment) => s.literal ?? s.pattern?.source ?? `{${s.param}}`;
 
 /** FORGE-056 discovery document: identity, digests, features and links. Counts, not a catalogue; the OpenAPI projection carries operations. */
 export function discovery(model: Model, auth: AuthHost): Record<string, unknown> {
@@ -72,12 +113,12 @@ function builtinRoutes(model: Model): Route[] {
   const pkg = model.bundle.ir.package.name;
   const mk = (method: string, path: string, action: string): Route => ({
     method,
-    segments: path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
+    segments: compilePath(path),
     ref: { op: { id: `${pkg}/_/changesets.${action}`, kind: `changeset.${action}`, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] },
   });
   const imp = (method: string, path: string, action: string): Route => ({
     method,
-    segments: path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
+    segments: compilePath(path),
     ref: { op: { id: `${pkg}/_/imports.${action}`, kind: `import.${action}`, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] },
   });
   const adm = (method: string, path: string, action: string): Route => ({
@@ -106,7 +147,7 @@ function builtinRoutes(model: Model): Route[] {
 
 /** Views, projections and caches (plan §16–17) bind the same paths the generated client uses. */
 function readModelRoutes(model: Model): Route[] {
-  const seg = (path: string) => path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s }));
+  const seg = compilePath;
   const route = (method: string, path: string, id: string, kind: string): Route => ({ method, segments: seg(path), ref: { op: { id, kind, http: { method, path } }, resource: undefined as unknown as Route["ref"]["resource"] } });
   const routes: Route[] = [];
   for (const v of model.views) routes.push(route("GET", `/v1/views/${kebab(v.name)}`, `${v.id}.query`, "view.query"));
@@ -137,21 +178,21 @@ function kebab(name: string): string {
 function compile(model: Model): Route[] {
   const routes: Route[] = model.httpOperations().map((ref) => ({
     method: ref.op.http!.method,
-    segments: ref.op.http!.path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })),
+    segments: compilePath(ref.op.http!.path),
     ref,
   }));
   for (const f of model.functions) {
     if (!f.http) continue;
-    routes.push({ method: f.http.method, segments: f.http.path.split("/").filter(Boolean).map((s) => (s.startsWith("{") ? { param: s.slice(1, -1) } : { literal: s })), ref: { op: { id: f.id, kind: "function", http: f.http }, resource: undefined as unknown as Route["ref"]["resource"] } });
+    routes.push({ method: f.http.method, segments: compilePath(f.http.path), ref: { op: { id: f.id, kind: "function", http: f.http }, resource: undefined as unknown as Route["ref"]["resource"] } });
   }
   routes.push(...builtinRoutes(model));
   routes.push(...readModelRoutes(model));
-  // Static segments win over parameters at the same position.
+  // Static segments win over mixed segments, which win over whole-segment parameters at the same position.
   routes.sort((a, b) => {
     const n = Math.max(a.segments.length, b.segments.length);
     for (let i = 0; i < n; i++) {
-      const x = a.segments[i]?.literal ? 0 : 1;
-      const y = b.segments[i]?.literal ? 0 : 1;
+      const x = rank(a.segments[i]);
+      const y = rank(b.segments[i]);
       if (x !== y) return x - y;
     }
     return 0;
@@ -166,6 +207,11 @@ function match(route: Route, path: string[]): Record<string, string> | null {
     const seg = route.segments[i]!;
     if (seg.literal !== undefined) {
       if (seg.literal !== path[i]) return null;
+    } else if (seg.pattern) {
+      // Match the raw segment so an encoded "." or "-" in a value cannot complete the literal part.
+      const m = seg.pattern.regex.exec(path[i]!);
+      if (!m) return null;
+      seg.pattern.params.forEach((p, j) => (params[p] = decodeURIComponent(m[j + 1]!)));
     } else {
       params[seg.param!] = decodeURIComponent(path[i]!);
     }
@@ -175,6 +221,8 @@ function match(route: Route, path: string[]): Record<string, string> | null {
 
 export interface HttpOptions {
   auth: AuthHost;
+  /** Explicit, reviewed public RFC 9727/9728 metadata; never grants API permissions. */
+  publication?: ApiPublicationProfile;
   endpoints?: HttpEndpoint[];
   requestId?: (req: Request) => string;
   /** Default 1 MiB; admin import bodies are allowed `adminMaxBodyBytes` (default 64 MiB). */
@@ -182,6 +230,8 @@ export interface HttpOptions {
   adminMaxBodyBytes?: number;
   /** Allowed browser origins (exact, or "*"). Absent = no CORS headers. */
   cors?: { origins: string[] };
+  /** Called once per authenticated request with its tenant (hosts track tenants for schedules; must not block). */
+  observeTenant?: (tenant: string) => void;
   /** Signed POST endpoints; each verifies a bounded raw body before session auth. */
   webhooks?: Record<string, SignedWebhook>;
   /** Extra authenticated endpoints by exact path (e.g. an MCP server at `/forge/mcp`). */
@@ -195,6 +245,14 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
   validateWebhooks(webhooks);
   const endpoints = compileEndpoints(options.endpoints ?? []);
   const routes = compile(model);
+  const publication = options.publication ? validateApiPublication(options.publication, new Set(routes.map(r => r.ref.op.id))) : undefined;
+  // Metadata and actual enforcement must describe the same reviewed authority.
+  if (engine.oauthPublication && publication &&
+      (publication.resource !== engine.oauthPublication.resource ||
+       JSON.stringify(publication.authorizationServers) !== JSON.stringify(engine.oauthPublication.authorizationServers) ||
+       JSON.stringify(publication.scopesSupported) !== JSON.stringify(engine.oauthPublication.scopesSupported) ||
+       JSON.stringify(publication.operations) !== JSON.stringify(engine.oauthPublication.operations)))
+    throw new Error("OAuth runtime and published security contracts disagree");
   const maxBody = options.maxBodyBytes ?? 1_048_576;
 
   const problem = (e: ForgeError, requestId: string) =>
@@ -209,7 +267,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
       "access-control-allow-origin": allowed,
       "access-control-allow-methods": "GET,POST,PATCH,PUT,DELETE,OPTIONS",
       "access-control-allow-headers": "content-type,if-match,idempotency-key,x-forge-tenant,x-forge-actor,x-forge-purpose,authorization",
-      "access-control-expose-headers": "etag,x-request-id",
+      "access-control-expose-headers": "etag,x-request-id,www-authenticate",
       "access-control-max-age": "600",
       vary: "origin",
     };
@@ -230,12 +288,26 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     const url = new URL(req.url);
     const path = url.pathname.split("/").filter(Boolean);
 
+    // The only pre-auth routes are explicitly reviewed public discovery
+    // metadata and declared signed webhooks, which verify their own HMAC.
+    // Existing /forge/discovery and /forge/openapi.json remain authenticated.
+    const publishedResponse = publication ? serveApiPublication(req, publication) : undefined;
+    if (publishedResponse) return publishedResponse;
     if (req.method === "POST" && Object.hasOwn(webhooks, url.pathname))
       return handleSignedWebhook(req, webhooks[url.pathname]!, requestId);
 
     // authenticate before routing: anonymous callers learn nothing about the API shape
     const principal = await options.auth.authenticate(req);
-    if (principal instanceof ForgeError) return problem(principal, requestId);
+    if (principal instanceof ForgeError) {
+      const response = problem(principal, requestId);
+      if (response.status === 401 && options.auth.scheme !== "dev-header") {
+        const base = publication ? resourceMetadataChallenge(publication) : "Bearer";
+        const invalid = req.headers.has("authorization") ? (base === "Bearer" ? ` error="invalid_token"` : `, error="invalid_token"`) : "";
+        response.headers.set("www-authenticate", base + invalid);
+      }
+      return response;
+    }
+    options.observeTenant?.(principal.tenant);
 
     if (req.headers.has("x-forge-if-build") && req.headers.get("x-forge-if-build") !== model.bundle.buildHash)
       return new Response(JSON.stringify({code:"BuildChanged",detail:"Reload the runtime contract before invoking."}), {status:409,headers:{"content-type":"application/problem+json","x-request-id":requestId}});
@@ -260,6 +332,13 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     // FORGE-056: bounded discovery metadata. Compatibility evaluation input, never deployment trust:
     // a client that finds a different digest runs `forgec compat`, it does not assume equivalence.
     if (req.method === "GET" && path[0] === "forge" && path.length === 2) {
+      // A raw bundle may contain internal operation definitions, schema
+      // components and workspace metadata not covered by the reviewed OAuth
+      // publication. Until a separately redacted projection is configured,
+      // never serve that entire bundle to a caller merely holding any token.
+      if (engine.oauthPublication &&
+          ["discovery", "workspace.json", "openapi.json"].includes(path[1]!))
+        return problem(err("NotPermitted", "private_contract_requires_reviewed_projection"), requestId);
       const meta = { "x-forge-build": model.bundle.buildHash, "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=60", "x-request-id": requestId };
       if (path[1] === "discovery") return new Response(JSON.stringify(discovery(model, options.auth)), { status: 200, headers: meta });
       if (path[1] === "workspace.json") {
@@ -267,7 +346,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         const operations = routes.filter(({ ref }) =>
           !!ref.resource || ref.op.kind.startsWith("changeset.") || ref.op.kind.startsWith("import.")
         ).map(({ ref, method, segments }) => ({ id: ref.op.id, kind: ref.op.kind, method,
-          path: "/" + segments.map(s => s.literal ?? `{${s.param}}`).join("/") }));
+          path: "/" + segments.map(templateOf).join("/") }));
         return new Response(JSON.stringify({ buildHash: model.bundle.buildHash, descriptor: model.bundle.ui, operations }), { headers: meta });
       }
       if (path[1] === "openapi.json") {
@@ -429,11 +508,24 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     if (purposeHeader && principal.purposes && !principal.purposes.includes(purposeHeader)) {
       return problem(err("NotPermitted", "the credential does not allow the requested purpose"), requestId);
     }
-    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace, ...(purposeHeader ? { purpose: purposeHeader } : {}), ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
+    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId, trace,
+      ...(principal.verifiedOAuth ? {verifiedOAuth: principal.verifiedOAuth} : {}), ...(purposeHeader ? { purpose: purposeHeader } : {}), ...(req.headers.get("idempotency-key") ? { idempotencyKey: req.headers.get("idempotency-key")! } : {}) };
     const exit = await Effect.runPromiseExit(engine.call(route.ref.op.id, input, ctx));
     if (exit._tag === "Failure") {
       const e = Cause.squash(exit.cause);
-      if (e instanceof ForgeError) return problem(e, requestId);
+      if (e instanceof ForgeError) {
+        const response = problem(e, requestId);
+        if (engine.oauthPublication && e.detail === "insufficient_scope") {
+          const scopes = engine.oauthPublication.operations?.[route.ref.op.id]?.scopes ?? [];
+          const metadata = publication ? resourceMetadataChallenge(publication).slice("Bearer ".length) : "";
+          response.headers.set("www-authenticate", `Bearer error="insufficient_scope", scope="${scopes.join(" ")}"` + (metadata ? ", " + metadata : ""));
+        } else if (engine.oauthPublication && e.code === "Unauthenticated") {
+          const base = publication ? resourceMetadataChallenge(publication) : "Bearer";
+          response.headers.set("www-authenticate", base + (req.headers.has("authorization")
+            ? (base === "Bearer" ? ` error="invalid_token"` : `, error="invalid_token"`) : ""));
+        }
+        return response;
+      }
       console.error("forge: unhandled failure", requestId, e);
       return problem(err("Internal", "unexpected failure"), requestId);
     }

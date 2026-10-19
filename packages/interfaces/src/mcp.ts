@@ -17,7 +17,7 @@
  */
 import { Cause, Effect } from "effect";
 import type { CallContext, Engine, Principal, Resource } from "@forgegraph/runtime";
-import { ForgeError, discovery } from "@forgegraph/runtime";
+import { ForgeError, discovery, checkPublishedOAuth } from "@forgegraph/runtime";
 
 /** Protocol revisions this server implements, newest first (pinned matrix). */
 export const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26"] as const;
@@ -168,6 +168,8 @@ export function createMcpServer(o: McpServerOptions): McpServer {
 
   /** Visibility = purpose surface permits the operation kind AND the authorizer allows the operation. */
   const visible = async (t: McpTool, ctx: CallContext): Promise<boolean> => {
+    if (engine.oauthPublication && !engine.gatekeeper.authorizer) return false;
+    if (engine.oauthPublication && checkPublishedOAuth(engine.oauthPublication, t.operationId, ctx.verifiedOAuth)) return false;
     if (t.resource) {
       const surface = await Effect.runPromiseExit(engine.scope.resolve(t.resource, ctx));
       if (surface._tag === "Failure") return false;
@@ -186,11 +188,11 @@ export function createMcpServer(o: McpServerOptions): McpServer {
     const epoch = engine.gatekeeper.authorizer?.epoch ?? 0;
     const key = `${epoch}|${principal.tenant}|${principal.actor}|${principal.issuer ?? ""}|${purpose ?? ""}`;
     const hit = listings.get(key);
-    if (hit && hit.until > Date.now()) return hit.tools;
-    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId: `mcp-list-${crypto.randomUUID()}`, ...(purpose ? { purpose } : {}) };
+    if (!engine.oauthPublication && hit && hit.until > Date.now()) return hit.tools;
+    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId: `mcp-list-${crypto.randomUUID()}`, ...(purpose ? { purpose } : {}), ...(principal.verifiedOAuth ? {verifiedOAuth:principal.verifiedOAuth} : {}) };
     const out: McpTool[] = [];
     for (const t of catalogue) if (await visible(t, ctx)) out.push(t);
-    listings.set(key, { tools: out, until: Date.now() + ttl });
+    if (!engine.oauthPublication) listings.set(key, { tools: out, until: Date.now() + ttl });
     return out;
   };
 
@@ -201,7 +203,7 @@ export function createMcpServer(o: McpServerOptions): McpServer {
   const fail = (id: JsonRpcRequest["id"], code: number, message: string, data?: unknown): JsonRpcResponse => ({ jsonrpc: "2.0", id: id ?? null, error: { code, message, ...(data !== undefined ? { data } : {}) } });
 
   const call = async (operationId: string, input: unknown, principal: Principal, purpose: string | undefined, id: JsonRpcRequest["id"]) => {
-    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId: `mcp-${crypto.randomUUID()}`, ...(purpose ? { purpose } : {}) };
+    const ctx: CallContext = { tenant: principal.tenant, actor: principal.actor, requestId: `mcp-${crypto.randomUUID()}`, ...(purpose ? { purpose } : {}), ...(principal.verifiedOAuth ? {verifiedOAuth:principal.verifiedOAuth} : {}) };
     const exit = await Effect.runPromiseExit(engine.call(operationId, input, ctx));
     if (exit._tag === "Success") {
       const value = exit.value as Record<string, unknown>;
@@ -241,16 +243,22 @@ export function createMcpServer(o: McpServerOptions): McpServer {
           return call(tool.operationId, params["arguments"] ?? {}, principal, purpose, id);
         }
         case "resources/list":
+          if (engine.oauthPublication) return reply(id, { resources: [] });
           return reply(id, { resources: [
             { uri: "forge://discovery", name: "discovery", title: "Deployment discovery", mimeType: "application/json" },
             { uri: "forge://openapi", name: "openapi", title: "OpenAPI projection", mimeType: "application/json" },
           ] });
         case "resources/templates/list":
+          if (engine.oauthPublication) return reply(id, { resourceTemplates: [] });
           return reply(id, { resourceTemplates: resourceTemplates.map((t) => ({ uriTemplate: t.uriTemplate, name: t.name, mimeType: t.mimeType })) });
         case "resources/read": {
           const uri = String(params["uri"] ?? "");
+          if (engine.oauthPublication && (uri === "forge://discovery" || uri === "forge://openapi"))
+            return fail(id, -32001, "private contract discovery requires reviewed projection");
           if (uri === "forge://discovery") return reply(id, { contents: [{ uri, mimeType: "application/json", text: JSON.stringify(discovery(engine.model, { scheme: o.authScheme ?? "bearer", authenticate: async () => principal })) }] });
-          if (uri === "forge://openapi") return reply(id, { contents: [{ uri, mimeType: "application/json", text: JSON.stringify(engine.model.bundle.openapi ?? {}) }] });
+          if (uri === "forge://openapi") return engine.oauthPublication
+            ? fail(id, -32001, "operation schema not available in this authorization profile")
+            : reply(id, { contents: [{ uri, mimeType: "application/json", text: JSON.stringify(engine.model.bundle.openapi ?? {}) }] });
           const m = /^forge:\/\/([^/]+)\/([^/]+)$/.exec(uri);
           const tpl = m && resourceTemplates.find((t) => t.uriTemplate === `forge://${m[1]}/{id}`);
           if (!tpl) return fail(id, -32002, "resource not found", { uri });

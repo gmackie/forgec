@@ -24,6 +24,8 @@ import { Portability } from "./portability.js";
 import { Governance } from "./governance.js";
 import { Scope } from "./scope.js";
 import { Gatekeeper } from "./gatekeeper.js";
+import {checkPublishedOAuth, type VerifiedOAuthAccess} from "./oauth-operation.js";
+import type {ValidatedApiPublication} from "./api-publication.js";
 import { Suppression } from "./suppression.js";
 import { jumpTestClock } from "./testing.js";
 import type { Transport } from "./dispatch.js";
@@ -44,6 +46,8 @@ export interface CallContext {
   attempt?: number;
   /** Privileged maintenance context (seeding, migration): bypasses purpose scoping; audited by actor. */
   maintenance?: boolean;
+  /** Host-verified OAuth access-token facts, never populated from caller JSON. */
+  verifiedOAuth?: VerifiedOAuthAccess;
 }
 
 export const PAGE_DEFAULT = 50;
@@ -73,13 +77,17 @@ export interface EngineOptions {
   secrets?: import("./credentials.js").SecretAdapter;
   functions?: FunctionImpl[];
   externals?: Record<string, ExternalBinding>;
+  /** Explicit reviewed security publication; enforces required OAuth on Engine.call. */
+  oauthPublication?: ValidatedApiPublication;
 }
 
 export class Engine {
   readonly functions: Functions;
+  readonly oauthPublication: ValidatedApiPublication | undefined;
   private readonly secrets: import("./credentials.js").SecretAdapter | undefined;
   constructor(readonly model: Model, readonly layer: Layer.Layer<RuntimeServices>, options: EngineOptions = {}) {
     this.secrets = options.secrets;
+    this.oauthPublication = options.oauthPublication;
     this.functions = new Functions(this, options.functions ?? [], options.externals ?? {});
   }
 
@@ -87,7 +95,8 @@ export class Engine {
     const self = this;
     // Every public logical operation — generated or handwritten — emits exactly one telemetry event.
     const started = performance.now();
-    return self.program(opId, input, ctx).pipe(
+    const failure = self.oauthGate(opId, ctx);
+    return (failure ? Effect.fail(failure) : self.program(opId, input, ctx)).pipe(
       Effect.provide(self.layer),
       Effect.tap(() => Effect.sync(() => self.telemetry.emit(opId, ctx, started, self.successStatus(opId)))),
       Effect.tapError((e) => Effect.sync(() => self.telemetry.emit(opId, ctx, started, e.status, e.code))),
@@ -98,9 +107,22 @@ export class Engine {
     return k === "create" || k === "changeset.propose" ? 201 : 200;
   }
 
-  /** Same as call() but without providing the layer (for use inside function bodies that share it). */
+  /**
+   * One authorization gate for every external and internal operation. A
+   * publication without a configured PDP is a configuration error, not an
+   * implicit allow. Trusted maintenance jobs remain an explicit exception.
+   */
+  private oauthGate(opId: string, ctx: CallContext): ForgeError | null {
+    if (ctx.maintenance || !this.oauthPublication) return null;
+    if (!this.gatekeeper.authorizer)
+      return err("NotPermitted", "oauth_policy_decision_point_unconfigured");
+    return checkPublishedOAuth(this.oauthPublication, opId, ctx.verifiedOAuth);
+  }
+
+  /** Internal operations inherit the exact same OAuth and PDP requirements. */
   callInternal(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
-    return this.program(opId, input, ctx);
+    const failure = this.oauthGate(opId, ctx);
+    return failure ? Effect.fail(failure) : this.program(opId, input, ctx);
   }
 
   consume(subscription: string, env: Envelope) {

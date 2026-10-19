@@ -5,7 +5,10 @@ import { Model, type AppBundle } from "../src/model.js";
 import { Engine } from "../src/engine.js";
 import { MemoryStorage } from "../src/adapters/memory.js";
 import { testLayer } from "../src/testing.js";
-import { createHttpHandler, devHeaderAuth } from "../src/http.js";
+import { compilePath, createHttpHandler, devHeaderAuth } from "../src/http.js";
+import { defineFunction } from "../src/functions.js";
+import {err} from "../src/errors.js";
+import type {ApiPublicationProfile} from "../src/api-publication.js";
 
 const bundle = JSON.parse(readFileSync(resolve(import.meta.dirname, "..", "..", "..", "conformance", "fixtures", "acme.app.json"), "utf8")) as AppBundle;
 const model = new Model(bundle);
@@ -120,6 +123,7 @@ describe("CORS", () => {
     expect(pre.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
     expect(pre.headers.get("access-control-allow-headers")).toContain("if-match");
     expect(pre.headers.get("access-control-expose-headers")).toContain("etag");
+    expect(pre.headers.get("access-control-expose-headers")).toContain("www-authenticate");
     const res = await h(req("POST", "/v1/customers", { code: "acme", name: "A" }, { origin: "http://localhost:5173" }));
     expect(res.headers.get("access-control-allow-origin")).toBe("http://localhost:5173");
     const other = await h(req("GET", "/v1/customers/x", undefined, { origin: "https://evil.example" }));
@@ -205,4 +209,118 @@ it("authenticates workspace discovery and exposes only record and changeset/impo
   expect(workspace.operations.some((o: any) => o.kind === "changeset.propose")).toBe(true);
   expect(workspace.operations.some((o: any) => o.kind.startsWith("admin.") || o.kind === "function")).toBe(false);
   expect((await handler(req("GET", "/forge/workspace.json", undefined, {"x-forge-if-build":"old"}))).status).toBe(409);
+});
+
+describe("mixed literal + parameter path segments (FORG-4)", () => {
+  // A path such as "/git/{owner}/{repo}.git/info/refs" carries a parameter and a literal in one segment.
+  // The compiler, OpenAPI projection and generated client all treat `{repo}` as the parameter; the router must too.
+  const withPath = (path: string) => {
+    const b = structuredClone(bundle);
+    for (const m of b.ir.modules) for (const f of m.functions ?? []) if (f.name === "SubmitOrder") f.http = { method: "POST", path };
+    const mm = new Model(b);
+    // Submits the order named by the bound `order` parameter, so a misparsed parameter cannot pass.
+    const submit = defineFunction("@acme/commerce/_/SubmitOrder", (deps) => {
+      const input = deps.input as { order: string; expectedVersion: number };
+      return deps.transitions.Order!.submit!(input.order, input.expectedVersion, {});
+    });
+    return createHttpHandler(mm, new Engine(mm, testLayer(new MemoryStorage()), { functions: [submit] }), { auth: devHeaderAuth() });
+  };
+  const seed = async (h: (r: Request) => Promise<Response>) => {
+    const cust = await (await h(req("POST", "/v1/customers", { code: "acme", name: "Acme" }))).json();
+    const site = await (await h(req("POST", "/v1/sites", { customer: cust.id, code: "hq", name: "HQ", timezone: "UTC" }))).json();
+    return (await (await h(req("POST", "/v1/orders", { customer: cust.id, site: site.id, subtotal: "10.00", tax: "0.50", requestedOn: "2026-09-20" }))).json()) as { id: string };
+  };
+
+  it("binds the parameter from a suffixed segment and requires the literal suffix", async () => {
+    const h = withPath("/v1/orders/{order}.json/submit");
+    const order = await seed(h);
+    const ok = await h(req("POST", `/v1/orders/${order.id}.json/submit`, {}, { "if-match": '"1"' }));
+    expect(ok.status).toBe(200);
+    expect((await ok.json()).status).toBe("Submitted");
+    expect((await h(req("POST", `/v1/orders/${order.id}/submit`, {}, { "if-match": '"2"' }))).status).toBe(404);
+    expect((await h(req("POST", `/v1/orders/${order.id}.xml/submit`, {}, { "if-match": '"2"' }))).status).toBe(404);
+  });
+
+  it("binds prefixed and infix parameters and rejects an empty value", async () => {
+    const pre = withPath("/v1/orders/order-{order}/submit");
+    const a = await seed(pre);
+    expect((await pre(req("POST", `/v1/orders/order-${a.id}/submit`, {}, { "if-match": '"1"' }))).status).toBe(200);
+    expect((await pre(req("POST", "/v1/orders/order-/submit", {}, { "if-match": '"1"' }))).status).toBe(404);
+    const infix = withPath("/v1/orders/x{order}.y/submit");
+    const b = await seed(infix);
+    const res = await infix(req("POST", `/v1/orders/x${encodeURIComponent(b.id)}.y/submit`, {}, { "if-match": '"1"' }));
+    expect(res.status).toBe(200);
+  });
+});
+
+describe("compilePath (FORG-4)", () => {
+  it("compiles the git smart-HTTP template into literal, parameter and mixed segments", () => {
+    const segs = compilePath("/git/{owner}/{repo}.git/info/refs");
+    expect(segs.map((s) => s.literal ?? s.param ?? s.pattern!.params)).toEqual(["git", "owner", ["repo"], "info", "refs"]);
+    const re = segs[2]!.pattern!.regex;
+    expect(re.exec("forgec.git")?.[1]).toBe("forgec");
+    expect(re.exec("my.repo.git")?.[1]).toBe("my.repo");
+    expect(re.exec("forgecXgit")).toBeNull();
+    expect(re.exec(".git")).toBeNull();
+  });
+
+  it("rejects malformed templates instead of routing a mangled parameter name", () => {
+    expect(() => compilePath("/git/{repo.git")).toThrow(/malformed path template/);
+    expect(() => compilePath("/git/repo}.git")).toThrow(/malformed path template/);
+    expect(() => compilePath("/git/{}")).toThrow(/malformed path template/);
+  });
+});
+
+
+describe("standards-first discovery remains opt-in and read-only", () => {
+  const publication: ApiPublicationProfile = {
+    version: "forge-api-publication/1",
+    resource: "https://api.test",
+    authorizationServers: ["https://auth.example.test"],
+    scopesSupported: ["orders:read"],
+    services: [{endpoint: "https://api.test/v1/orders", serviceDesc: "https://api.test/forge/openapi.json", visibility: "public"}],
+  };
+  it("publishes GET and HEAD before authentication without exposing private contract routes", async () => {
+    const protectedHandler = createHttpHandler(model, new Engine(model, testLayer(new MemoryStorage())), {
+      auth: {scheme: "oauth2", authenticate: async () => err("Unauthenticated", "access token required")},
+      publication,
+    });
+    const catalog = await protectedHandler(new Request("https://api.test/.well-known/api-catalog"));
+    expect(catalog.status).toBe(200);
+    expect(catalog.headers.get("content-type")).toContain("application/linkset+json");
+    expect((await catalog.json()).linkset).toHaveLength(2);
+    const head = await protectedHandler(new Request("https://api.test/.well-known/api-catalog", {method:"HEAD"}));
+    expect(head.status).toBe(200);
+    expect(head.headers.get("link")).toContain("api-catalog");
+    const resource = await protectedHandler(new Request("https://api.test/.well-known/oauth-protected-resource"));
+    expect((await resource.json()).resource).toBe("https://api.test");
+    const privateSpec = await protectedHandler(new Request("https://api.test/forge/openapi.json"));
+    expect(privateSpec.status).toBe(401);
+    expect(privateSpec.headers.get("www-authenticate")).toContain("resource_metadata");
+    const exactResource = await protectedHandler(new Request("https://api.test/"));
+    expect(exactResource.headers.get("www-authenticate")).toBe('Bearer resource_metadata="https://api.test/.well-known/oauth-protected-resource"');
+    const denied = await protectedHandler(new Request("https://api.test/v1/orders"));
+    expect(denied.status).toBe(401);
+    expect(denied.headers.get("www-authenticate")).toContain("resource_metadata");
+    const invalidBearer = await protectedHandler(new Request("https://api.test/v1/orders",{
+      headers:{authorization:"Bearer invalid-token"},
+    }));
+    expect(invalidBearer.status).toBe(401);
+    expect(invalidBearer.headers.get("www-authenticate")).toContain('error="invalid_token"');
+    expect(invalidBearer.headers.get("www-authenticate")).toContain("resource_metadata");
+  });
+  it("provides a Bearer RFC 6750 challenge without inventing resource metadata",async()=>{
+    const standalone=createHttpHandler(model,new Engine(model,testLayer(new MemoryStorage())),{
+      auth:{scheme:"oauth2",authenticate:async()=>err("Unauthenticated","invalid_token")},
+    });
+    const missing=await standalone(new Request("https://api.test/v1/orders"));
+    expect(missing.headers.get("www-authenticate")).toBe("Bearer");
+    const invalid=await standalone(new Request("https://api.test/v1/orders",{
+      headers:{authorization:"Bearer malformed"}
+    }));
+    expect(invalid.headers.get("www-authenticate")).toBe('Bearer error="invalid_token"');
+  });
+  it("does not publish any new well-known route unless an operator opted in", async () => {
+    expect((await handler(req("GET", "/.well-known/api-catalog"))).status).toBe(404);
+  });
 });

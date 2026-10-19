@@ -47,6 +47,50 @@ const FIELD_DECORATORS: &[&str] = &["unique", "immutable", "label", "data", "seq
 const EDITION_2027_DECORATORS: &[&str] = &["purposeScoped", "subject", "data", "record"];
 const FUNCTION_DECORATORS: &[&str] = &["http", "label"];
 const HTTP_METHODS: &[&str] = &["GET", "POST", "PUT", "PATCH", "DELETE"];
+
+/// Parameters named by an `@http` path template, in order (FORG-4).
+///
+/// A segment may be a literal, a whole parameter (`{repo}`) or a literal mixed with parameters
+/// (`{repo}.git`, `v{major}-{minor}`); the runtime router, the OpenAPI projection and the generated
+/// client all bind `{name}` wherever it appears. Templates the router cannot bind unambiguously are
+/// rejected with a reason: unbalanced or nested braces, an empty or non-identifier name, and two
+/// parameters with no literal between them.
+fn http_path_params(path: &str) -> Result<Vec<String>, String> {
+    let mut params = Vec::new();
+    for segment in path.split('/') {
+        let mut rest = segment;
+        let mut previous_was_param = false;
+        while !rest.is_empty() {
+            if let Some(after) = rest.strip_prefix('{') {
+                let Some(end) = after.find('}') else {
+                    return Err(format!("segment `{segment}` has an unclosed `{{`"));
+                };
+                let name = &after[..end];
+                if name.is_empty() || !name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_') {
+                    return Err(format!(
+                        "segment `{segment}` has an invalid parameter name `{{{name}}}`"
+                    ));
+                }
+                if previous_was_param {
+                    return Err(format!(
+                        "segment `{segment}` has adjacent parameters; separate them with a literal"
+                    ));
+                }
+                params.push(name.to_string());
+                previous_was_param = true;
+                rest = &after[end + 1..];
+            } else {
+                let stop = rest.find('{').unwrap_or(rest.len());
+                if rest[..stop].contains('}') {
+                    return Err(format!("segment `{segment}` has an unmatched `}}`"));
+                }
+                previous_was_param = false;
+                rest = &rest[stop..];
+            }
+        }
+    }
+    Ok(params)
+}
 const DEFAULT_MODULE: &str = "_";
 
 pub struct Compilation {
@@ -3614,10 +3658,21 @@ impl<'a> Ctx<'a> {
                                 .as_ref()
                                 .map(|t| self.fields_of_type(&t.base, module))
                                 .unwrap_or_default();
-                            for param in p.split('{').skip(1).filter_map(|s| s.split('}').next()) {
-                                if !input_fields.iter().any(|f| f == param) {
-                                    self.err("E-HTTP-001", file, range_of(&d), format!("path parameter `{{{param}}}` is not a field of the function input"), None);
+                            match http_path_params(&p) {
+                                Ok(params) => {
+                                    for param in params {
+                                        if !input_fields.contains(&param) {
+                                            self.err("E-HTTP-001", file, range_of(&d), format!("path parameter `{{{param}}}` is not a field of the function input"), None);
+                                        }
+                                    }
                                 }
+                                Err(reason) => self.err(
+                                    "E-HTTP-002",
+                                    file,
+                                    range_of(&d),
+                                    format!("malformed `@http` path `{p}`: {reason}"),
+                                    None,
+                                ),
                             }
                             http = Some(HttpBinding { method: m, path: p });
                         }
@@ -3949,10 +4004,21 @@ impl<'a> Ctx<'a> {
                                 .as_ref()
                                 .map(|t| self.fields_of_type(&t.base, module))
                                 .unwrap_or_default();
-                            for param in p.split('{').skip(1).filter_map(|s| s.split('}').next()) {
-                                if !input_fields.iter().any(|f| f == param) {
-                                    self.err("E-HTTP-001", file, range_of(&d), format!("path parameter `{{{param}}}` is not a field of the workflow input"), None);
+                            match http_path_params(&p) {
+                                Ok(params) => {
+                                    for param in params {
+                                        if !input_fields.contains(&param) {
+                                            self.err("E-HTTP-001", file, range_of(&d), format!("path parameter `{{{param}}}` is not a field of the workflow input"), None);
+                                        }
+                                    }
                                 }
+                                Err(reason) => self.err(
+                                    "E-HTTP-002",
+                                    file,
+                                    range_of(&d),
+                                    format!("malformed `@http` path `{p}`: {reason}"),
+                                    None,
+                                ),
                             }
                             http = Some(HttpBinding { method: m, path: p });
                         }
@@ -5097,15 +5163,21 @@ impl<'a> Ctx<'a> {
                 }
                 if !resource {
                     let fields = self.function_input_types(&id, &module);
-                    for param in binding
-                        .path
-                        .split('{')
-                        .skip(1)
-                        .filter_map(|p| p.split('}').next())
-                    {
-                        if !fields.iter().any(|(name, _)| name == param) {
-                            self.err("E-HTTP-001", file, range_of(&exposure), format!("path parameter `{{{param}}}` is not a field of the function input"), None);
+                    match http_path_params(&binding.path) {
+                        Ok(params) => {
+                            for param in params {
+                                if !fields.iter().any(|(name, _)| *name == param) {
+                                    self.err("E-HTTP-001", file, range_of(&exposure), format!("path parameter `{{{param}}}` is not a field of the function input"), None);
+                                }
+                            }
                         }
+                        Err(reason) => self.err(
+                            "E-HTTP-002",
+                            file,
+                            range_of(&exposure),
+                            format!("malformed `@http` path `{}`: {reason}", binding.path),
+                            None,
+                        ),
                     }
                 }
                 if self.source_http.insert(id, binding).is_some() {

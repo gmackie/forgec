@@ -106,7 +106,7 @@ export function createNodeHost(options: NodeHostOptions): NodeHost {
     );
   }
   if (auth.scheme === "dev-header") console.warn("forge: DEVELOPMENT AUTH ACTIVE — x-forge-tenant/x-forge-actor headers are trusted verbatim. Never run this configuration where untrusted callers can reach it.");
-  const handler = createHttpHandler(runtime.model, runtime.engine, { auth, ...(options.endpoints ? { endpoints: options.endpoints } : {}), ...(options.webhooks ? { webhooks: options.webhooks } : {}), requestId: () => crypto.randomUUID(), ...(options.cors ? { cors: { origins: options.cors } } : {}) });
+  const handler = createHttpHandler(runtime.model, runtime.engine, { auth, observeTenant: (t) => void runtime.observeTenant(t), ...(options.endpoints ? { endpoints: options.endpoints } : {}), ...(options.webhooks ? { webhooks: options.webhooks } : {}), requestId: () => crypto.randomUUID(), ...(options.cors ? { cors: { origins: options.cors } } : {}) });
   const maxInFlight = options.maxInFlight ?? 256;
   const drainTimeout = options.drainTimeoutMs ?? 5000;
   if (!Number.isSafeInteger(drainTimeout) || drainTimeout < 0) throw new Error("drainTimeoutMs must be a nonnegative safe integer");
