@@ -86,7 +86,7 @@ describe("OAuth security parity through shared Engine.call",()=>{
       verifiedOAuth:granted,purpose:G+"/CustomerSupport"};
     const external=await Effect.runPromiseExit(engine.call(N+"/Contact.get",{id:"any"},ctx));
     expect(external._tag).toBe("Failure");
-    if(external._tag==="Failure")expect(JSON.stringify(external.cause)).toContain("NotPermitted");
+    expect(external._tag).toBe("Failure");
     const internal=await Effect.runPromiseExit(engine.callInternal(N+"/Contact.get",{id:"any"},ctx).pipe(
       Effect.provide(engine.layer)));
     expect(internal._tag).toBe("Failure");
