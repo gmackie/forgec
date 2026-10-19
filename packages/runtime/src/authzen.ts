@@ -60,6 +60,12 @@ async function boundedDecision(response: Response): Promise<boolean> {
       typeof (parsed as {decision?: unknown}).decision !== "boolean") {
     throw new Error("invalid AuthZEN decision");
   }
+  // A positive response must not carry unimplemented obligations or advice.
+  // AuthZEN 1.0 core decisions are boolean; future extensions require an
+  // explicit, versioned handler, never silent admission.
+  if ((parsed as {decision: boolean}).decision &&
+      Object.keys(parsed).some(k => k !== "decision"))
+    throw new Error("unsupported positive AuthZEN response extensions");
   return (parsed as {decision: boolean}).decision;
 }
 

@@ -236,6 +236,13 @@ const JSON_HEADERS = { "content-type": "application/json; charset=utf-8" };
 export function createHttpHandler(model: Model, engine: Engine, options: HttpOptions): (req: Request) => Promise<Response> {
   const routes = compile(model);
   const publication = options.publication ? validateApiPublication(options.publication, new Set(routes.map(r => r.ref.op.id))) : undefined;
+  // Metadata and actual enforcement must describe the same reviewed authority.
+  if (engine.oauthPublication && publication &&
+      (publication.resource !== engine.oauthPublication.resource ||
+       JSON.stringify(publication.authorizationServers) !== JSON.stringify(engine.oauthPublication.authorizationServers) ||
+       JSON.stringify(publication.scopesSupported) !== JSON.stringify(engine.oauthPublication.scopesSupported) ||
+       JSON.stringify(publication.operations) !== JSON.stringify(engine.oauthPublication.operations)))
+    throw new Error("OAuth runtime and published security contracts disagree");
   const maxBody = options.maxBodyBytes ?? 1_048_576;
 
   const problem = (e: ForgeError, requestId: string) =>
@@ -297,6 +304,13 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
     // FORGE-056: bounded discovery metadata. Compatibility evaluation input, never deployment trust:
     // a client that finds a different digest runs `forgec compat`, it does not assume equivalence.
     if (req.method === "GET" && path[0] === "forge" && path.length === 2) {
+      // A raw bundle may contain internal operation definitions, schema
+      // components and workspace metadata not covered by the reviewed OAuth
+      // publication. Until a separately redacted projection is configured,
+      // never serve that entire bundle to a caller merely holding any token.
+      if (engine.oauthPublication &&
+          ["discovery", "workspace.json", "openapi.json"].includes(path[1]!))
+        return problem(err("NotPermitted", "private_contract_requires_reviewed_projection"), requestId);
       const meta = { "x-forge-build": model.bundle.buildHash, "content-type": "application/json; charset=utf-8", "cache-control": "private, max-age=60", "x-request-id": requestId };
       if (path[1] === "discovery") return new Response(JSON.stringify(discovery(model, options.auth)), { status: 200, headers: meta });
       if (path[1] === "workspace.json") {

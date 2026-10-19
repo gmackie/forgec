@@ -77,4 +77,47 @@ describe("OAuth security parity through shared Engine.call",()=>{
     });
     await expect(Effect.runPromiseExit(unreviewed).then(x=>x._tag)).resolves.toBe("Failure");
   });
+
+  it("fails closed without PDP, protects nested calls and suppresses raw contract inventory",async()=>{
+    const model=new Model(bundle);
+    const engine=new Engine(model,testLayer(new MemoryStorage()),{oauthPublication:pub});
+    const granted=token(["contact:read"]);
+    const ctx={tenant:"t",actor:"agent-7",requestId:"no-pdp",
+      verifiedOAuth:granted,purpose:G+"/CustomerSupport"};
+    const external=await Effect.runPromiseExit(engine.call(N+"/Contact.get",{id:"any"},ctx));
+    expect(external._tag).toBe("Failure");
+    expect(external._tag).toBe("Failure");
+    const internal=await Effect.runPromiseExit(engine.callInternal(N+"/Contact.get",{id:"any"},ctx).pipe(
+      Effect.provide(engine.layer)));
+    expect(internal._tag).toBe("Failure");
+    const server=createMcpServer({engine});
+    const principal:Principal={tenant:"t",actor:"agent-7",
+      verifiedOAuth:granted,purposes:[G+"/CustomerSupport"]};
+    const listed=await server.handle(principal,{jsonrpc:"2.0",id:1,method:"tools/list"},{purpose:G+"/CustomerSupport"});
+    expect((listed as any).result.tools).toEqual([]);
+    const resources=await server.handle(principal,{jsonrpc:"2.0",id:2,method:"resources/list"},{});
+    expect((resources as any).result.resources).toEqual([]);
+    const templates=await server.handle(principal,{jsonrpc:"2.0",id:3,method:"resources/templates/list"},{});
+    expect((templates as any).result.resourceTemplates).toEqual([]);
+    const metadata=await server.handle(principal,{jsonrpc:"2.0",id:4,method:"resources/read",
+      params:{uri:"forge://discovery"}},{});
+    expect((metadata as any).error.code).toBe(-32001);
+    const handler=createHttpHandler(model,engine,{auth,publication:profile,
+      mounts:{"/forge/mcp":mcpHttp(server)}});
+    for(const path of ["/forge/discovery","/forge/workspace.json","/forge/openapi.json"]) {
+      const response=await handler(new Request(target+path,{
+        headers:{authorization:"Bearer read"}
+      }));
+      expect(response.status).toBe(403);
+    }
+    const publicCatalog=await handler(new Request(target+"/.well-known/api-catalog"));
+    expect(publicCatalog.status).toBe(200);
+  });
+  it("rejects a security publisher that disagrees with the runtime enforcement profile",()=>{
+    const model=new Model(bundle);
+    const engine=new Engine(model,testLayer(new MemoryStorage()),{oauthPublication:pub});
+    expect(()=>createHttpHandler(model,engine,{auth,publication:{
+      ...profile,authorizationServers:["https://untrusted.example.test"]
+    }})).toThrow(/security contracts disagree/);
+  });
 });
