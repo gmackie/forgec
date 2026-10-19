@@ -113,3 +113,66 @@ describe("occurrence ledger", () => {
     expect(r2[0]).toMatchObject({ outcome: "ran" });
   });
 });
+
+/**
+ * FORG-3: hosts used to tick schedules only for tenants with pending outbox rows, so an idle tenant
+ * and a tenant-less (global) package never fired. The schedule index records every tenant that has
+ * been seen with its next due instant; a sweep ticks exactly the tenants that are due.
+ */
+describe("schedule index (FORG-3)", () => {
+  const RUNNER = "@acme/commerce/_/RebuildOrderSummary";
+  let storage: MemoryStorage;
+  let runs: { tenant: string; occurrence: string }[];
+  let fail: boolean;
+  const make = (m: Model) => {
+    runs = [];
+    return new Engine(m, testLayer(storage, { start: "2026-09-20T02:00:00.000Z" }), {
+      functions: [defineFunction(RUNNER, (d) => (fail ? d.fail("Boom") : Effect.sync(() => { runs.push({ tenant: d.ctx.tenant, occurrence: String((d.input as { occurrence: string }).occurrence) }); return { ok: true }; })))],
+    });
+  };
+  beforeEach(() => { storage = new MemoryStorage(); fail = false; });
+
+  it("an idle tenant (no outbox rows, no workflows) fires once it has been seen, and is not ticked again until due", async () => {
+    const engine = make(model);
+    await Effect.runPromise(engine.schedules.track("idle"));
+    await Effect.runPromise(engine.schedules.track("idle")); // idempotent
+    expect(await Effect.runPromise(storage.outboxTenants())).toEqual([]);
+    expect(await Effect.runPromise(engine.schedules.sweep("2026-09-20T02:30:00Z"))).toEqual([]);
+    // The host's 5-minute sweep lands after the intended 03:00 instant; the occurrence is still 03:00.
+    const fired = await Effect.runPromise(engine.schedules.sweep("2026-09-20T03:04:00Z"));
+    expect(fired).toEqual([{ tenant: "idle", source: S, occurrence: "2026-09-20T03:00:00.000Z", outcome: "ran" }]);
+    expect(runs).toEqual([{ tenant: "idle", occurrence: "2026-09-20T03:00:00.000Z" }]);
+    expect(await Effect.runPromise(engine.schedules.sweep("2026-09-20T03:09:00Z"))).toEqual([]);
+    expect(await Effect.runPromise(engine.schedules.sweep("2026-09-21T03:00:00Z"))).toMatchObject([{ tenant: "idle", occurrence: "2026-09-21T03:00:00.000Z", outcome: "ran" }]);
+  });
+
+  it("tenants passed by the host (e.g. outbox tenants) are tracked, and every tracked tenant fires on its own ledger", async () => {
+    const engine = make(model);
+    await Effect.runPromise(engine.schedules.track("a"));
+    const fired = await Effect.runPromise(engine.schedules.sweep("2026-09-20T03:00:00Z", ["b"]));
+    expect(fired.map((r) => r.tenant).sort()).toEqual(["a", "b"]);
+    expect(runs.map((r) => r.tenant).sort()).toEqual(["a", "b"]);
+  });
+
+  it("a failed occurrence stays due and is retried by the next sweep", async () => {
+    const engine = make(model);
+    await Effect.runPromise(engine.schedules.track("idle"));
+    fail = true;
+    expect(await Effect.runPromise(engine.schedules.sweep("2026-09-20T03:00:00Z"))).toMatchObject([{ tenant: "idle", outcome: "failed" }]);
+    fail = false;
+    expect(await Effect.runPromise(engine.schedules.sweep("2026-09-20T03:05:00Z"))).toMatchObject([{ tenant: "idle", occurrence: "2026-09-20T03:00:00.000Z", outcome: "ran" }]);
+  });
+
+  it("a tenant-less package's schedules are global: they fire with no tenant ever seen, once per occurrence, on one ledger", async () => {
+    const global = structuredClone(bundle);
+    for (const m of global.ir.modules) for (const r of m.resources) r.decorators.tenant = false;
+    const engine = make(new Model(global));
+    const fired = await Effect.runPromise(engine.schedules.sweep("2026-09-20T03:00:00Z"));
+    expect(fired).toEqual([{ tenant: "_forge", source: S, occurrence: "2026-09-20T03:00:00.000Z", outcome: "ran" }]);
+    // Seen tenants do not multiply a global job, and an operator tick from any tenant hits the same ledger.
+    await Effect.runPromise(engine.schedules.track("acme"));
+    expect(await Effect.runPromise(engine.schedules.sweep("2026-09-21T03:00:00Z", ["other"]))).toMatchObject([{ tenant: "_forge", occurrence: "2026-09-21T03:00:00.000Z", outcome: "ran" }]);
+    expect(await Effect.runPromise(engine.schedules.tick("acme", "2026-09-21T03:00:30Z"))).toMatchObject([{ occurrence: "2026-09-21T03:00:00.000Z", outcome: "duplicate" }]);
+    expect(runs).toHaveLength(2);
+  });
+});

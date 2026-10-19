@@ -126,14 +126,17 @@ it("authenticates Node requests and applies membership revocation without restar
 });
 it("authenticates the Workers Fetch host without Node credential APIs or D1 access", async () => {
   const { auth } = setup();
-  const prepare = vi.fn(() => { throw Error("unexpected D1 access"); });
+  // FORG-3 records each authenticated tenant in the schedule index (system
+  // tenant "_forge") off the request path; that is the only D1 access allowed.
+  const touched: unknown[] = [];
+  const prepare = vi.fn(() => ({ bind: (...params: unknown[]) => { touched.push(params[0]); throw Error("unexpected D1 access"); } }));
   const env = { DB: { prepare }, CURSOR_SECRET: "test" } as unknown as WorkerEnv;
   const worker = createWorker(hostBundle, { auth, endpoints: [{ method: "GET", path: "/identity", responseMode: "buffered", handle: async (_request, context) => Response.json(context.principal) }] });
   const ctx = { waitUntil: vi.fn() };
   expect((await worker.fetch(new Request("https://app.test/identity"), env, ctx)).status).toBe(401);
   const response = await worker.fetch(new Request("https://app.test/identity", { headers: { cookie: "session=valid", "x-forge-tenant": "evil" } }), env, ctx);
   expect(await response.json()).toMatchObject({ actor: "user", tenant: "workspace" });
-  expect(prepare).not.toHaveBeenCalled();
+  expect(touched.filter((tenant) => tenant !== "_forge")).toEqual([]);
 });
 
 it("requires a trusted origin for session WebSocket upgrades", async () => {

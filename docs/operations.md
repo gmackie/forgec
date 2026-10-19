@@ -32,6 +32,14 @@ benchmark section of the certification report.
 replay after an outage; providers call it on their triggers). A failed
 occurrence is not marked done and re-runs on the next tick.
 
+Host triggers (Cloudflare Cron Triggers, EventBridge, the Node sweep) call
+`Schedules.sweep`. A schedule index, one document in the `_forge` system
+tenant, maps each tenant the HTTP handler has authenticated to its next due
+instant. Each trigger reads that one document and ticks only the tenants that
+are due, so idle tenants fire without pending outbox work and a trigger never
+scans every tenant. For a tenant-less package the schedules are global, and
+their ledger lives on `_forge` whichever tenant reads or ticks it.
+
 ## Workflows
 
 `GET /v1/workflows/<name>/{id}` shows status, bindings and history;

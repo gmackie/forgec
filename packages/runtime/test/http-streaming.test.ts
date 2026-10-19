@@ -29,12 +29,15 @@ it("stops pulling response chunks while the Node sink applies backpressure", asy
 });
 
 it("binds Workers endpoint configuration and returns a live stream without storage access", async () => {
-  const prepare = vi.fn(() => { throw new Error("no storage access expected"); });
+  // FORG-3 records each authenticated tenant in the schedule index (system
+  // tenant "_forge") off the request path; that is the only D1 access allowed.
+  const touched: unknown[] = [];
+  const prepare = vi.fn(() => ({ bind: (...params: unknown[]) => { touched.push(params[0]); throw Error("no storage access expected"); } }));
   const env = { DB: { prepare }, CURSOR_SECRET: "fixture", STREAM_NAME: "log" } as unknown as WorkerEnv;
   const worker = createWorker(bundle, { auth: devHeaderAuth(), endpoints: env => [{ method: "GET", path: "/worker/stream", responseMode: "stream", handle: async req => sseResponse(async function* () { yield { data: String(env.STREAM_NAME) }; }, { signal: req.signal }) }] });
   const res = await worker.fetch(new Request("https://test/worker/stream", { headers }), env, { waitUntil: vi.fn() });
   expect(await res.text()).toBe("data: log\n\n");
-  expect(prepare).not.toHaveBeenCalled();
+  expect(touched.filter((tenant) => tenant !== "_forge")).toEqual([]);
 });
 
 it("does not pull SSE events until requested and aborts a stalled producer", async () => {
