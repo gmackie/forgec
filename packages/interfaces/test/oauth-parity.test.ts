@@ -120,4 +120,35 @@ describe("OAuth security parity through shared Engine.call",()=>{
       ...profile,authorizationServers:["https://untrusted.example.test"]
     }})).toThrow(/security contracts disagree/);
   });
+
+  it("serves only a reviewed public OpenAPI projection at the standard service-desc URL",async()=>{
+    const model=new Model(bundle),engine=new Engine(model,testLayer(new MemoryStorage()),{oauthPublication:pub});
+    engine.gatekeeper.authorizer=localAuthorizer({epoch:1,knownObligations:[],pips:[],
+      policies:[{id:"contacts",actions:[N+"/Contact.*"],requires:[],where:[]}]});
+    const server={
+      issuer:"https://id.example.test",
+      authorizationUrl:"https://id.example.test/authorize",
+      tokenUrl:"https://id.example.test/token",
+      scopeDescriptions:{"contact:read":"Read contacts","contact:write":"Write contacts"},
+    };
+    const handler=createHttpHandler(model,engine,{
+      auth,publication:profile,publicOpenApiServer:server,
+    });
+    const res=await handler(new Request(target+"/forge/openapi.json"));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("cache-control")).toContain("public");
+    const spec=await res.json() as {paths:Record<string,Record<string,{operationId:string}>>;
+      components:{schemas:Record<string,unknown>;securitySchemes:Record<string,unknown>}};
+    const published=Object.values(spec.paths).flatMap(ops=>Object.values(ops).map(x=>x.operationId));
+    expect(published.sort()).toEqual([N+"/Contact.get",N+"/Contact.update"].sort());
+    expect(spec.components.securitySchemes).toHaveProperty("forgeOAuth");
+    const head=await handler(new Request(target+"/forge/openapi.json",{method:"HEAD"}));
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe("");
+    const rawHandler=createHttpHandler(model,engine,{auth,publication:profile});
+    const raw=await rawHandler(new Request(target+"/forge/openapi.json",{
+      headers:{authorization:"Bearer read"},
+    }));
+    expect(raw.status).toBe(403);
+  });
 });
