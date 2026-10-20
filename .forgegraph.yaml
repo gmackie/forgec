@@ -1,7 +1,6 @@
 app: forge-console
 server: https://forgegraf.com
 deploymentPlatform: cloudflare-workers
-healthCheckUrl: https://forge.gmac.io/healthz
 stages:
   - name: production
     url: https://forge.gmac.io
@@ -36,3 +35,11 @@ stages:
 # reach the registry — Access cannot authenticate `docker`. Create the bypass BEFORE the
 # application covering the hostname, or there is a window in which /v2 answers a login page to
 # every container client. `packages/console/scripts/edge-smoke.mjs` checks exactly that.
+
+# ForgeGraph reads health.url (config apply); a top-level healthCheckUrl was
+# ignored, so production deploys were never probed and their Kanbanger
+# receipts carried no health, leaving production.healthy completion rules
+# unsatisfied. The agent GETs this exact URL after each deploy and rolls back
+# unless it returns 2xx.
+health:
+  url: https://forge.gmac.io/healthz
