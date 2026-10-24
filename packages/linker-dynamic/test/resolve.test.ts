@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { childMain, childSource, type LinkerKit } from "../src/child.ts";
 import { LinkError, matchRoute, resolveManifest, type ClosureManifest } from "../src/manifest.ts";
 import { derivePolicy, privilegedPolicy } from "../src/policy.ts";
-import { checkSql, tableAccess } from "../src/sql-gate.ts";
+import { checkSql, sqlDenial, tableAccess } from "../src/sql-gate.ts";
 import { MemoryBlobStore, verifiedBlob } from "../src/store.ts";
 import { acmeManifest, appBundle, entry, h, rehash } from "./fixtures.ts";
 
@@ -124,6 +124,18 @@ describe("derivePolicy", () => {
     expect(derivePolicy(m, entry(m, "GET /v1/orders/{id}"), schema()).objects).toEqual([]);
   });
 
+  it("withholds the handles other entry points declare, so the child can refuse them (FORG-34)", () => {
+    const m = acmeManifest();
+    expect(derivePolicy(m, entry(m, "GET /v1/customers"), schema()).withheld).toEqual({ objects: ["BLOBS"], queues: ["Q_FULFILL_ORDER"], workflows: ["WF_PROCESS_ORDER"] });
+    expect(derivePolicy(m, entry(m, "POST /v1/orders/{order}/process"), schema()).withheld).toEqual({ objects: ["BLOBS"], queues: [], workflows: [] });
+    expect(privilegedPolicy(m, schema(), "x").withheld).toEqual({ objects: [], queues: [], workflows: [] });
+    const kit: LinkerKit = { libraries: { "@forgegraph/runtime@0.5.0": "sha256:r", "effect@4.0.3": "sha256:e" }, apps: { [m.buildHash]: "sha256:a" } };
+    const p = derivePolicy(m, entry(m, "GET /v1/customers"), schema());
+    const main = childMain(childSource(m, p, kit), p, []);
+    expect(main).toContain('import { capabilityDeniedError, createWorker } from "@forgegraph/runtime";');
+    expect(main).toContain('for (const b of POLICY.withheld.objects) out[b] = refusing("r2", b);');
+  });
+
   it("no entry point is privileged: the sweep is narrowed to the dispatch unit's closure", () => {
     const m = acmeManifest();
     for (const e of m.entryPoints) expect(derivePolicy(m, e, schema()).privileged, e.id).toBe(false);
@@ -195,6 +207,19 @@ describe("SQL gate", () => {
     expect(() => checkSql(`SELECT name FROM sqlite_master`, policy)).toThrow(/read sqlite_master/);
     expect(() => checkSql(`PRAGMA table_list`, policy)).toThrow(/unclassified statement refused/);
     expect(() => checkSql(`DROP TABLE order_`, policy)).toThrow(/unclassified/);
+  });
+
+  it("names a refused table by its resource capability (FORG-34)", () => {
+    const gate = { ...policy, label: "http-route:POST /v1/orders/{order}/submit", resources: { order_: "@acme/commerce/_/Order", department: "@acme/commerce/_/Department" } };
+    expect(sqlDenial(`SELECT * FROM order_ JOIN site ON 1`, gate)).toBeNull();
+    expect(sqlDenial(`UPDATE order_ SET x = ? WHERE id = ?`, { ...gate, tables: { read: ["order_"], write: [] } })).toEqual({
+      capability: "resource:@acme/commerce/_/Order#write",
+      entryPoint: "http-route:POST /v1/orders/{order}/submit",
+      detail: "http-route:POST /v1/orders/{order}/submit has no capability to write order_",
+    });
+    expect(sqlDenial(`SELECT * FROM department`, gate)?.capability).toBe("resource:@acme/commerce/_/Department#read");
+    expect(sqlDenial(`SELECT name FROM sqlite_master`, gate)?.capability).toBe("table:sqlite_master#read");
+    expect(sqlDenial(`PRAGMA table_list`, gate)).toMatchObject({ capability: "sql:unclassified", detail: expect.stringMatching(/unclassified statement refused/) });
   });
 });
 

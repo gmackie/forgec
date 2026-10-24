@@ -82,8 +82,8 @@ Per-entry-point link of acme (`results/linker-packed/sizes.json`):
 | whole-app `fallback` scripts | **2** (`forge:residual`, `forge:sweep`) | **0** |
 | `whole` scripts (by design) | — | 3: the contract-metadata routes |
 | sliced scripts | 59 | 84; `app.json` slice min / median / max 5,671 / 49,768 / 85,528 B |
-| residual | whole app (539,571 B) | empty slice, no units (311,711 B): authenticates and answers 404 |
-| sweep (dispatch owner) | whole app | sliced: 63,594 B of `app.json`, 360,077 B script |
+| residual | whole app (539,571 B) | empty slice, no units (313,468 B): authenticates and answers 404 |
+| sweep (dispatch owner) | whole app | sliced: 63,594 B of `app.json`, 361,745 B script |
 | link warnings | 1 (cancel route has no workflow binding) | 0 |
 
 The three `whole` scripts serve the contract itself. Discovery counts the whole model, and the
@@ -135,7 +135,7 @@ Run as T4 ran it (`results/linker-dynamic.json`):
 | Linker B with `LINKER_UNCOVERED=runtime` | 15 / 15, 49 requests through the whole-app fallback | **15 / 15**, **0** fallbacks |
 
 No child is privileged: 53 distinct children, `privilegedChildren: []`. The post-commit
-`dispatch()` child ran 111 times in the strict run on the sweep entry point's closure
+`dispatch()` child ran 114 times in the strict run on the sweep entry point's closure
 (`isSweepClosure: true`, `privileged: false`), with no gate denial. `scheduled()` uses the same
 child. The whole-app child now exists only behind `LINKER_UNCOVERED=runtime` and for pre-FORG-33
 manifests.
@@ -148,6 +148,19 @@ Still not linked, and still refused fail-closed:
   because B runs nothing for a path no entry point claims.
 - **Wrong method or preflight on a known path.** These run in that path's child (`matchRoute(…, {
   anyMethod: true })`), whose runtime answers 405 or 204 without touching a capability.
+
+### With FORG-34 (merged from main bfee5b2)
+
+The results above were re-measured after merging FORG-34. They are unchanged except for script
+sizes: scripts are about 1.7 KB larger with the refusing-stub host. FORG-34 turns a binding declared
+for another script into a stub that refuses with 403 `CapabilityDenied`. With the fuller
+declarations in this change:
+
+- The cancel route holds the real `WF_PROCESS_ORDER`. On main it was undeclared, so it would have
+  been a stub, and the runtime swallows a failed wake.
+- The sliced sweep holds `BLOBS` as a stub, because nothing in its closure moves blob bytes.
+- No conformance step got a `CapabilityDenied`: 15/15 on every Linker A target, and Linker B strict
+  15/15 with 0 denials.
 
 ## Source spans and blob hashes: design
 

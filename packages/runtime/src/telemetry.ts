@@ -84,9 +84,10 @@ export class Telemetry {
     const surface = ref && ctx.purpose ? this.engine.scope.surface(ref.resource.id, ctx.purpose) : null;
     if (surface) out.surface = surface.digest.slice(0, 12);
     // The decision the call path took: a scope or authorizer refusal is `deny`; a scoped or authorized call is `allow`;
-    // maintenance and unscoped calls without an authorizer took no decision.
+    // maintenance and unscoped calls without an authorizer took no decision. A linker capability gate's
+    // refusal (CapabilityDenied) is a deny too.
     const gated = Boolean(surface) || Boolean(this.engine.gatekeeper.authorizer && !ctx.maintenance);
-    out.decision = code === "NotPermitted" ? "deny" : gated ? "allow" : "none";
+    out.decision = code === "NotPermitted" || code === "CapabilityDenied" ? "deny" : gated ? "allow" : "none";
     out.policyEpoch = this.engine.gatekeeper.authorizer?.epoch ?? 0;
     if (this.grantEpoch) out.grantEpoch = this.grantEpoch;
     return out;

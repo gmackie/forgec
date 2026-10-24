@@ -4,11 +4,12 @@
 // capability stubs (WorkerEntrypoint classes below, narrowed by props it cannot see or forge),
 // never this Worker's env, and no network unless its entry point declares egress.
 import { WorkerEntrypoint, WorkflowEntrypoint, type WorkflowStepLike } from "cloudflare:workers";
+import { capabilityDenied, capabilityDeniedError } from "@forgegraph/runtime/errors";
 import { childMain, childSource, COMPATIBILITY_DATE, type LinkerKit } from "./child.ts";
 import { digest, LINK_DOMAIN } from "./hash.ts";
 import { LinkError, matchRoute, resolveManifest, type ClosureManifest, type EntryPoint, type Resolved } from "./manifest.ts";
 import { derivePolicy, objectRoutePolicy, privilegedPolicy, SWEEP_SERVICE, type Policy, type SqlSchema } from "./policy.ts";
-import { checkSql } from "./sql-gate.ts";
+import { sqlDenial, type GatePolicy } from "./sql-gate.ts";
 import { R2BlobStore, verifiedBlob, type BlobStore, type R2BucketLike } from "./store.ts";
 
 interface D1StatementLike {
@@ -36,7 +37,7 @@ export interface HostEnv {
   [binding: string]: unknown;
 }
 
-type GateProps = { label: string; tables: { read: string[]; write: string[] } };
+type GateProps = GatePolicy;
 type BindingProps = { label: string; binding: string };
 type EgressProps = { label: string; allow: string[] };
 
@@ -105,12 +106,13 @@ async function current(env: HostEnv): Promise<Linked | null> {
 /** Bindings a child may hold as plain values: the manifest's host secrets and vars. */
 const childVars = (m: ClosureManifest) => m.hostBindings.filter((b) => b.type === "secret" || b.type === "var").map((b) => b.name).sort();
 
-function capabilityEnv(ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, env: HostEnv, policy: Policy, vars: string[]): Record<string, unknown> {
+function capabilityEnv(ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, env: HostEnv, policy: Policy, vars: string[], schema: SqlSchema): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const v of vars) if (typeof env[v] === "string") out[v] = env[v];
   // The runtime host builds D1 storage for every request, so even a closure with no tables gets a
   // D1 handle; under an empty policy it refuses every statement.
-  out["DB"] = ctx.exports["D1Gate"]!({ props: { label: policy.label, tables: policy.tables } satisfies GateProps });
+  const resources = Object.fromEntries(schema.tables.map((t) => [t.name, t.resource]));
+  out["DB"] = ctx.exports["D1Gate"]!({ props: { label: policy.label, tables: policy.tables, resources } satisfies GateProps });
   for (const b of policy.objects) if (env[b]) out[b] = ctx.exports["ObjectsGate"]!({ props: { label: policy.label, binding: b } satisfies BindingProps });
   for (const b of policy.queues) if (env[b]) out[b] = ctx.exports["QueueGate"]!({ props: { label: policy.label, binding: b } satisfies BindingProps });
   for (const b of policy.workflows) if (env[b]) out[b] = ctx.exports["WorkflowGate"]!({ props: { label: policy.label, binding: b } satisfies BindingProps });
@@ -156,7 +158,7 @@ async function childFor(env: HostEnv, ctx: { exports: Record<string, (o: { props
     cold = true;
     return {
       ...code!,
-      env: capabilityEnv(ctx, env, policy, vars),
+      env: capabilityEnv(ctx, env, policy, vars, l.schema),
       globalOutbound: policy.egress.length ? ctx.exports["Egress"]!({ props: { label: policy.label, allow: policy.egress } satisfies EgressProps }) : null,
     };
   });
@@ -328,16 +330,17 @@ export default {
 };
 
 // ------------------------------------------------------------------------- capability handles
-/** D1, narrowed to the tables the closure may read and write. */
+/**
+ * D1, narrowed to the tables the closure may read and write. A refused statement throws the
+ * runtime's capability denial (FORG-34), which the child's D1 adapter answers as 403
+ * CapabilityDenied: not a storage failure, and not retried.
+ */
 export class D1Gate extends WorkerEntrypoint<HostEnv, GateProps> {
   private check(sql: string) {
-    try {
-      checkSql(sql, this.ctx.props);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      recordDenial(msg);
-      throw new Error(msg);
-    }
+    const denial = sqlDenial(sql, this.ctx.props);
+    if (!denial) return;
+    recordDenial(denial.detail!);
+    throw capabilityDeniedError(denial);
   }
   private stmt(sql: string, params: unknown[]) {
     this.check(sql);
@@ -415,8 +418,10 @@ export class Egress extends WorkerEntrypoint<HostEnv, EgressProps> {
   async fetch(request: Request): Promise<Response> {
     const origin = new URL(request.url).origin;
     if (!this.ctx.props.allow.includes(origin)) {
-      recordDenial(`${this.ctx.props.label} has no egress to ${origin}`);
-      return new Response(JSON.stringify({ code: "EgressDenied", origin }), { status: 403, headers: { "content-type": "application/json", "x-forge-egress": "denied" } });
+      const detail = `${this.ctx.props.label} has no egress to ${origin}`;
+      recordDenial(detail);
+      const body = capabilityDenied({ capability: `egress:${origin}`, entryPoint: this.ctx.props.label, detail }).problem(crypto.randomUUID());
+      return new Response(JSON.stringify({ ...body, origin }), { status: 403, headers: { "content-type": "application/problem+json", "x-forge-egress": "denied" } });
     }
     return fetch(request);
   }

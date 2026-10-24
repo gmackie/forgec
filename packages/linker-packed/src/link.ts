@@ -27,6 +27,17 @@ import pkg from "../package.json" with { type: "json" };
 
 /** Binding types that appear in `env`; cron and queue-consumer are triggers, not handles. */
 const ENV_BINDINGS = new Set(["d1", "r2", "secret", "var", "queue-producer", "durable-object", "workflow"]);
+/**
+ * Handle bindings the runtime probes for presence and would silently do without; withheld ones get a
+ * refusing stub (FORG-34). The realtime namespace is left absent: a script without it answers a
+ * websocket upgrade 404, and fan-out runs in the dispatch owner.
+ */
+const STUBBED_BINDINGS = new Set(["r2", "queue-producer", "workflow"]);
+const withheldFrom = (declared: Binding[], injected: Binding[]) =>
+  declared
+    .filter((b) => STUBBED_BINDINGS.has(b.type) && !injected.some((i) => i.name === b.name))
+    .map((b) => ({ type: b.type, name: b.name }))
+    .sort((a, b) => (a.name < b.name ? -1 : 1));
 
 export const LINKER = `${pkg.name}@${pkg.version}`;
 const HOST = resolve(import.meta.dirname, "host.ts");
@@ -79,6 +90,8 @@ export interface LinkedScript {
   dispatchOwner: boolean;
   slice: SliceReport;
   capabilities: CapabilityReport;
+  /** Bindings declared for other scripts: the runtime here holds a stub that refuses them (403 CapabilityDenied). */
+  withheld: Binding[];
   /** Linker-owned bindings (not capabilities of any unit): the dispatch service binding. */
   linkerBindings: Array<Binding & { script: string }>;
   /** sha256 of worker.js: a script is re-uploaded exactly when this changes. */
@@ -189,6 +202,7 @@ export async function link(options: LinkOptions): Promise<Link> {
       pathRoutes: allRoutes.filter((r) => owned.has(r.path)),
       deny: g.residual && strategy.name !== "single" ? allRoutes : [],
       bindings: g.capabilities.injected.filter((b) => ENV_BINDINGS.has(b.type)).map((b) => b.name),
+      withheld: withheldFrom(declaredAll, g.capabilities.injected),
       dispatch: g.dispatch,
       dispatchOwner: g === owner && strategy.name !== "single",
       sweeps: { outbox: sweepAll, schedules: sweepAll || crons.length > 0, workflows: sweepAll },
@@ -243,6 +257,7 @@ export async function link(options: LinkOptions): Promise<Link> {
       dispatchOwner: host.dispatchOwner,
       slice: g.sliced.report,
       capabilities: g.capabilities,
+      withheld: host.withheld,
       linkerBindings,
       scriptHash: null,
       bytes: null,

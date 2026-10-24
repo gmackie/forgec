@@ -117,6 +117,20 @@ describe("packed linker over examples/acme", async () => {
       expect(script("forge:sweep").dispatchOwner).toBe(true);
       // The planner declares queue and realtime bindings for SubmitOrder's publish; a sliced script forwards delivery, so they are reported unused.
       expect(script("POST /v1/orders/{order}/submit").capabilities.unused.map((b) => b.name).sort()).toEqual(["Q_FULFILL_ORDER", "REALTIME"]);
+      // FORG-34: handles declared for other scripts are withheld, and the runtime gets a stub that answers 403 CapabilityDenied.
+      expect(script("POST /v1/customers").withheld).toEqual([
+        { type: "r2", name: "BLOBS" },
+        { type: "queue-producer", name: "Q_FULFILL_ORDER" },
+        { type: "workflow", name: "WF_PROCESS_ORDER" },
+      ]);
+      expect(script("POST /v1/orders/{order}/process").withheld).toEqual([{ type: "r2", name: "BLOBS" }]);
+      // FORG-33: the sweep is sliced to the dispatch unit's closure, which moves no blob bytes, so it
+      // holds BLOBS as a refusing stub too; its queue and workflow bindings are its own.
+      expect(script("forge:sweep").withheld).toEqual([{ type: "r2", name: "BLOBS" }]);
+      // The cancel route declares its workflow binding (FORG-33), so it holds the real handle, not a stub.
+      expect(script("POST /v1/workflows/process-order/{id}/cancel").withheld.map((b) => b.name)).not.toContain("WF_PROCESS_ORDER");
+      // No group that runs whole-app is left except contract metadata, which reads nothing it withholds.
+      expect(per.scripts.filter((s) => s.slice.mode === "fallback")).toEqual([]);
     });
 
     it("finds nothing the planner leaves undeclared", () => {

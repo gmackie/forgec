@@ -3,6 +3,7 @@
 // reads must be readable and the table it writes must be writable under the closure's policy.
 // Statements this scanner cannot classify are refused. This is a research-grade check over the
 // SQL the runtime generates, not a SQL parser; see README "Sandbox".
+import type { CapabilityDenial } from "@forgegraph/runtime/errors";
 import { LinkError } from "./manifest.ts";
 
 const TABLE_REF = /\b(from|join|into|update|table)\s+("(?:[^"]|"")+"|[A-Za-z_][A-Za-z0-9_]*)\s*(\()?/gi;
@@ -40,10 +41,46 @@ export function tableAccess(sql: string): TableAccess {
   return { write: target.name, read: [...new Set(refs.filter((r) => r !== target).map((r) => r.name))] };
 }
 
-export function checkSql(sql: string, policy: { label: string; tables: { read: string[]; write: string[] } }): void {
-  const access = tableAccess(sql);
-  const denied: string[] = [];
-  if (access.write && !policy.tables.write.includes(access.write)) denied.push(`write ${access.write}`);
-  for (const t of access.read) if (!policy.tables.read.includes(t)) denied.push(`read ${t}`);
-  if (denied.length) throw new LinkError("CapabilityDenied", [`${policy.label} has no capability to ${denied.join(", ")}`]);
+export interface GatePolicy {
+  label: string;
+  tables: { read: string[]; write: string[] };
+  /** Table -> resource id, to name a refused table by its manifest capability. */
+  resources?: Record<string, string>;
+}
+
+/** Why the policy refuses a statement, or null: the problem text and the capability it lacks. */
+function refusal(sql: string, policy: GatePolicy): { problem: string; capability: string } | null {
+  let access: TableAccess;
+  try {
+    access = tableAccess(sql);
+  } catch (e) {
+    if (e instanceof LinkError) return { problem: e.problems.join("; "), capability: "sql:unclassified" };
+    throw e;
+  }
+  const denied: Array<{ mode: "read" | "write"; table: string }> = [];
+  if (access.write && !policy.tables.write.includes(access.write)) denied.push({ mode: "write", table: access.write });
+  for (const t of access.read) if (!policy.tables.read.includes(t)) denied.push({ mode: "read", table: t });
+  if (!denied.length) return null;
+  const first = denied[0]!;
+  const resource = policy.resources?.[first.table];
+  return {
+    problem: `${policy.label} has no capability to ${denied.map((d) => `${d.mode} ${d.table}`).join(", ")}`,
+    capability: resource ? `resource:${resource}#${first.mode}` : `table:${first.table}#${first.mode}`,
+  };
+}
+
+export function checkSql(sql: string, policy: GatePolicy): void {
+  const r = refusal(sql, policy);
+  if (r) throw new LinkError("CapabilityDenied", [r.problem]);
+}
+
+/**
+ * The statement's refusal under the policy, as the runtime's CapabilityDenied carries it (FORG-34):
+ * the first refused table, named by its resource capability (`resource:<id>#write`) where the
+ * schema maps it, `table:<name>#<mode>` otherwise (runtime tables, sqlite_master), and
+ * `sql:unclassified` for a statement the scanner cannot classify.
+ */
+export function sqlDenial(sql: string, policy: GatePolicy): CapabilityDenial | null {
+  const r = refusal(sql, policy);
+  return r ? { capability: r.capability, entryPoint: policy.label, detail: r.problem } : null;
 }

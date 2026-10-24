@@ -179,11 +179,38 @@ describe("Linker B host on local workerd", () => {
     await h.resetStats(host.base);
     const order = await draftOrder("UND1");
     const r = await call("POST", `/v1/orders/${order}/submit`, { expectedVersion: 1 });
-    // The runtime reports the refused statement as a storage failure, not as a domain error.
-    expect(r.status).toBe(503);
-    expect(r.json.code).toBe("StorageUnavailable");
+    // FORG-34: a policy denial, not an outage (it was 503 StorageUnavailable, and retried).
+    expect(r.status).toBe(403);
+    expect(r.json).toMatchObject({ code: "CapabilityDenied", retryable: false, capability: "resource:@acme/commerce/_/Order#write", entryPoint: `http-route:${SUBMIT}` });
     expect((await call("GET", `/v1/orders/${order}`)).json.status).toBe("Draft");
     expect((await h.stats(host.base)).denials.some((d) => d.includes(`http-route:${SUBMIT} has no capability to write order_`))).toBe(true);
+  });
+
+  it("a handle declared for other entry points is refused, not silently replaced (FORG-34)", async () => {
+    // finalize reads the uploaded bytes from BLOBS. Without its r2 binding the runtime used to fall
+    // back to an in-memory object store and answer 422 (no bytes); now the child's stub refuses it.
+    const finalize = async (code: string) => {
+      const c = await call("POST", "/v1/customers", { code, name: "Blob" });
+      const s = await call("POST", "/v1/sites", { customer: c.json.id, code: "hq", name: "HQ", timezone: "UTC" });
+      const o = await call("POST", "/v1/orders", { customer: c.json.id, site: s.json.id, subtotal: "1.00", tax: "0.00", requestedOn: "2026-09-20" });
+      const doc = await call("POST", "/v1/order-documents", { order: o.json.id, kind: "quote", label: "Q1" });
+      expect(doc.status).toBe(201);
+      const begin = await fetch(`${host.base}/v1/order-documents/${doc.json.id}/upload`, { method: "POST", headers: { ...H, "if-match": '"1"' }, body: JSON.stringify({ expectedVersion: 1, mediaType: "application/pdf", byteCount: 5 }) });
+      expect(begin.status).toBe(200);
+      const r = await fetch(`${host.base}/v1/order-documents/${doc.json.id}/finalize`, { method: "POST", headers: { ...H, "if-match": '"2"' }, body: JSON.stringify({ expectedVersion: 2 }) });
+      return { status: r.status, json: (await r.json()) as Record<string, unknown> };
+    };
+    expect((await link(acmeManifestText())).status).toBe(200);
+    const declared = await finalize("BLB1");
+    expect(declared.status).toBe(422);
+    expect(declared.json["code"]).toBe("ValidationFailed");
+    const m = acmeManifest();
+    const route = entry(m, "POST /v1/order-documents/{id}/finalize");
+    route.bindings = route.bindings.filter((b) => b.name !== "BLOBS");
+    expect((await link(rehash(m, { closures: false }))).status).toBe(200);
+    const withheld = await finalize("BLB2");
+    expect(withheld.status).toBe(403);
+    expect(withheld.json).toMatchObject({ code: "CapabilityDenied", capability: "binding:r2:BLOBS", entryPoint: "http-route:POST /v1/order-documents/{id}/finalize" });
   });
 
   it("dispatch: a narrowed child never marks another closure's delivery done; the dispatch child delivers it", async () => {

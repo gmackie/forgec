@@ -6,7 +6,7 @@
  * presigning can be enabled by supplying R2 S3 credentials.
  */
 import { Effect } from "effect";
-import { err, type ForgeError } from "../errors.js";
+import { deniedOr, err, type ForgeError } from "../errors.js";
 import type { ObjectHead, ObjectStoreAdapter, SignedUrl } from "../services.js";
 
 export interface R2Like {
@@ -47,7 +47,7 @@ export class R2ObjectStore implements ObjectStoreAdapter {
   constructor(private readonly bucket: R2Like, private readonly opts: { baseUrl: string; secret: string }) {}
 
   private wrap<A>(f: () => Promise<A>): Effect.Effect<A, ForgeError> {
-    return Effect.tryPromise({ try: f, catch: (e) => err("StorageUnavailable", String((e as Error).message ?? e)) });
+    return Effect.tryPromise({ try: f, catch: (e) => deniedOr(e, () => err("StorageUnavailable", String((e as Error).message ?? e))) });
   }
 
   presignUpload(key: string, mediaType: string, byteCount: number, ttlSeconds: number): Effect.Effect<SignedUrl, ForgeError> {

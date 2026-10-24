@@ -24,7 +24,8 @@ Each script carries only:
   gets an empty slice and the sweep gets its dispatch unit's closure. Contract-metadata routes take
   the whole `app.json` by design (mode `whole`: they publish the whole contract). Only a manifest
   that still lists `uncovered` surfaces makes the residual a whole-app `fallback`, with the reason;
-- a thin host (`src/host.ts`) that passes the runtime only the bindings the manifest declares,
+- a thin host (`src/host.ts`) that passes the runtime only the bindings the manifest declares
+  (handles declared for other scripts become stubs that refuse with 403 `CapabilityDenied`),
   answers only its own routes, and forwards outbox dispatch to the dispatch owner when its model is a
   slice.
 
