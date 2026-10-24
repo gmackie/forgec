@@ -152,6 +152,8 @@ export default {
 };
 
 export class Forge extends WorkerEntrypoint {
+  // Starts the isolate and runs no unit code: a tier host (linker C) calls it first, so a child that fails to load is a LinkError, not a failed request.
+  ping() { return true; }
   advance(tenant, id) { return worker.advance(hostEnv(this.env), tenant, id); }
   dispatch(tenant, o) { return worker.dispatch(hostEnv(this.env), tenant, o); }
   async scheduled(event) {

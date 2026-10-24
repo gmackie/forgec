@@ -34,6 +34,12 @@ export interface HostEnv {
   LINKER_ADMIN_TOKEN?: string;
   /** "fail" (default): a request no entry point claims is refused. "runtime": served by the whole-app child and reported. */
   LINKER_UNCOVERED?: string;
+  /**
+   * Set when this host is linker C's dynamic tier (FORG-43): the service binding to linker A's dispatch
+   * owner. Post-commit dispatch goes there instead of to a dispatch child, and every child is probed
+   * before use, so a child that cannot load is refused (a LinkError the router falls back on).
+   */
+  FORGE_DISPATCH?: { fetch(input: Request | string, init?: RequestInit): Promise<Response> };
   [binding: string]: unknown;
 }
 
@@ -65,7 +71,9 @@ const codeCache = new Map<string, WorkerLoaderCode>();
 const stats = { closures: new Map<string, ClosureStats>(), denials: [] as string[], fallbacks: [] as string[], refused: [] as string[] };
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
-const problem = (e: LinkError) => json(e.problem(), e.status, { "content-type": "application/problem+json" });
+/** Set on every refusal made before a request reached unit code: what linker C's router falls back on. */
+export const REFUSED_HEADER = "x-forge-linker-refused";
+const problem = (e: LinkError) => json(e.problem(), e.status, { "content-type": "application/problem+json", [REFUSED_HEADER]: e.code });
 const recordDenial = (msg: string) => {
   stats.denials.push(msg);
   console.warn(`linker: ${msg}`);
@@ -153,15 +161,28 @@ async function childFor(env: HostEnv, ctx: { exports: Record<string, (o: { props
     buildMs = performance.now() - t0;
   }
   let cold = false;
+  if (!env.LOADER) throw new LinkError("LoaderUnavailable", [`${policy.label}: no Worker Loader binding`]);
   // Stubs are minted in the request that creates the isolate, never cached across requests.
-  const stub = env.LOADER.get(id, () => {
-    cold = true;
-    return {
-      ...code!,
-      env: capabilityEnv(ctx, env, policy, vars, l.schema),
-      globalOutbound: policy.egress.length ? ctx.exports["Egress"]!({ props: { label: policy.label, allow: policy.egress } satisfies EgressProps }) : null,
-    };
-  });
+  let stub: WorkerStubLike;
+  try {
+    stub = env.LOADER.get(id, () => {
+      cold = true;
+      return {
+        ...code!,
+        env: capabilityEnv(ctx, env, policy, vars, l.schema),
+        globalOutbound: policy.egress.length ? ctx.exports["Egress"]!({ props: { label: policy.label, allow: policy.egress } satisfies EgressProps }) : null,
+      };
+    });
+  } catch (e) {
+    throw new LinkError("LoaderUnavailable", [`${policy.label}: ${String(e)}`]);
+  }
+  if (env.FORGE_DISPATCH) {
+    try {
+      await stub.getEntrypoint("Forge")["ping"]!();
+    } catch (e) {
+      throw new LinkError("LoadFailed", [`${policy.label}: child ${id} did not start: ${String(e)}`]);
+    }
+  }
   return { stub, id, closureHash, privileged: policy.privileged, cold: () => cold, buildMs };
 }
 
@@ -231,6 +252,9 @@ async function admin(request: Request, env: HostEnv, url: URL): Promise<Response
 }
 
 // ---------------------------------------------------------------------------------- the Worker
+/** Linker A's dispatch-owner endpoint (packages/linker-packed/src/host.ts), named here so neither linker imports the other. */
+const DISPATCH_PATH = "/_forge/linker/dispatch";
+
 /** Tenants whose schedule-index record this isolate has handed to dispatch() (once per isolate, like the runtime). */
 const seenTenants = new Set<string>();
 
@@ -241,7 +265,7 @@ export default {
     const t0 = performance.now();
     try {
       const l = await current(env);
-      if (!l) return json({ code: "NoManifest", detail: "no Closure Manifest has been linked" }, 503);
+      if (!l) return json({ code: "NoManifest", detail: "no Closure Manifest has been linked" }, 503, { [REFUSED_HEADER]: "NoManifest" });
       const m = l.resolved.manifest;
       let entry: EntryPoint | null = null;
       let policy: Policy;
@@ -269,6 +293,7 @@ export default {
       const cold = child.cold();
       record(child, policy.label, cold);
       const out = new Response(res.body, res);
+      out.headers.delete(REFUSED_HEADER);
       out.headers.set("x-forge-entry", entry?.id ?? policy.label);
       out.headers.set("x-forge-closure", closureHash);
       out.headers.set("x-forge-isolate", cold ? "cold" : "warm");
@@ -279,7 +304,22 @@ export default {
       // first-sight schedule-index record a whole-app Worker makes for every tenant it serves.
       const tenant = request.headers.get("x-forge-tenant");
       const sweep = request.method !== "GET" && res.status < 300;
-      if (tenant && (sweep || !seenTenants.has(tenant))) {
+      if (tenant && (sweep || !seenTenants.has(tenant)) && env.FORGE_DISPATCH) {
+        // Linker C: one dispatch owner for both tiers, linker A's sweep script (same body as its forwarders).
+        seenTenants.add(tenant);
+        const owner = env.FORGE_DISPATCH;
+        ctx.waitUntil(
+          owner
+            .fetch(`https://dispatch${DISPATCH_PATH}`, { method: "POST", body: JSON.stringify({ tenant, sweep }), headers: { "content-type": "application/json" } })
+            .then((r) => {
+              if (!r.ok) throw new Error(`dispatch owner answered ${r.status}`);
+            })
+            .catch((e: unknown) => {
+              if (!sweep) seenTenants.delete(tenant);
+              console.warn("linker: dispatch hand-off failed", String(e));
+            }),
+        );
+      } else if (tenant && (sweep || !seenTenants.has(tenant))) {
         seenTenants.add(tenant);
         ctx.waitUntil(
           dispatchChild(env, ctx, l, "runtime:dispatch")
@@ -432,20 +472,23 @@ export class Egress extends WorkerEntrypoint<HostEnv, EgressProps> {
  * the deployed script exports, so the host exports one per workflow and runs each advance in the
  * workflow entry point's child.
  */
+/** One driver step of a workflow instance in its entry point's child. A LinkError means no unit code ran. */
+export async function advanceWorkflow(env: HostEnv, ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, className: string, tenant: string, id: string): Promise<{ status: string; dueAt?: string }> {
+  const l = await current(env);
+  const entry = l?.resolved.byWorkflowClass.get(className);
+  if (!l || !entry) throw new LinkError("UnknownEntryPoint", [`workflow class ${className} is not an entry point`]);
+  const child = await childFor(env, ctx, l, entry.closureHash, derivePolicy(l.resolved.manifest, entry, l.schema));
+  const st = (await child.stub.getEntrypoint("Forge")["advance"]!(tenant, id)) as { status: string; dueAt?: string };
+  record(child, `workflow:${entry.id}`, child.cold());
+  return st;
+}
+
 export function forgeWorkflow(className: string) {
   return class ForgeWorkflow extends WorkflowEntrypoint<HostEnv, { tenant: string; id: string }> {
     async run(event: { payload: { tenant: string; id: string } }, step: WorkflowStepLike) {
       const env = this.env;
       const ctx = this.ctx as unknown as { exports: Record<string, (o: { props: unknown }) => unknown> };
-      const advance = async () => {
-        const l = await current(env);
-        const entry = l?.resolved.byWorkflowClass.get(className);
-        if (!l || !entry) throw new LinkError("UnknownEntryPoint", [`workflow class ${className} is not an entry point`]);
-        const child = await childFor(env, ctx, l, entry.closureHash, derivePolicy(l.resolved.manifest, entry, l.schema));
-        const st = (await child.stub.getEntrypoint("Forge")["advance"]!(event.payload.tenant, event.payload.id)) as { status: string; dueAt?: string };
-        record(child, `workflow:${entry.id}`, child.cold());
-        return st;
-      };
+      const advance = () => advanceWorkflow(env, ctx, className, event.payload.tenant, event.payload.id);
       for (let n = 0; n < 10_000; n++) {
         const state = await step.do(`advance:${n}`, advance);
         if (state.status === "sleeping") await step.sleep(`sleep:${n}`, Math.max(0, Date.parse(state.dueAt!) - Date.now()));
