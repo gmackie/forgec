@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { BUNDLER, bundleUnit, libraryVersion, type Finding } from "./bundle.ts";
-import { CLOSURE_DOMAIN, digest, IMPLEMENTATION_DOMAIN, MANIFEST_DOMAIN, sha256, stableJson, UNIT_DOMAIN } from "./hash.ts";
+import { CLOSURE_DOMAIN, digest, gitBlob, IMPLEMENTATION_DOMAIN, MANIFEST_DOMAIN, sha256, stableJson, UNIT_DOMAIN } from "./hash.ts";
 import { locateImpl, type LocateOptions } from "./locate.ts";
 import { TRANSPILER, verifyComponent } from "./wasm.ts";
 import type { Lowering } from "./wit-lowering.ts";
@@ -20,6 +20,25 @@ export interface Binding {
 type PlanProvider = { kind: "unit"; symbol: string } | { kind: "runtime"; service: string };
 type Provider = { kind: "unit"; unit: string } | { kind: "runtime"; service: string };
 
+/**
+ * Where a unit comes from (FORG-33): a `.forge` declaration (planned by forgec) or an `impl/` body
+ * (added here). Provenance for Loom: no unit, closure or implementation digest covers it, only
+ * `manifestHash` does. A span moves when unrelated text above it changes, and a blob hash moves with
+ * any edit to its file, so neither may re-identify a unit whose behaviour is unchanged.
+ */
+export interface SourceRef {
+  part: "declaration" | "body";
+  /** Package `path` is relative to, when not the manifest's own (an external's declaration). */
+  package?: string;
+  /** Relative to the package root, `/`-separated. */
+  path: string;
+  /** Byte range `[start, end)`. */
+  start: number;
+  end: number;
+  /** `git hash-object` of the whole file. */
+  gitBlob: string;
+}
+
 /** The WIT world forgec generated for an implemented function unit (FORG-31), or why there is none. */
 export type PlannedWit =
   | { status: "ok"; abi: "forge-wit/1"; digest: string; world: string; lowering: Lowering }
@@ -27,7 +46,7 @@ export type PlannedWit =
 
 export interface PlannedUnit {
   symbol: string;
-  role: "function" | "external" | "operation" | "workflow";
+  role: "function" | "external" | "operation" | "workflow" | "view" | "projection" | "cache" | "schedule" | "service";
   kind: "js-module" | "forge-native";
   interface: unknown;
   interfaceHash: string;
@@ -36,6 +55,8 @@ export interface PlannedUnit {
   imports: Array<{ capability: string; provider: PlanProvider }>;
   bindings: Binding[];
   wit?: PlannedWit;
+  /** `.forge` declaration spans (absent from plans written before FORG-33). */
+  sources?: SourceRef[];
 }
 
 export interface UnitPlan {
@@ -62,6 +83,7 @@ export interface SealedUnit {
   imports: Array<{ capability: string; provider: Provider }>;
   bindings: Binding[];
   findings: Finding[];
+  sources: SourceRef[];
 }
 
 export interface ClosureManifest {
@@ -132,6 +154,8 @@ export async function seal(plan: UnitPlan, appRoot: string, options: SealOptions
   const modules = new Map<string, Uint8Array>();
   const moduleInfo: ClosureManifest["modules"] = {};
   const impl = new Map<string, { implementation: Record<string, unknown>; findings: Finding[] }>();
+  const bodies = new Map<string, SourceRef>();
+  const blobOf = (file: string) => gitBlob(new Uint8Array(readFileSync(resolve(appRoot, file))));
   const kinds = new Map<string, SealedUnit["kind"]>(plan.units.map((u) => [u.symbol, u.kind]));
   for (const u of plan.units) {
     if (u.kind === "forge-native") {
@@ -153,6 +177,7 @@ export async function seal(plan: UnitPlan, appRoot: string, options: SealOptions
       moduleInfo[lowered] = { path: `modules/${lowered.slice("sha256:".length)}.json`, bytes: lowering.byteLength, sources: [] };
       // The world digest pins the WIT the component was checked against; the bytes pin the body.
       impl.set(u.symbol, { implementation: { component: blob, world: wit.digest, lowering: lowered, abi: wit.abi }, findings: [] });
+      bodies.set(u.symbol, { part: "body", path: component.split("\\").join("/"), start: 0, end: bytes.byteLength, gitBlob: gitBlob(bytes) });
       kinds.set(u.symbol, "wasm-component");
       continue;
     }
@@ -164,6 +189,18 @@ export async function seal(plan: UnitPlan, appRoot: string, options: SealOptions
     moduleInfo[blob] = { path: `modules/${blob.slice("sha256:".length)}.js`, bytes: m.code.byteLength, sources: m.sources };
     const abi = site.binding === "function" ? "forgegraph-function/1" : "forgegraph-external-binding/1";
     impl.set(u.symbol, { implementation: { module: blob, export: "default", abi, libraries: m.libraries }, findings: m.findings });
+    bodies.set(u.symbol, { part: "body", path: site.file, start: site.start, end: site.end, gitBlob: blobOf(site.file) });
+  }
+
+  // A plan's declaration spans must still describe the files being sealed: a .forge edit after
+  // `forgec build --units` would otherwise seal spans of text that no longer exists.
+  for (const u of plan.units) {
+    for (const s of u.sources ?? []) {
+      if (s.package && s.package !== plan.package.name) continue; // another package's root: not under appRoot
+      const path = resolve(appRoot, s.path);
+      if (!existsSync(path)) throw new Error(`stale plan: ${u.symbol} is declared in ${s.path}, which does not exist under ${appRoot}`);
+      if (blobOf(s.path) !== s.gitBlob) throw new Error(`stale plan: ${s.path} changed since forgec planned ${u.symbol}; run forgec build --units again`);
+    }
   }
 
   // A unit's identity covers the interfaces it calls, not their implementations, so a body edit
@@ -197,6 +234,7 @@ export async function seal(plan: UnitPlan, appRoot: string, options: SealOptions
       imports: u.imports.map((i) => ({ capability: i.capability, provider: provider(i.provider) })),
       bindings: u.bindings,
       findings,
+      sources: [...(u.sources ?? []), ...(bodies.has(u.symbol) ? [bodies.get(u.symbol)!] : [])],
     };
   }
 

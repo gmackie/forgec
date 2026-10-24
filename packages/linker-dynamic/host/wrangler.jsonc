@@ -7,7 +7,7 @@
   "main": "acme.ts",
   "compatibility_date": "2026-09-25",
   "worker_loaders": [{ "binding": "LOADER" }],
-  "vars": { "FORGE_AUTH": "dev-headers" },
+  "vars": { "FORGE_AUTH": "dev-headers", "FORGE_CORS": "http://localhost:5173,https://forge-acme-workspace.example.workers.dev" },
   "r2_buckets": [
     { "binding": "UNITS", "bucket_name": "forge-units" },
     { "binding": "BLOBS", "bucket_name": "forge-acme-blobs" }

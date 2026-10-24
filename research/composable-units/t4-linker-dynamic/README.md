@@ -6,6 +6,14 @@ One host Worker serves `examples/acme` from its sealed Closure Manifest. For eac
 
 Everything here ran on local workerd (`wrangler dev --local`). Nothing was deployed.
 
+> **Addendum (FORG-33, 2026-10-24).** The strict linker now passes **15/15** with no fallback, no
+> refusal and no capability denial: changesets, imports, views, projections, caches and schedule
+> routes are entry points, the sweep and dispatch child is narrowed to the dispatch unit's closure
+> (no child is privileged), `FORGE_CORS` reaches children, and the object-bytes route is a manifest
+> entry point. Findings 9 (changesets, imports, object bytes) and 8 (`FORGE_CORS`) and design
+> question 7 are resolved for acme; the rest of this README is T4's record. See
+> [`../r2-coverage/`](../r2-coverage/README.md).
+
 ## Reproduce
 
 Requires the T2 prerequisites (`cargo build -p forgegraph-cli`, `pnpm install`) and the workspace build (`pnpm -r run build`, for the runtime's `dist/`, which the whole-app baseline Worker imports). From the repository root:

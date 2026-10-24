@@ -106,8 +106,9 @@ describe("closure manifest for examples/acme", async () => {
       expect(e.closure.includes(b.unitHash), e.id).toBe(contains);
       expect(e.closureHash !== old.closureHash, e.id).toBe(contains);
     }
-    // the cron, its workflow step, the workflow class, its start and signal routes
-    expect(containing).toBe(5);
+    // the schedule's cron and manual-tick route, the workflow step, the workflow class, its start and
+    // signal routes, and the sweep (FORG-33: the sweep's closure is the dispatch unit's)
+    expect(containing).toBe(7);
   });
 
   it("changing a signature changes both interfaceHash and unitHash", async () => {
@@ -148,7 +149,107 @@ describe("closure manifest for examples/acme", async () => {
       { type: "queue-producer", name: "Q_FULFILL_ORDER" },
     ]);
     const sweep = base.manifest.entryPoints.find((e) => e.id === "forge:sweep")!;
-    expect(sweep.root).toBeNull();
+    expect(sweep.root).toBe(unit(base, "dispatch").unitHash);
     expect(sweep.runtimeService).toBe("outbox-and-workflow-sweep");
+  });
+
+  it("covers every surface the runtime serves (FORG-33)", () => {
+    const m = base.manifest;
+    expect(m.uncovered).toEqual([]);
+    const ids = new Set(m.entryPoints.map((e) => e.id));
+    for (const id of [
+      "GET /v1/views/pending-orders",
+      "GET /v1/customer-order-summaries/{id}",
+      "POST /v1/customer-order-summaries/rebuild",
+      "GET /v1/caches/current-site-policy",
+      "GET /v1/schedules/nightly-reconciliation",
+      "POST /v1/schedules/nightly-reconciliation/tick",
+      "POST /v1/changesets",
+      "POST /v1/changesets/{id}/commit",
+      "POST /v1/imports/stage",
+      "POST /v1/admin/export",
+      "GET /forge/discovery",
+      "GET /_forge/objects/{token}",
+      "GET /v1/live/orders",
+      "projection:CustomerOrderSummary",
+    ])
+      expect(ids.has(id), id).toBe(true);
+    const roles = (id: string) => m.entryPoints.find((e) => e.id === id)!.closure.map((h) => m.units[h]!.role);
+    expect(roles("GET /v1/views/pending-orders").sort()).toEqual(["operation", "view"]);
+    expect(roles("POST /v1/imports/stage")).toContain("service");
+    // The implicit channel: audited operations publish it, the projection's subscription consumes it.
+    const create = unit(base, "Order.create");
+    expect(create.imports.map((i) => i.capability)).toContain("send:@acme/commerce/_/Order.changes#Created");
+    const sub = m.entryPoints.find((e) => e.id === "projection:CustomerOrderSummary")!;
+    expect(sub.kind).toBe("subscription");
+    expect((sub.trigger as { channel: string }).channel).toBe("@acme/commerce/_/Order.changes");
+    // Cancelling wakes the native instance, so the cancel route declares the workflow binding.
+    expect(m.entryPoints.find((e) => e.id === "POST /v1/workflows/process-order/{id}/cancel")!.bindings).toEqual([{ type: "workflow", name: "WF_PROCESS_ORDER" }]);
+    expect(m.hostBindings.map((b) => b.name)).toContain("FORGE_CORS");
+  });
+});
+
+describe("unit sources (FORG-33)", async () => {
+  const app = copyAcme();
+  const base = await build(app);
+  const text = (pkgRoot: string, path: string, start: number, end: number) => readFileSync(join(pkgRoot, path)).subarray(start, end).toString("utf8");
+  const pkgRoot = (s: { package?: string }) => (s.package === "@acme/payments" ? join(app, "../payments") : app);
+
+  it("records the .forge declaration and the impl/ body, each with its file's git blob hash", () => {
+    const m = base.manifest;
+    const submit = unit(base, "SubmitOrder");
+    expect(submit.sources.map((s) => [s.part, s.path])).toEqual([
+      ["declaration", "src/orders/fulfillment.forge"],
+      ["body", "impl/submit-order.ts"],
+    ]);
+    const [decl, body] = submit.sources;
+    expect(text(app, decl!.path, decl!.start, decl!.end)).toMatch(/function SubmitOrder\b/);
+    expect(text(app, body!.path, body!.start, body!.end)).toMatch(/^export const \w+ = defineFunction\("@acme\/commerce\/_\/SubmitOrder"/);
+    // An external is declared by the package that exports it and implemented by the deployment.
+    const authorize = unit(base, "AuthorizePayment");
+    expect(authorize.sources.map((s) => [s.part, s.package ?? null, s.path])).toEqual([
+      ["declaration", "@acme/payments", "src/index.forge"],
+      ["body", null, "impl/payment-adapter.ts"],
+    ]);
+    // A generated operation is declared by its resource.
+    const [op] = unit(base, "Order.create").sources;
+    expect(text(app, op!.path, op!.start, op!.end)).toMatch(/^export resource Order\b/);
+    for (const u of Object.values(m.units)) {
+      if (u.role === "service") expect(u.sources, u.symbol).toEqual([]);
+      else expect(u.sources.length, u.symbol).toBeGreaterThan(0);
+      for (const s of u.sources) {
+        const file = join(pkgRoot(s), s.path);
+        expect(execFileSync("git", ["hash-object", file], { encoding: "utf8" }).trim(), `${u.symbol} ${s.path}`).toBe(s.gitBlob);
+        expect(s.end).toBeGreaterThan(s.start);
+        expect(s.end).toBeLessThanOrEqual(readFileSync(file).byteLength);
+      }
+    }
+  });
+
+  it("moving a declaration or a body changes its spans and the manifest hash, never a unit or closure hash", async () => {
+    const moved = await build(
+      copyAcme((a) => {
+        const f = join(a, "src/orders/fulfillment.forge");
+        writeFileSync(f, `// moved down by a comment\n${readFileSync(f, "utf8")}`);
+        const g = join(a, "impl/submit-order.ts");
+        writeFileSync(g, `// moved down by a comment\n${readFileSync(g, "utf8")}`);
+      }),
+    );
+    const [a, b] = [unit(base, "SubmitOrder"), unit(moved, "SubmitOrder")];
+    expect(b.sources.map((s) => s.start)).toEqual(a.sources.map((s) => s.start + "// moved down by a comment\n".length));
+    expect(b.sources.map((s) => s.gitBlob)).not.toEqual(a.sources.map((s) => s.gitBlob));
+    expect([b.interfaceHash, b.implementationHash, b.unitHash]).toEqual([a.interfaceHash, a.implementationHash, a.unitHash]);
+    expect([...moved.bySymbol]).toEqual([...base.bySymbol]);
+    expect(moved.manifest.entryPoints.map((e) => e.closureHash)).toEqual(base.manifest.entryPoints.map((e) => e.closureHash));
+    expect(moved.manifest.manifestHash).not.toBe(base.manifest.manifestHash);
+  });
+
+  it("refuses to seal a plan whose .forge files changed after forgec planned them", async () => {
+    const stale = copyAcme();
+    execFileSync(forgec, ["build", stale, "--units"], { stdio: "pipe" });
+    const plan = JSON.parse(readFileSync(join(stale, "generated/units/plan.json"), "utf8")) as UnitPlan;
+    const f = join(stale, "src/orders/fulfillment.forge");
+    writeFileSync(f, `${readFileSync(f, "utf8")}\n`);
+    await expect(seal(plan, stale)).rejects.toThrow(/stale plan: src\/orders\/fulfillment\.forge changed since forgec planned/);
   });
 });
