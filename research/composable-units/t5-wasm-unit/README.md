@@ -22,6 +22,13 @@ Pinned toolchain for the component: Rust 1.97.1 with target `wasm32-unknown-unkn
 `Cargo.lock`), and `wasm-tools` 1.262.0 (`cargo install --locked wasm-tools@1.262.0`). The JS side
 pins `@bytecodealliance/jco` 1.39.0 and `miniflare` 4.20260730.0 (exact) in `packages/units`.
 
+The component is byte-identical across hosts (checked on macOS arm64 and in Linux x86_64 CI), not
+just across checkout paths. Besides remapping paths, `build-component.mjs` runs cargo with a
+`RUSTC_WRAPPER` that sets `-C metadata=<package>@<version>` for the wasm32 crates. Cargo's own
+value hashes `rustc -vV`, including its `host:` line, into the proc-macro dependencies, so the
+crate hashes in every v0 symbol differed by host. LTO and `wasm-ld` then laid out the same
+functions in a different order, and stripping the names kept that order (FORG-35).
+
 ## Which function, and why a new one
 
 None of acme's implemented functions is pure. `SubmitOrder` reads two resources, applies a
@@ -230,6 +237,7 @@ Findings:
 7. **Who chooses the implementation?** Today the sealer invocation does (`--component`). Should
    `impl/` declare components (for example `export const components = {…}` in `impl/index.ts`), so
    the deployment owns the choice and the manifest is reproducible from source alone?
-8. **The component is committed.** It reproduces byte for byte, but only with the pinned toolchain.
+8. **The component is committed.** It reproduces byte for byte on macOS and Linux, but only with the
+   pinned toolchain.
    Should CI build it, or keep checking the committed bytes with `build-component.mjs --check`? Note
    that reformatting the Rust changes the bytes, because panic locations embed line numbers.

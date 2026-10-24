@@ -70,14 +70,21 @@ describe.skipIf(!enabled)("linker differential over examples/acme", () => {
 
   // A list ordered only by its generated id returns records created in the same millisecond in an
   // order fixed by fresh random ids: same items, run-dependent order. Explained only in that case.
-  const appJson = JSON.parse(readFileSync(join(app, "generated/app.json"), "utf8")) as { ir: { modules: Array<{ resources: Array<{ id: string; lists: Array<{ name: string; order: Array<{ field: string }> }> }> }> } };
-  const idOrdered = new Set(appJson.ir.modules.flatMap((m) => m.resources.flatMap((r) => r.lists.filter((l) => l.order.length === 1 && l.order[0]!.field === "id").map((l) => `${r.id}.list.${l.name}`))));
+  // Read lazily: vitest collects a skipped describe's body too, and a fresh checkout has no
+  // generated app.json until the opt-in run builds it.
+  let idOrderedLists: Set<string> | undefined;
+  const idOrdered = () => {
+    if (idOrderedLists) return idOrderedLists;
+    const appJson = JSON.parse(readFileSync(join(app, "generated/app.json"), "utf8")) as { ir: { modules: Array<{ resources: Array<{ id: string; lists: Array<{ name: string; order: Array<{ field: string }> }> }> }> } };
+    idOrderedLists = new Set(appJson.ir.modules.flatMap((m) => m.resources.flatMap((r) => r.lists.filter((l) => l.order.length === 1 && l.order[0]!.field === "id").map((l) => `${r.id}.list.${l.name}`))));
+    return idOrderedLists;
+  };
   // The runner numbers ids it has seen (`$id:n`, by first appearance) and leaves ids it never saw raw
   // (records a changeset created): either way the id text differs between runs, so compare without it.
   const sortedItems = (v: unknown) => JSON.stringify(((v as { value?: { items?: unknown[] } })?.value?.items ?? []).map((x) => JSON.stringify(x).replace(/\$id:\d+|\b[a-z]+_[0-9a-z]{26}\b/g, "<id>")).sort());
   const idOrderOnly = (a: Report[], b: Report[], d: Difference) => {
     const step = scenarios.find((s) => s.id === d.scenario)?.steps.find((s) => s.name === d.step) as { op?: string } | undefined;
-    if (!step?.op || !idOrdered.has(step.op)) return false;
+    if (!step?.op || !idOrdered().has(step.op)) return false;
     const [ra, rb] = [a.find((r) => r.scenario === d.scenario)?.results[d.step], b.find((r) => r.scenario === d.scenario)?.results[d.step]];
     return sortedItems(ra) === sortedItems(rb);
   };
