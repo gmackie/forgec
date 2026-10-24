@@ -2,13 +2,17 @@
 // declared `Product read` capability. Plans examples/pricing with the real `forgec`, seals the unit
 // as a js-module and as a Rust wasm-component (transpiled with JSPI), and runs both in workerd
 // behind the same caller, reading from the same D1-backed resource store.
+//
+// FORG-41: concurrent calls on one isolate interleave for the wasm-component as they do for the
+// js-module (an instance per in-flight call, from a pool), and a trap mid-call discards only its
+// own instance.
 import { execFileSync } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Miniflare } from "miniflare";
 import { afterAll, describe, expect, it } from "vitest";
-import { bindUnit, CALLER, D1_RESOURCE_HOST, D1_RESOURCE_HOST_SCHEMA, type BoundUnit } from "../src/harness.ts";
+import { bindUnit, CALLER, D1_RESOURCE_HOST, D1_RESOURCE_HOST_SCHEMA, type BoundUnit, type WorkerModule } from "../src/harness.ts";
 import { seal, type Sealed, type UnitPlan } from "../src/index.ts";
 import { asyncImports, type Lowering } from "../src/wit-lowering.ts";
 import { priceCartIn, type PriceCartInput, type Product } from "../../../examples/pricing/impl/cart.ts";
@@ -124,6 +128,77 @@ async function run(bound: BoundUnit, inputs: unknown[]): Promise<unknown[]> {
   });
 }
 
+// ------------------------------------------------------------------ concurrency (FORG-41)
+
+/**
+ * Every read waits 20 ms and is logged. `trap-*` answers a price the Rust unit cannot parse, so it
+ * aborts (a WASM trap) after the call's earlier reads; the JS unit throws on it.
+ */
+const SLOW_HOST = `export const log = [];
+export function capability() {
+  return {
+    async get(id) {
+      log.push(id);
+      await scheduler.wait(20);
+      return { ok: true, value: { id, sku: id.toUpperCase(), unitPrice: id.startsWith("trap-") ? "not-a-price" : "1.25", active: true } };
+    },
+  };
+}
+`;
+const CONCURRENT_CALLER = `import * as bound from "./bound.js";
+import { log } from "./host.js";
+const cart = (tag, n, last = "") => ({ items: Array.from({ length: n }, (_, i) => ({ product: (i === n - 1 ? last : "") + tag + "-" + (i + 1), quantity: 1 })) });
+const settle = (p) => Promise.race([p.then((r) => (r.ok ? r.value.subtotal : r.code), (e) => "threw: " + String(e.message ?? e)), scheduler.wait(5000).then(() => "hung")]);
+const invoke = (input) => bound.invoke(input);
+export default { async fetch(request) {
+  await bound.ready();
+  const { c } = await request.json();
+  log.length = 0;
+  let t0 = performance.now();
+  await settle(invoke(cart("solo", 4)));
+  const oneMs = performance.now() - t0;
+  log.length = 0;
+  t0 = performance.now();
+  const concurrent = await Promise.all(Array.from({ length: c }, (_, k) => settle(invoke(cart("c" + k, 4)))));
+  const concurrentMs = performance.now() - t0;
+  const readOrder = [...log];
+  // A trap mid-call, while two good calls are suspended; then more calls, sequential and concurrent.
+  const during = await Promise.all([settle(invoke(cart("a", 3))), settle(invoke(cart("x", 3, "trap-"))), settle(invoke(cart("b", 3)))]);
+  const after = [await settle(invoke(cart("after1", 3))), await settle(invoke(cart("after2", 3)))];
+  const afterConcurrent = await Promise.all([settle(invoke(cart("y", 3))), settle(invoke(cart("z", 3)))]);
+  return Response.json({ oneMs, concurrentMs, concurrent, readOrder, during, after, afterConcurrent, stats: bound.stats?.() ?? null });
+}};
+`;
+interface ConcurrentRun {
+  oneMs: number;
+  concurrentMs: number;
+  concurrent: string[];
+  readOrder: string[];
+  during: string[];
+  after: string[];
+  afterConcurrent: string[];
+  stats: Record<string, number> | null;
+}
+
+async function concurrently(bound: BoundUnit, c: number): Promise<ConcurrentRun> {
+  const enc = (s: string) => new TextEncoder().encode(s);
+  const swap = (m: WorkerModule): WorkerModule => (m.path === "caller.js" ? { ...m, contents: enc(CONCURRENT_CALLER) } : m.path === "host.js" ? { ...m, contents: enc(SLOW_HOST) } : m);
+  const mf = new Miniflare({ modules: bound.modules.map(swap), compatibilityDate: "2026-07-01" });
+  try {
+    const res = await mf.dispatchFetch("http://unit/", { method: "POST", body: JSON.stringify({ c }) });
+    expect(res.status, await res.clone().text()).toBe(200);
+    return (await res.json()) as ConcurrentRun;
+  } finally {
+    await mf.dispose();
+  }
+}
+
+/** True when every call made its first read before any call made its last (of `n` reads each). */
+function interleaved(order: string[], n: number): boolean {
+  const at = (suffix: string) => order.flatMap((id, i) => (id.endsWith(suffix) ? [i] : []));
+  return Math.max(...at("-1")) < Math.min(...at(`-${n}`));
+}
+
 describe("PriceCart as a js-module and as a wasm-component with a capability import", async () => {
   const plan = planOf(pricing);
   const js = await seal(plan, pricing);
@@ -189,6 +264,52 @@ describe("PriceCart as a js-module and as a wasm-component with a capability imp
       const seen = new Set(b.slice(CASES.length).map((x) => ((x as { ok: boolean }).ok ? "ok" : (x as { code: string }).code)));
       expect([...seen].sort()).toEqual(["CartTooLarge", "EmptyCart", "InactiveProduct", "NotFound", "ok"]);
     }, 120_000);
+
+    describe("concurrent calls on one isolate (FORG-41)", async () => {
+      const C = 8;
+      const [pooled, shared, plainJs] = await Promise.all([bindUnit(wasm, SYMBOL, pricing), bindUnit(wasm, SYMBOL, pricing, { instances: "shared" }), bindUnit(js, SYMBOL, pricing)]);
+      // One at a time: the timings below compare runs on a possibly loaded machine.
+      const w = await concurrently(pooled, C);
+      const s = await concurrently(shared, C);
+      const j = await concurrently(plainJs, C);
+
+      it("interleaves wasm calls like JS calls: no serialization behind a suspended call", () => {
+        for (const r of [w, j]) {
+          expect(r.concurrent).toEqual(Array.from({ length: C }, () => "5.00"));
+          expect(interleaved(r.readOrder, 4), r.readOrder.join(" ")).toBe(true);
+          // Every call's first read happens before any call's second: the reads go out in waves.
+          expect(new Set(r.readOrder.slice(0, C).map((id) => id.slice(id.lastIndexOf("-"))))).toEqual(new Set(["-1"]));
+          // 8 calls of 4 sequential 20 ms reads, at once: serialized they take 8x one call. The bound is
+          // loose (half of that) because the order above is the proof; this only checks the clock agrees.
+          expect(r.concurrentMs, `one ${r.oneMs} ms, ${C} at once ${r.concurrentMs} ms`).toBeLessThan((r.oneMs * C) / 2);
+        }
+        expect(w.stats).toMatchObject({ peak: C, created: C, discarded: 1 });
+      });
+
+      it("serializes on one shared instance (the binding before FORG-41), which is what the pool removes", () => {
+        expect(s.concurrent).toEqual(Array.from({ length: C }, () => "5.00"));
+        expect(interleaved(s.readOrder, 4)).toBe(false);
+        expect(s.readOrder.slice(0, 4)).toEqual(["c0-1", "c0-2", "c0-3", "c0-4"]);
+        expect(s.concurrentMs).toBeGreaterThan(s.oneMs * (C / 2));
+      });
+
+      it("a trap mid-call discards only its own instance: suspended and later calls are unaffected", () => {
+        expect(w.during[0]).toBe("3.75");
+        expect(w.during[1]).toMatch(/^threw: .*unreachable/);
+        expect(w.during[2]).toBe("3.75");
+        expect([...w.after, ...w.afterConcurrent]).toEqual(["3.75", "3.75", "3.75", "3.75"]);
+        // The same as the JS unit, whose body throws on the bad price.
+        expect(j.during[0]).toBe("3.75");
+        expect(j.during[1]).toMatch(/^threw: /);
+        expect([j.during[2], ...j.after, ...j.afterConcurrent]).toEqual(["3.75", "3.75", "3.75", "3.75", "3.75"]);
+      });
+
+      it("a trap poisons a shared instance for every later call", () => {
+        expect(s.during[0]).toBe("3.75");
+        expect(s.during[1]).toMatch(/^threw: .*unreachable/);
+        for (const r of [...s.after, ...s.afterConcurrent]) expect(r).toMatch(/^threw: .*cannot enter component instance/);
+      });
+    });
 
     it("fails closed when the host does not provide a declared capability", async () => {
       const [noJs, noWasm] = await Promise.all([bindUnit(js, SYMBOL, pricing), bindUnit(wasm, SYMBOL, pricing)]);

@@ -54,6 +54,11 @@ call suspends while the host's handle awaits (D1 and the like). The handles come
 module (`bindUnit(..., { host })`; `D1_RESOURCE_HOST` reads a D1 table), and the js-module binding
 uses the same handles. A unit's interface hash covers the types its capabilities reach.
 
+jco serializes calls on one component instance, and a trap poisons it for good (FORG-41). So the
+harness gives each in-flight call its own instance from a pool (`src/pool.ts`: up to 32, idle ones
+reused). A call that throws discards its instance. Concurrent WASM calls then interleave like JS
+calls, and a trap fails only its own call.
+
 Results: `research/composable-units/t2-units/` (acme), `research/composable-units/t5-wasm-unit/`,
-`research/composable-units/r2-coverage/` (coverage and source spans) and
-`research/composable-units/r2-wasm-async/`.
+`research/composable-units/r2-coverage/` (coverage and source spans),
+`research/composable-units/r2-wasm-async/` and `research/composable-units/r3-wasm-pool/`.
