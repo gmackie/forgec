@@ -85,6 +85,18 @@ enum Cmd {
         #[arg(long)]
         units: bool,
     },
+    /// Print the WIT world generated from DomainIR for an implemented function unit (research,
+    /// FORG-31). Exit 1 with `E-WIT-*` diagnostics when the interface has no WIT lowering.
+    Wit {
+        #[arg(default_value = ".")]
+        path: PathBuf,
+        /// Unit symbol (`@acme/pricing/_/QuoteOrder`) or its declaration name (`QuoteOrder`).
+        #[arg(long)]
+        unit: String,
+        /// Print the lowering (wire value <-> WIT value map) instead of the world.
+        #[arg(long)]
+        lowering: bool,
+    },
     /// Write `forge.lock`, pinning dependency contracts and the compiler version.
     Lock {
         #[arg(default_value = ".")]
@@ -586,8 +598,58 @@ fn main() -> Result<()> {
                     out_dir.join("units/plan.json"),
                     serde_json::to_string_pretty(&unit_plan)? + "\n",
                 )?;
+                write_unit_wit(&unit_plan, &out_dir.join("units/wit"))?;
             }
             println!("{}: wrote {}", loaded.package.name, out_dir.display());
+        }
+        Cmd::Wit {
+            path,
+            unit,
+            lowering,
+        } => {
+            let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
+            eprint!("{}", loaded.compilation.render());
+            let Some(ir) = loaded.compilation.ir.as_ref() else {
+                std::process::exit(1)
+            };
+            let plans = forgegraph_planner::plan(ir).map_err(|e| anyhow!("{e}"))?;
+            let deps: Vec<&DomainIR> = loaded.deps.iter().map(|(_, d)| d).collect();
+            let unit_plan = forgegraph_planner::units::plan(ir, &deps, &plans);
+            let Some(u) = unit_plan
+                .units
+                .iter()
+                .find(|u| u.symbol == unit || u.symbol.ends_with(&format!("/{unit}")))
+            else {
+                bail!("no unit `{unit}` in {}", loaded.package.name);
+            };
+            match &u.wit {
+                Some(forgegraph_planner::wit::UnitWit::Ok {
+                    world, lowering: l, ..
+                }) => {
+                    if lowering {
+                        println!("{}", serde_json::to_string_pretty(l)?);
+                    } else {
+                        print!("{world}");
+                    }
+                }
+                Some(forgegraph_planner::wit::UnitWit::Unsupported { diagnostics }) => {
+                    for d in diagnostics {
+                        eprintln!("{d}");
+                    }
+                    eprintln!(
+                        "{}: no WIT world: {} diagnostic(s); this unit can only be a js-module",
+                        u.symbol,
+                        diagnostics.len()
+                    );
+                    std::process::exit(1);
+                }
+                None => bail!(
+                    "{} is a {} {} unit: only implemented function units have a WIT world",
+                    u.symbol,
+                    u.kind,
+                    u.role
+                ),
+            }
         }
         Cmd::Lock { path } => {
             let loaded = load_tree(&path, &mut BTreeMap::new(), &mut Vec::new())?;
@@ -1006,6 +1068,42 @@ fn verify_extensions(pkg: &forgegraph_semantic::Package) -> Result<()> {
 
 /// Build identity per specs/language/identity.md: package IR content, dependency
 /// hashes, and the compiler version. No timestamps or machine paths.
+/// `units/wit/<symbol>.wit` for every unit with a WIT world, `@acme/pricing/_/QuoteOrder` ->
+/// `acme.pricing.QuoteOrder.wit`. Units without one are reported, not fatal: they stay js-modules.
+fn write_unit_wit(unit_plan: &serde_json::Value, dir: &Path) -> Result<()> {
+    if dir.exists() {
+        std::fs::remove_dir_all(dir)?;
+    }
+    for u in unit_plan["units"].as_array().into_iter().flatten() {
+        let symbol = u["symbol"].as_str().unwrap_or_default();
+        match u["wit"]["status"].as_str() {
+            Some("ok") => {
+                std::fs::create_dir_all(dir)?;
+                let file = symbol
+                    .trim_start_matches('@')
+                    .replace("/_/", "/")
+                    .replace('/', ".");
+                std::fs::write(
+                    dir.join(format!("{file}.wit")),
+                    u["wit"]["world"].as_str().unwrap_or_default(),
+                )?;
+            }
+            Some(_) => {
+                for d in u["wit"]["diagnostics"].as_array().into_iter().flatten() {
+                    eprintln!(
+                        "note[{}]: {symbol}: {}: {} (no WIT world; js-module only)",
+                        d["code"].as_str().unwrap_or_default(),
+                        d["path"].as_str().unwrap_or_default(),
+                        d["message"].as_str().unwrap_or_default()
+                    );
+                }
+            }
+            None => {}
+        }
+    }
+    Ok(())
+}
+
 fn build_hash(ir: &DomainIR, deps: &[(String, DomainIR)], selected: &[DomainIR]) -> String {
     use std::fmt::Write;
     let mut material = String::new();

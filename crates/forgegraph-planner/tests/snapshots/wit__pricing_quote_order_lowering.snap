@@ -1,0 +1,203 @@
+---
+source: crates/forgegraph-planner/tests/wit.rs
+expression: lowering
+---
+{
+  "version": "forge-wit-lowering/1",
+  "package": "forge:unit",
+  "world": "unit",
+  "export": {
+    "name": "run",
+    "js": "run",
+    "params": [
+      {
+        "name": "input",
+        "type": {
+          "t": "ref",
+          "name": "quote-order-input"
+        }
+      }
+    ],
+    "result": {
+      "t": "ref",
+      "name": "order-quote"
+    },
+    "error": "failure"
+  },
+  "types": {
+    "customer-tier": {
+      "kind": "enum",
+      "cases": [
+        {
+          "case": "standard",
+          "wire": "standard"
+        },
+        {
+          "case": "gold",
+          "wire": "gold"
+        },
+        {
+          "case": "enterprise",
+          "wire": "enterprise"
+        }
+      ]
+    },
+    "failure": {
+      "kind": "failure",
+      "cases": [
+        {
+          "case": "empty-order",
+          "wire": "EmptyOrder"
+        },
+        {
+          "case": "invalid-tax-rate",
+          "wire": "InvalidTaxRate"
+        },
+        {
+          "case": "quote-too-large",
+          "wire": "QuoteTooLarge"
+        }
+      ],
+      "fault": false
+    },
+    "order-quote": {
+      "kind": "record",
+      "fields": [
+        {
+          "wire": "subtotal",
+          "wit": "subtotal",
+          "js": "subtotal",
+          "type": {
+            "t": "string"
+          }
+        },
+        {
+          "wire": "discount",
+          "wit": "discount",
+          "js": "discount",
+          "type": {
+            "t": "string"
+          }
+        },
+        {
+          "wire": "tax",
+          "wit": "tax",
+          "js": "tax",
+          "type": {
+            "t": "string"
+          }
+        },
+        {
+          "wire": "shipping",
+          "wit": "shipping",
+          "js": "shipping",
+          "type": {
+            "t": "string"
+          }
+        },
+        {
+          "wire": "total",
+          "wit": "total",
+          "js": "total",
+          "type": {
+            "t": "string"
+          }
+        },
+        {
+          "wire": "lineCount",
+          "wit": "line-count",
+          "js": "lineCount",
+          "type": {
+            "t": "s64"
+          }
+        },
+        {
+          "wire": "topSku",
+          "wit": "top-sku",
+          "js": "topSku",
+          "type": {
+            "t": "option",
+            "of": {
+              "t": "string"
+            }
+          }
+        }
+      ]
+    },
+    "quote-line": {
+      "kind": "record",
+      "fields": [
+        {
+          "wire": "sku",
+          "wit": "sku",
+          "js": "sku",
+          "type": {
+            "t": "string"
+          }
+        },
+        {
+          "wire": "quantity",
+          "wit": "quantity",
+          "js": "quantity",
+          "type": {
+            "t": "s64"
+          }
+        },
+        {
+          "wire": "unitPrice",
+          "wit": "unit-price",
+          "js": "unitPrice",
+          "type": {
+            "t": "string"
+          }
+        }
+      ]
+    },
+    "quote-order-input": {
+      "kind": "record",
+      "fields": [
+        {
+          "wire": "lines",
+          "wit": "lines",
+          "js": "lines",
+          "type": {
+            "t": "list",
+            "of": {
+              "t": "ref",
+              "name": "quote-line"
+            }
+          }
+        },
+        {
+          "wire": "tier",
+          "wit": "tier",
+          "js": "tier",
+          "type": {
+            "t": "ref",
+            "name": "customer-tier"
+          }
+        },
+        {
+          "wire": "taxRateBasisPoints",
+          "wit": "tax-rate-basis-points",
+          "js": "taxRateBasisPoints",
+          "type": {
+            "t": "s64"
+          }
+        },
+        {
+          "wire": "shipping",
+          "wit": "shipping",
+          "js": "shipping",
+          "type": {
+            "t": "option",
+            "of": {
+              "t": "string"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "imports": []
+}

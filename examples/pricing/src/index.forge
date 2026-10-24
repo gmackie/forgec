@@ -1,0 +1,45 @@
+/// Acme pricing: a pure order quote, the reference unit for FORG-31 (a Rust WASM component and a
+/// JS module behind one interface derived from this declaration).
+export enum CustomerTier {
+  Standard = "standard"
+  Gold = "gold"
+  Enterprise = "enterprise"
+}
+
+export shape QuoteLine {
+  sku : text trim length 1..64
+  quantity : integer >= 1
+  unitPrice : money<USD> >= 0
+}
+
+export shape QuoteOrderInput {
+  lines : list<QuoteLine> length <= 1000
+  tier : CustomerTier
+  taxRateBasisPoints : integer >= 0
+  shipping : money<USD>? >= 0
+}
+
+export shape OrderQuote {
+  subtotal : money<USD>
+  discount : money<USD>
+  tax : money<USD>
+  shipping : money<USD>
+  total : money<USD>
+  lineCount : integer
+  topSku : text?
+}
+
+/// Prices an order: line totals, the tier discount, tax on the discounted subtotal (half-up to
+/// the cent) and optional shipping. No storage, no messages: a pure function of its input.
+export function QuoteOrder
+  @http(POST, "/v1/quotes")
+{
+  input QuoteOrderInput
+  output OrderQuote
+
+  errors {
+    EmptyOrder
+    InvalidTaxRate
+    QuoteTooLarge
+  }
+}
