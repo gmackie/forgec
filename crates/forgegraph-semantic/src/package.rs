@@ -1,8 +1,130 @@
 //! Package model and loading. The compiler core is filesystem-free; this
-//! module is the host service that reads `forge.toml` and sources.
+//! module is the host service that reads `forge.toml` and sources, through a
+//! [`SourceTree`] so a host without a filesystem (wasm32 Workers) can supply them.
 
 use serde::Deserialize;
-use std::path::{Path, PathBuf};
+use std::collections::BTreeMap;
+use std::io;
+use std::path::{Component, Path, PathBuf};
+
+/// Read-only access to package sources, manifests and pins.
+pub trait SourceTree {
+    fn read(&self, path: &Path) -> io::Result<Vec<u8>>;
+    fn read_to_string(&self, path: &Path) -> io::Result<String> {
+        String::from_utf8(self.read(path)?).map_err(|_| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                "stream did not contain valid UTF-8",
+            )
+        })
+    }
+    /// The entries directly under `dir` as `(path, is_dir)`, in no particular order.
+    fn read_dir(&self, dir: &Path) -> io::Result<Vec<(PathBuf, bool)>>;
+    /// The identity used to detect dependency cycles and shared dependencies.
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf>;
+}
+
+/// The host filesystem.
+pub struct OsTree;
+impl SourceTree for OsTree {
+    fn read(&self, path: &Path) -> io::Result<Vec<u8>> {
+        std::fs::read(path)
+    }
+    fn read_to_string(&self, path: &Path) -> io::Result<String> {
+        std::fs::read_to_string(path)
+    }
+    fn read_dir(&self, dir: &Path) -> io::Result<Vec<(PathBuf, bool)>> {
+        let mut out = Vec::new();
+        for entry in std::fs::read_dir(dir)? {
+            let path = entry?.path();
+            let is_dir = path.is_dir();
+            out.push((path, is_dir));
+        }
+        Ok(out)
+    }
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
+        path.canonicalize()
+    }
+}
+
+/// Files held in memory, keyed by `/`-separated path. Paths are resolved
+/// lexically (`.` and `..` folded), so `../payments` from `examples/acme`
+/// names `examples/payments`. Directories exist implicitly.
+#[derive(Debug, Clone, Default)]
+pub struct MemoryTree {
+    files: BTreeMap<PathBuf, Vec<u8>>,
+}
+impl MemoryTree {
+    pub fn new(files: impl IntoIterator<Item = (String, Vec<u8>)>) -> MemoryTree {
+        MemoryTree {
+            files: files
+                .into_iter()
+                .map(|(path, bytes)| (normalize(Path::new(&path)), bytes))
+                .collect(),
+        }
+    }
+    fn is_dir(&self, dir: &Path) -> bool {
+        self.files.keys().any(|p| p != dir && p.starts_with(dir))
+    }
+}
+fn not_found(path: &Path) -> io::Error {
+    io::Error::new(
+        io::ErrorKind::NotFound,
+        format!("{} is not in the in-memory source tree", path.display()),
+    )
+}
+fn normalize(path: &Path) -> PathBuf {
+    let mut out: Vec<Component> = Vec::new();
+    for c in path.components() {
+        match c {
+            Component::CurDir => {}
+            Component::ParentDir => match out.last() {
+                Some(Component::Normal(_)) => {
+                    out.pop();
+                }
+                Some(Component::RootDir | Component::Prefix(_)) => {}
+                _ => out.push(c),
+            },
+            c => out.push(c),
+        }
+    }
+    out.iter().collect()
+}
+impl SourceTree for MemoryTree {
+    fn read(&self, path: &Path) -> io::Result<Vec<u8>> {
+        let path = normalize(path);
+        self.files
+            .get(&path)
+            .cloned()
+            .ok_or_else(|| not_found(&path))
+    }
+    fn read_dir(&self, dir: &Path) -> io::Result<Vec<(PathBuf, bool)>> {
+        let dir = normalize(dir);
+        let depth = dir.components().count();
+        let mut entries = BTreeMap::new();
+        for path in self
+            .files
+            .keys()
+            .filter(|p| **p != dir && p.starts_with(&dir))
+        {
+            let mut components = path.components();
+            let child: PathBuf = components.by_ref().take(depth + 1).collect();
+            entries.insert(child, components.next().is_some());
+        }
+        if entries.is_empty() {
+            return Err(not_found(&dir));
+        }
+        Ok(entries.into_iter().collect())
+    }
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
+        let path = normalize(path);
+        if self.files.contains_key(&path) || self.is_dir(&path) {
+            Ok(path)
+        } else {
+            Err(not_found(&path))
+        }
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SourceFile {
@@ -155,15 +277,21 @@ impl std::error::Error for LoadError {}
 /// Read `forge.toml` and every `.forge` file under the source root, in a
 /// deterministic order independent of directory iteration order.
 pub fn load_package(root: &Path) -> Result<Package, LoadError> {
+    load_package_in(&OsTree, root)
+}
+
+/// [`load_package`] over any [`SourceTree`].
+pub fn load_package_in(tree: &dyn SourceTree, root: &Path) -> Result<Package, LoadError> {
     let manifest_path = root.join("forge.toml");
-    let text = std::fs::read_to_string(&manifest_path)
+    let text = tree
+        .read_to_string(&manifest_path)
         .map_err(|e| LoadError::Io(manifest_path.clone(), e))?;
     let m: Manifest = toml::from_str(&text)
         .map_err(|e| LoadError::Manifest(manifest_path.clone(), e.to_string()))?;
 
     let src_root = root.join(&m.source.root);
     let mut paths = Vec::new();
-    collect_forge_files(&src_root, &mut paths)?;
+    collect_forge_files(tree, &src_root, &mut paths)?;
     paths.sort();
     let mut files = Vec::new();
     for p in paths {
@@ -172,7 +300,9 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
             .unwrap_or(&p)
             .to_string_lossy()
             .replace('\\', "/");
-        let text = std::fs::read_to_string(&p).map_err(|e| LoadError::Io(p.clone(), e))?;
+        let text = tree
+            .read_to_string(&p)
+            .map_err(|e| LoadError::Io(p.clone(), e))?;
         files.push(SourceFile { path: rel, text });
     }
 
@@ -181,7 +311,8 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
     for (alias, dep) in &m.dependencies {
         let dep_root = root.join(&dep.path);
         let dep_manifest = dep_root.join("forge.toml");
-        let dep_text = std::fs::read_to_string(&dep_manifest)
+        let dep_text = tree
+            .read_to_string(&dep_manifest)
             .map_err(|e| LoadError::Io(dep_manifest.clone(), e))?;
         let dm: Manifest = toml::from_str(&dep_text)
             .map_err(|e| LoadError::Manifest(dep_manifest.clone(), e.to_string()))?;
@@ -234,16 +365,66 @@ pub fn load_package(root: &Path) -> Result<Package, LoadError> {
     })
 }
 
-fn collect_forge_files(dir: &Path, out: &mut Vec<PathBuf>) -> Result<(), LoadError> {
-    let entries = std::fs::read_dir(dir).map_err(|e| LoadError::Io(dir.to_path_buf(), e))?;
-    for entry in entries {
-        let entry = entry.map_err(|e| LoadError::Io(dir.to_path_buf(), e))?;
-        let path = entry.path();
-        if path.is_dir() {
-            collect_forge_files(&path, out)?;
+fn collect_forge_files(
+    tree: &dyn SourceTree,
+    dir: &Path,
+    out: &mut Vec<PathBuf>,
+) -> Result<(), LoadError> {
+    let entries = tree
+        .read_dir(dir)
+        .map_err(|e| LoadError::Io(dir.to_path_buf(), e))?;
+    for (path, is_dir) in entries {
+        if is_dir {
+            collect_forge_files(tree, &path, out)?;
         } else if path.extension().is_some_and(|e| e == "forge") {
             out.push(path);
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn tree() -> MemoryTree {
+        MemoryTree::new([
+            (
+                "app/forge.toml".to_string(),
+                b"[package]\nname = \"@t/app\"\nversion = \"1.0.0\"\n\n[dependencies]\nlib = { path = \"../lib\" }\n".to_vec(),
+            ),
+            ("app/src/b/two.forge".to_string(), b"purpose Two\n".to_vec()),
+            ("app/src/one.forge".to_string(), b"purpose One\n".to_vec()),
+            ("app/src/notes.txt".to_string(), b"ignored".to_vec()),
+            (
+                "lib/forge.toml".to_string(),
+                b"[package]\nname = \"@t/lib\"\nversion = \"0.1.0\"\n".to_vec(),
+            ),
+        ])
+    }
+
+    #[test]
+    fn memory_tree_loads_a_package_like_the_filesystem() {
+        let package = load_package_in(&tree(), Path::new("app")).unwrap();
+        assert_eq!(package.name, "@t/app");
+        let paths: Vec<_> = package.files.iter().map(|f| f.path.as_str()).collect();
+        assert_eq!(paths, ["src/b/two.forge", "src/one.forge"]);
+        assert_eq!(package.dependencies, [("lib".into(), "@t/lib".into())]);
+        assert_eq!(
+            tree().canonicalize(&package.dependency_paths[0].1).unwrap(),
+            Path::new("lib")
+        );
+    }
+
+    #[test]
+    fn memory_tree_reports_absent_paths() {
+        let tree = tree();
+        assert!(tree.canonicalize(Path::new("app/../missing")).is_err());
+        assert!(tree.read(Path::new("app/src")).is_err());
+        assert!(load_package_in(&tree, Path::new("lib")).is_err());
+        assert_eq!(
+            tree.canonicalize(Path::new("./app/src/../src")).unwrap(),
+            Path::new("app/src")
+        );
+    }
 }

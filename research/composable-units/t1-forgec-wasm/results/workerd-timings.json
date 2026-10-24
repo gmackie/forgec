@@ -1,0 +1,63 @@
+{
+  "host": "wrangler dev --local (workerd), loopback HTTP",
+  "wrangler": "4.135.0",
+  "runsPerOp": 20,
+  "measuredAt": "2026-10-24T02:38:34.992Z",
+  "notes": [
+    "clientWallMs: fetch round trip from Node on the same machine, including HTTP and JSON (build response carries every artifact).",
+    "inIsolateMs: performance.now() delta around the synchronous wasm call inside the isolate. Local workerd advanced its clock during the call; deployed Workers only advance clocks across I/O, so this reading is not available there.",
+    "cpuMs: local workerd does not report per-request CPU time (its observability spans carry duration_ms only), so it is missing, not zero. The synchronous inIsolateMs is the closest local proxy. See node-v8-cpu.json for process CPU time of the same module under Node's V8.",
+    "first: the first request the dev server receives (check, then build). V8 compiles wasm functions lazily and tiers them up, so first calls include compilation of the code they touch."
+  ],
+  "check": {
+    "first": {
+      "clientWallMs": 75.95,
+      "inIsolateMs": 44
+    },
+    "warm": {
+      "clientWallMs": {
+        "n": 20,
+        "min": 4.61,
+        "median": 5.3,
+        "p90": 6.69,
+        "max": 7.84,
+        "mean": 5.47
+      },
+      "inIsolateMs": {
+        "n": 20,
+        "min": 3,
+        "median": 3,
+        "p90": 4,
+        "max": 4,
+        "mean": 3.35
+      }
+    },
+    "cpuMs": null
+  },
+  "build": {
+    "first": {
+      "clientWallMs": 92.05,
+      "inIsolateMs": 78
+    },
+    "warm": {
+      "clientWallMs": {
+        "n": 20,
+        "min": 41.31,
+        "median": 42.73,
+        "p90": 45.42,
+        "max": 48.69,
+        "mean": 42.94
+      },
+      "inIsolateMs": {
+        "n": 20,
+        "min": 29,
+        "median": 30,
+        "p90": 32,
+        "max": 36,
+        "mean": 30.45
+      }
+    },
+    "cpuMs": null
+  },
+  "wasmMemoryBytesAfterRuns": 10092544
+}

@@ -1,0 +1,19 @@
+[package]
+name = "forgegraph-wasm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+description = "forgec check/build over an in-memory source tree, for wasm32 hosts such as Cloudflare Workers"
+repository.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+forgegraph-semantic = { path = "../forgegraph-semantic", version = "0.5.0" }
+forgegraph-planner = { path = "../forgegraph-planner", version = "0.5.0" }
+forgegraph-codegen = { path = "../forgegraph-codegen", version = "0.5.0" }
+serde.workspace = true
+serde_json.workspace = true
