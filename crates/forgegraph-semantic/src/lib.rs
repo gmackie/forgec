@@ -25,6 +25,8 @@ pub mod taxonomy;
 pub use compiler::{Compilation, compile};
 pub use diagnostics::{Diagnostic, Severity};
 pub use ir::DomainIR;
-pub use package::{LoadError, Package, SourceFile, load_package};
+pub use package::{
+    LoadError, MemoryTree, OsTree, Package, SourceFile, SourceTree, load_package, load_package_in,
+};
 
 mod concept_contract_canonical;
