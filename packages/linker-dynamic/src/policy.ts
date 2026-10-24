@@ -27,9 +27,24 @@ export interface Policy {
   units: string[];
   /** Manifest bindings this linker cannot hand to a child (reported, never silently dropped). */
   unlinked: string[];
+  /**
+   * Handles other entry points declare and this one does not. The child's runtime gets a stub for
+   * each that refuses with 403 CapabilityDenied, instead of nothing, which it would silently replace
+   * (BLOBS with an in-memory store, a workflow binding with the cron timer). FORG-34.
+   */
+  withheld: { objects: string[]; queues: string[]; workflows: string[] };
 }
 
 const sorted = (s: Iterable<string>) => [...new Set(s)].sort();
+
+/** Every binding of `type` the manifest names, on any entry point or unit. */
+const declaredOf = (manifest: ClosureManifest, type: string) =>
+  sorted([...manifest.entryPoints.flatMap((e) => e.bindings), ...Object.values(manifest.units).flatMap((u) => u.bindings)].filter((b) => b.type === type).map((b) => b.name));
+
+function withheldFrom(manifest: ClosureManifest, granted: { objects: string[]; queues: string[]; workflows: string[] }): Policy["withheld"] {
+  const minus = (type: string, have: string[]) => declaredOf(manifest, type).filter((n) => !have.includes(n));
+  return { objects: minus("r2", granted.objects), queues: minus("queue-producer", granted.queues), workflows: minus("workflow", granted.workflows) };
+}
 const WRITE_MODES = new Set(["write", "create", "delete"]);
 
 /** Runtime-owned tables (receipts, audit, outbox, documents). Not narrowed: see README finding. */
@@ -76,24 +91,23 @@ export function derivePolicy(manifest: ClosureManifest, entry: EntryPoint, schem
     else if (b.type === "workflow") workflows.push(b.name);
     else if (b.type === "durable-object") unlinked.push(`durable-object:${b.name} (realtime fan-out is not linked by T4)`);
   }
+  const granted = { objects: sorted(objects), queues: sorted(queues), workflows: sorted(workflows) };
   return {
     label: `${entry.kind}:${entry.id}`,
     privileged: false,
     tables: { read: sorted(read), write: sorted(write) },
-    objects: sorted(objects),
-    queues: sorted(queues),
-    workflows: sorted(workflows),
+    ...granted,
     egress: sorted(entry.egress ?? []),
     units: jsUnits(manifest, entry.closure).map((u) => u.hash),
     unlinked: sorted(unlinked),
+    withheld: withheldFrom(manifest, granted),
   };
 }
 
 /** Every table, every binding the manifest names, every js unit. Used only where the runtime needs the whole app. */
 export function privilegedPolicy(manifest: ClosureManifest, schema: SqlSchema, label: string): Policy {
   const all = sorted([...schema.tables.map((t) => t.name), ...systemTables(schema)]);
-  const bindings = [...manifest.entryPoints.flatMap((e) => e.bindings), ...Object.values(manifest.units).flatMap((u) => u.bindings)];
-  const of = (type: string) => sorted(bindings.filter((b) => b.type === type).map((b) => b.name));
+  const of = (type: string) => declaredOf(manifest, type);
   return {
     label,
     privileged: true,
@@ -104,11 +118,12 @@ export function privilegedPolicy(manifest: ClosureManifest, schema: SqlSchema, l
     egress: [],
     units: Object.entries(manifest.units).filter(([, u]) => u.kind === "js-module").map(([h]) => h).sort(),
     unlinked: of("durable-object").map((n) => `durable-object:${n} (realtime fan-out is not linked by T4)`),
+    withheld: { objects: [], queues: [], workflows: [] },
   };
 }
 
 /** The signed object-bytes route (`/_forge/objects/<token>`) has no manifest entry point (README finding). */
 export function objectRoutePolicy(manifest: ClosureManifest): Policy {
   const r2 = sorted(manifest.entryPoints.flatMap((e) => e.bindings).filter((b) => b.type === "r2").map((b) => b.name));
-  return { label: "runtime:object-bytes", privileged: false, tables: { read: [], write: [] }, objects: r2, queues: [], workflows: [], egress: [], units: [], unlinked: [] };
+  return { label: "runtime:object-bytes", privileged: false, tables: { read: [], write: [] }, objects: r2, queues: [], workflows: [], egress: [], units: [], unlinked: [], withheld: withheldFrom(manifest, { objects: r2, queues: [], workflows: [] }) };
 }
