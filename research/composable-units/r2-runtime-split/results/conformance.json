@@ -25,7 +25,7 @@
       "name": "whole-app",
       "describe": "today's Worker: deploy/cloudflare/worker.ts with the whole app.json",
       "scripts": 1,
-      "startupMs": 3562,
+      "startupMs": 1142,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -129,7 +129,7 @@
       "name": "whole-app-repeat",
       "describe": "A/A control: today's Worker again, fresh instance; its differences from whole-app are run-to-run nondeterminism",
       "scripts": 1,
-      "startupMs": 3505,
+      "startupMs": 822,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -233,7 +233,7 @@
       "name": "single",
       "describe": "linker A, strategy single: one script rebuilt from the manifest",
       "scripts": 1,
-      "startupMs": 3145,
+      "startupMs": 899,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -336,8 +336,8 @@
     {
       "name": "per-entry-point",
       "describe": "linker A, strategy per-entry-point, sliced app.json, router + dispatch owner",
-      "scripts": 62,
-      "startupMs": 11861,
+      "scripts": 88,
+      "startupMs": 5944,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -440,8 +440,8 @@
     {
       "name": "per-entry-point-full",
       "describe": "control: per-entry-point with the whole app.json in every script (separates splitting from slicing)",
-      "scripts": 62,
-      "startupMs": 18531,
+      "scripts": 88,
+      "startupMs": 8596,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -547,7 +547,7 @@
       "a": "whole-app",
       "b": "whole-app-repeat",
       "compared": 221,
-      "explained": 100,
+      "explained": 104,
       "explainedKeys": [
         "at",
         "freshUntil",
@@ -563,7 +563,7 @@
       "a": "whole-app",
       "b": "single",
       "compared": 221,
-      "explained": 104,
+      "explained": 100,
       "explainedKeys": [
         "at",
         "freshUntil",
@@ -579,7 +579,7 @@
       "a": "whole-app",
       "b": "per-entry-point",
       "compared": 221,
-      "explained": 100,
+      "explained": 92,
       "explainedKeys": [
         "at",
         "freshUntil",

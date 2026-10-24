@@ -5,6 +5,10 @@ and open question 2). In T3, `createWorker` brought the whole engine and Effect 
 into every packed Worker, so linker A's 61 `per-entry-point` scripts were each 320–540 KB. Now a packed
 script imports only the runtime features its `app.json` slice uses.
 
+Merged over main `c0e7558`, which includes FORG-33 (manifest coverage). Since FORG-33 linker A has 87
+scripts, the residual and the sweep are sliced, and only the three contract-metadata scripts carry the
+whole `app.json`. The baseline for this spike is therefore main `c0e7558` without the split.
+
 ## Reproduce
 
 ```sh
@@ -17,17 +21,26 @@ pnpm --filter @forgegraph/linker-packed test
 `measure.ts <label>` builds and seals acme, links `single` and `per-entry-point`, and writes
 `results/<label>.json`. That file holds per-script sizes, the total deploy size, what a one-body edit
 re-uploads, an esbuild-metafile breakdown of five representative scripts, and Effect's floor.
-`results/before.json` comes from the same script on main `bfee5b2`, before the split. It predates the `effectFloor` field, which `measure.ts` gained later.
-`results/after.json` comes from `b825240`. `compare.ts` writes `results/summary.json`, which sets both
-against FORG-29's recorded `../t3-linker-packed/results`. `results/conformance.json` is the linker
-differential run on the split.
+The results files:
+
+- `results/main-c0e7558.json`: the same script on main `c0e7558` (FORG-33, 87 scripts, no split). This
+  is the baseline.
+- `results/after.json`: the split merged over `c0e7558` (`760137e`).
+- `results/before.json`: main `bfee5b2` (61 scripts, before FORG-33 and the split), kept for context.
+  It predates the `effectFloor` field.
+- `results/summary.json`: written by `compare.ts`; sets all three against FORG-29's recorded
+  `../t3-linker-packed/results`.
+- `results/conformance.json`: the linker-A differential on the split (`LINK_RESULTS`).
+- `results/linker-dynamic.json`: linker B's strict conformance on the split (FORG-33's
+  `r2-coverage/conformance-dynamic.ts`, copied here so FORG-33's record stays as measured).
 
 The bundling is the same as FORG-29: esbuild, minified, ESM, platform neutral, `cloudflare:*` and
 `node:*` external, gzip -9. Machine: macOS arm64, Node 24.14.0, esbuild 0.27.7.
 
 ## 1. What a packed script imported (before)
 
-Metafile, bytes in the minified output, `before.json` → `representative`:
+Metafile, bytes in the minified output, `before.json` → `representative` (main `bfee5b2`; on `c0e7558`
+the runtime and Effect columns are identical, and the sweep is sliced to 361,745 B):
 
 | script | total | runtime | Effect | app.json slice |
 | --- | --- | --- | --- | --- |
@@ -118,26 +131,71 @@ because it cannot deliver its outbox.
 
 **Linker A** (`packages/linker-packed/src/features.ts`, plus a few lines in `link.ts` and `host.ts`):
 
-- The generated `entry.mjs` imports exactly `requiredFeatures(sliceModel)`, plus `cloudflareObjects`
-  when the slice has blobs, and passes them to `packed()`.
-- Fallback groups (`forge:residual`, `forge:sweep`, `single`) import `allFeatures`.
-- Sliced scripts forward dispatch, so none of them links `dispatch`.
+- A sliced group links the union of three things:
+  - `requiredFeatures` of its slice's model.
+  - The features behind the runtime-served routes it answers. `surfaceFeatures(path)` in
+    `@forgegraph/runtime/features` maps `/v1/changesets*` to `changesets`, `/v1/imports/*` to `imports`
+    (which brings `changesets`), `/v1/admin/{export,import,verify,fence}` to `portability`, and
+    `/v1/admin/{subjects/locate,inspect}` to `governance`.
+  - `dispatch`, for the dispatch owner only.
+- It links blob storage (`cloudflareObjects`) with `blobs`, and for the `/_forge/objects/{token}`
+  scripts, which serve bytes without any blob operation.
+- Groups that run the whole `app.json` link `allFeatures`: contract metadata (`whole`), a `fallback` for
+  an uncovered surface, `single`, and the `per-entry-point-full` control. Contract metadata could be
+  linked smaller (it only reads the model), but the model it carries uses every feature, so
+  `checkFeatures` would demand most of them anyway. It stays on the full set.
 - At link time the linker builds the Worker with `createWorkerWith(slice, …)` and the script's real
   sweeps and `postCommit` shape. If the runtime refuses, the link fails with `LinkError("slice")`.
-- `link.json` records `features` for each script.
+- `link.json` records `features: { mode, names, objects }` for each script.
 - `packed()` requires `features` in its second argument, because the host must not name `allFeatures`
   itself.
 
-Features across the 61 scripts:
+**The residual and the sweep, after FORG-33.**
+
+- `forge:residual` has an empty model. It only authenticates and answers 404, so it links no features
+  (247,110 B, down from 313,468).
+- `forge:sweep` is the dispatch owner, sliced to the dispatch unit's closure. It links `dispatch`,
+  `readModels` (the projection), `realtime` (fan-out), `schedules` (its slice holds the sources its cron
+  sweeps) and `workflows` (332,830 B, down from 361,745).
+
+Features across the 87 scripts:
 
 | features | scripts |
 | --- | --- |
-| none | 40 |
-| `blobs`, `governance` | 10 |
+| none (2 of them with blob storage: `GET`/`PUT /_forge/objects/{token}`; 1 is the residual) | 43 |
+| `blobs`, `governance` | 12 |
+| `blobs`, `changesets`, `governance` (changesets) | 5 |
+| `readModels` (views, caches, projection reads) | 5 |
 | `realtime`, `workflows` | 5 |
-| `realtime` | 3 |
-| `schedules` | 1 |
-| all (fallbacks) | 2 |
+| `blobs`, `governance`, `portability` (admin export, import, verify, fence) | 4 |
+| `realtime` | 4 |
+| `schedules` | 3 |
+| `blobs`, `changesets`, `governance`, `imports` (imports) | 2 |
+| `dispatch`, `readModels`, `realtime`, `schedules`, `workflows` (the sweep) | 1 |
+| all (contract metadata, the whole `app.json`) | 3 |
+
+The changeset, import and admin slices hold every resource, including the blob resource
+`OrderDocument`, so they link `blobs` and `governance` too.
+
+**FORG-34's `CapabilityDenied` with the split.** A withheld binding and a missing feature are two
+different things, and both are refused:
+
+- **A withheld binding still answers 403 `CapabilityDenied`.** The packed host still replaces each
+  withheld handle with a refusing stub, and blob storage reads `BLOBS` from the narrowed env whichever
+  features are linked. So a script with `blobs` linked and `BLOBS` withheld answers 403
+  `binding:r2:BLOBS`, exactly as before. `packages/linker-packed/test/host.test.ts` checks this both with
+  every feature and with only the slice's features.
+- **A missing feature can't reach the binding.**
+  - A model that uses blob resources without `blobs` (or `blobs` without blob storage) is refused when
+    the Worker is built, which for linker A means at link time.
+  - With `blobs` absent, the model has no blob operations, so blob routes answer 404. The withheld stub
+    is never reached (tested).
+  - If anything still reached blob storage in a Worker linked without it, the `Objects` service refuses
+    with 403 `CapabilityDenied` (capability `objects`). That is a linking defect, and it is refused like
+    any capability the script isn't linked with. Before this merge it answered 405.
+- **An engine surface that isn't linked** (changesets, imports or admin on a script without them)
+  answers 405 `MethodNotAllowed`: an operation that isn't served here, not a refused authority. On
+  linker-A output the host refuses such routes with 404 `NotRouted` before the engine sees them.
 
 Options considered and not taken:
 
@@ -149,44 +207,68 @@ Options considered and not taken:
 
 ## 3. Results (measured)
 
-`results/summary.json`. Raw per script and gzip per script are min / median / max.
+`results/summary.json`. Raw per script and gzip per script are min / median / max. Deploy totals include
+the router (5,234 B with 61 scripts, 7,577 B with 87).
 
-| | raw per script | gzip per script | whole deploy raw / gzip |
-| --- | --- | --- | --- |
-| FORG-29 (T3) | 318,819 / 345,508 / 539,571 | 99,346 / 101,191 / 115,013 | 21,200,030 / 6,185,744 |
-| main before split (`bfee5b2`) | 320,576 / 347,265 / 541,215 | 100,046 / 101,893 / 115,656 | 21,306,592 / 6,228,331 |
-| **after split (`b825240`)** | **254,206 / 280,895 / 544,493** | **79,688 / 81,537 / 116,353** | **17,645,144 / 5,103,410** |
-| change vs FORG-29 | −20.3% / −18.7% / +0.9% | −19.8% / −19.4% / +1.2% | −16.8% / −17.5% |
+| | scripts | raw per script | gzip per script | whole deploy raw / gzip |
+| --- | --- | --- | --- | --- |
+| FORG-29 (T3) | 61 | 318,819 / 345,508 / 539,571 | 99,346 / 101,191 / 115,013 | 21,200,030 / 6,185,744 |
+| main `bfee5b2` (before FORG-33) | 61 | 320,576 / 347,265 / 541,215 | 100,046 / 101,893 / 115,656 | 21,306,592 / 6,228,331 |
+| **main `c0e7558` (baseline)** | 87 | 309,772 / 348,583 / 537,742 | 98,677 / 102,220 / 114,953 | 30,877,218 / 8,918,184 |
+| **split over `c0e7558`** | 87 | **247,110 / 285,719 / 541,032** | **78,796 / 82,560 / 115,665** | **25,941,622 / 7,400,600** |
+| change vs `c0e7558` | | −20.2% / −18.0% / +0.6% | −20.1% / −19.2% / +0.6% | −16.0% / −17.0% |
 
-All rows are for 61 scripts plus the router. The deploy totals include the 5,234 B router.
-
-Runtime plus Effect per script: from 301,755 B in every script to 235,373 B (median) for sliced scripts.
-The two fallback scripts carry 305,057 B.
+Runtime plus Effect per script drops from 301,755 B in every script to 235,385 B (min) and 237,383 B
+(median). The three contract-metadata scripts carry 305,022 B. The max row is contract metadata in both
+columns, which links every feature.
 
 **What a one-body edit re-uploads.** The edit is `impl/rebuild-order-summary.ts`, the same as FORG-29.
 
-| | scripts | raw | gzip |
+| | scripts re-uploaded | raw | gzip |
 | --- | --- | --- | --- |
 | FORG-29 `per-entry-point` | 6 of 61 | 2,496,501 | 641,314 |
-| main before split | 6 of 61 | 2,506,550 | 645,282 |
-| **after split** | 6 of 61 | **2,308,463** (−7.5%) | **583,803** (−9.0%) |
-| `single` (for reference) | 1 | 542,064 | 116,150 |
+| main `bfee5b2` | 6 of 61 | 2,506,550 | 645,282 |
+| **main `c0e7558` (baseline)** | 6 of 87 | 2,138,367 | 621,567 |
+| **split** | 6 of 87 | **1,845,816** (−13.7%) | **532,147** (−14.4%) |
+| `single` (for reference) | 1 | 542,264 | 116,236 |
 
-The same six scripts change: the four whose closure moved, plus the two fallbacks. The fallbacks are
-1.09 MB of the 2.31 MB and did not shrink, so the edit saving is smaller than the per-script saving.
+FORG-33 removed the whole-app fallbacks from this set. The six scripts are now:
 
-**The representative scripts after the split** (`after.json` → `representative`):
+- the cron
+- the schedule tick route
+- the workflow class
+- the start route
+- the signal route
+- the sweep
 
-| script | features | total | runtime | Effect | runtime modules | dropped |
-| --- | --- | --- | --- | --- | --- | --- |
-| `GET /v1/customers/{id}` | none | 254,214 (−20.7%) | 142,995 | 92,378 | 33 | workflows, read models, schedules, changesets, blobs + R2 + memory objects, governance, imports + CSV, dispatch |
-| `POST /v1/orders/{order}/submit` | realtime | 287,604 (−18.3%) | 144,993 | 92,378 | 33 | same |
-| `ProcessOrder` | realtime, workflows | 310,843 (−13.5%) | 160,877 | 92,378 | 35 | same except workflows; read models drops to the 139 B `durationMs` it imports |
-| `fulfill-order` | realtime | 285,813 (−18.4%) | 144,993 | 92,378 | 33 | same as the CRUD read |
-| `forge:sweep` | all | 541,883 (+0.6%) | 212,611 | 92,446 | 44 | none |
+Every one of them is sliced, so the split shrinks all six. For example, the workflow class goes from
+359,561 to 311,043 B, and the sweep from 361,745 to 332,830 B.
 
-**The whole-app Worker and the fallbacks grew by 0.6%** (whole app: 536,243 → 539,718 B). That is the
-registry, the getters, the feature checks and the `...With` indirection.
+**The representative scripts** (`summary.json` → `representative`, `c0e7558` → split):
+
+| script | features | total | runtime | Effect |
+| --- | --- | --- | --- | --- |
+| `GET /v1/customers/{id}` (CRUD read) | none | 320,899 → 254,541 (−20.7%) | 209,334 → 143,007 | 92,421 → 92,378 |
+| `POST /v1/orders/{order}/submit` (write + outbox) | realtime | 352,257 → 287,852 (−18.3%) | 209,381 → 145,005 | same |
+| `ProcessOrder` (workflow class + steps) | realtime, workflows | 359,561 → 311,043 (−13.5%) | 209,381 → 160,889 | same |
+| `fulfill-order` (queue consumer) | realtime | 350,418 → 286,013 (−18.4%) | 209,381 → 145,005 | same |
+| `forge:sweep` (dispatch owner) | dispatch, readModels, realtime, schedules, workflows | 361,745 → 332,830 (−8.0%) | 209,381 → 180,440 | same |
+
+Other scripts (`c0e7558` → split):
+
+- `forge:residual`: 313,468 → 247,110
+- `POST /v1/changesets`: 380,032 → 334,743
+- `POST /v1/imports/stage`: 380,041 → 340,746
+- `POST /v1/admin/fence`: 380,035 → 333,387
+- `GET /v1/views/pending-orders`: 348,630 → 292,201
+- `GET /_forge/objects/{token}`: 309,772 → 248,266
+
+What the CRUD read drops: workflows, read models, schedules, changesets, blobs (plus R2 and memory
+objects), governance, imports (plus CSV) and dispatch. The workflow script keeps only the 139 B
+`durationMs` of `readmodels.ts`.
+
+**The whole-app Worker grew by 0.6%** (536,243 → 539,730 B), and so did contract metadata and `single`.
+That is the registry, the getters, the feature checks and the `...With` indirection.
 
 ### Effect: at its floor
 
@@ -202,26 +284,31 @@ requests through Effect, which is a different project.
 
 ## 4. Correctness
 
-- **Linker differential** (`T3_DIFFERENTIAL=1`, `results/conformance.json`):
+All of these ran on the merge with `c0e7558`.
+
+- **Linker-A differential** (`T3_DIFFERENTIAL=1`, `LINK_RESULTS` → `results/conformance.json`):
   - Scenarios: 15/15 (221 steps) plus the realtime WebSocket check on every target: whole-app,
-    whole-app A/A, `single`, `per-entry-point`, `per-entry-point-full`.
+    whole-app A/A, `single`, `per-entry-point` (87 scripts + router), `per-entry-point-full`.
   - Unexplained differences from whole-app: 0 on every target. Run-to-run noise is 100 positions, as in
     FORG-29.
-  - Local startup times (3.1–18.5 s) are far above FORG-29's because other builds were running on the
-    machine. Don't compare them.
 - **The whole-app Worker** (`deploy/cloudflare/worker.ts`, which uses `createWorker`) passes 15/15.
-- **Runtime tests:** 166 files and 1,087 tests pass (`--testTimeout=60000`), including the new
-  `test/features.test.ts`. It covers the full `Engine` and the derived requirements, a refused
-  under-linked model, CRUD on a bare `EngineCore`, an unlinked surface answering 405, the fence honoured
-  without portability, and the `createWorkerWith` refusals.
-- **Other tests:** linker-packed 18/18 (including a new feature-selection case and the workerd smoke
-  test), linker-dynamic 29/29, units 18/18.
+- **Linker B** strict conformance (`results/linker-dynamic.json`): whole-app 15/15, strict 15/15 and the
+  reported-fallback host 15/15, with 0 denials, 0 fallbacks and 0 refusals. Linker B's children use the
+  full `createWorker`, so this checks the whole-engine path after the split.
+- **Runtime tests:** 166 files and 1,087 tests pass (`--testTimeout=60000`), including
+  `test/features.test.ts`.
+- **Other tests:** linker-packed 23 passed (6 opt-in differential cases skipped), including the feature
+  selection for FORG-33's groups and the four `CapabilityDenied` host cases. linker-dynamic 30/30,
+  units 28/28.
+- **Rust:** `cargo fmt --check`, `cargo clippy --workspace --all-targets -D warnings` and
+  `cargo test --workspace` pass.
 - **Build and release checks:** `pnpm -r run build`, `pnpm typecheck`, `release:check` and
   `release:identities` pass.
+- **Fixtures:** `scripts/refresh-fixtures.sh` leaves the tree clean.
 
 ## 5. What still sits in every sliced script, and what's left
 
-The CRUD floor is 254 KB: Effect 92 KB, runtime core 143 KB, slice 16 KB, host 2 KB. The core parts
+The CRUD floor is 255 KB: Effect 92 KB, runtime core 143 KB, slice 16 KB, host 2 KB. The core parts
 that still look optional:
 
 | part | bytes | why it stayed |
@@ -233,15 +320,15 @@ that still look optional:
 
 **Findings**
 
-1. **Splitting by feature cuts a typical packed script by about a fifth** (median raw −18.7%, gzip −19.4%,
-   deploy −17%). It does not change T3's conclusion: per-entry-point packing still costs about 33× a
-   single Worker in deploy bytes (17.6 MB vs 0.54 MB). The floor is Effect plus the CRUD engine,
-   235 KB of every script.
+1. **Splitting by feature cuts a typical packed script by about a fifth** against `c0e7558`: median raw
+   −18.0%, gzip −19.2%, deploy −16%. It cuts the bytes a one-body edit re-uploads by 13.7%. It does
+   not change T3's conclusion: per-entry-point packing still costs about 48× a single Worker in deploy
+   bytes (25.9 MB vs 0.54 MB for 87 scripts). The floor is Effect plus the CRUD engine, about 235 KB of
+   every script.
 2. **Per-script slicing can't remove Effect.** It is already at its floor.
-3. **The fallback groups dominate edits.** Two whole-app scripts are re-uploaded on every body edit. This
-   is T3 open question 4: the planner should own entry points for the residual surfaces and for the
-   dispatch owner.
-4. **Shared code is the bigger lever.** The remaining 235 KB is identical across scripts, so linker B's
+3. **With FORG-33, edits touch only sliced scripts,** so the split now reaches every re-uploaded byte. The
+   only whole-`app.json` scripts left are contract metadata, which changes on any `.forge` edit anyway.
+4. **Shared code is the bigger lever.** The remaining ~235 KB is identical across scripts, so linker B's
    shared-runtime premise (T4), or per-resource grouping (T3 open question 5), cuts more than further
    splitting.
 
@@ -253,9 +340,11 @@ removed. Added:
 - `.`: `EngineCore`, `writesFenced`
 - `./cloudflare`: `createWorkerWith`, `createWorkflowEntrypointWith`, `createRealtimeObjectWith`,
   `cloudflareObjects`
-- the new `./features` subpath (14 exports)
+- the new `./features` subpath (15 exports, including `surfaceFeatures`)
 
-`EngineOptions.features` and `WorkerOptions.objects` are new optional fields.
+`EngineOptions.features` and `WorkerOptions.objects` are new optional fields. A Worker built with
+`createWorkerWith` and no blob storage refuses `Objects` calls with 403 `CapabilityDenied`. `createWorker`
+always has blob storage.
 
 Behaviour is unchanged for `new Engine(...)` and `createWorker`. Two type-level changes on `Engine`:
 

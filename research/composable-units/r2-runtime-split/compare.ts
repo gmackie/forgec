@@ -1,5 +1,7 @@
 // FORG-37: results/summary.json from the FORG-29 baseline (../t3-linker-packed/results) and this
-// spike's results/before.json (main before the split) and results/after.json (the split).
+// spike's results: before.json (main bfee5b2, before FORG-33 and the split), main-c0e7558.json (main
+// with FORG-33's coverage, 87 scripts, no split: the baseline the split is measured against) and
+// after.json (the split merged over c0e7558).
 //   node research/composable-units/r2-runtime-split/compare.ts
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -32,6 +34,7 @@ const forg29: Row = {
   singleBodyEdit: { raw: t3edit[bodyKey].perStrategy.single.reuploadedRaw, gzip: t3edit[bodyKey].perStrategy.single.reuploadedGzip },
 };
 const before = read("results/before.json");
+const main = read("results/main-c0e7558.json");
 const after = read("results/after.json");
 const rep = (m: any) => Object.fromEntries(Object.entries(m.representative as Record<string, any>).map(([k, v]) => [k, { what: v.what, features: v.features, raw: v.raw, gzip: v.gzip, runtime: v.runtime, effect: v.effect, runtimeModules: v.runtimeModules }]));
 const pct = (a: number, b: number) => Math.round(((b - a) / a) * 1000) / 10;
@@ -41,7 +44,21 @@ writeFileSync(
   stableJson({
     version: "r2-runtime-split-summary/1",
     issue: "FORG-37",
-    rows: { "FORG-29 (t3 results)": forg29, [`before (${before.commit})`]: row(before.measured), [`after (${after.commit})`]: a },
+    rows: { "FORG-29 (t3 results)": forg29, [`before (${before.commit})`]: row(before.measured), [`main (${main.commit})`]: row(main.measured), [`after (${after.commit})`]: a },
+    changeVsMainPercent: (() => {
+      const m = row(main.measured);
+      return {
+        scripts: [main.measured.strategies["per-entry-point"].scripts, after.measured.strategies["per-entry-point"].scripts],
+        perScriptRawMin: pct((m.perScriptRaw as any).min, (a.perScriptRaw as any).min),
+        perScriptRawMedian: pct((m.perScriptRaw as any).median, (a.perScriptRaw as any).median),
+        perScriptRawMax: pct((m.perScriptRaw as any).max, (a.perScriptRaw as any).max),
+        perScriptGzipMedian: pct((m.perScriptGzip as any).median, (a.perScriptGzip as any).median),
+        deployRaw: pct(m.deployRaw, a.deployRaw),
+        deployGzip: pct(m.deployGzip, a.deployGzip),
+        bodyEditRaw: pct(m.bodyEdit.raw, a.bodyEdit.raw),
+        bodyEditGzip: pct(m.bodyEdit.gzip, a.bodyEdit.gzip),
+      };
+    })(),
     changeVsForg29Percent: {
       perScriptRawMedian: pct((forg29.perScriptRaw as any).median, (a.perScriptRaw as any).median),
       perScriptGzipMedian: pct((forg29.perScriptGzip as any).median, (a.perScriptGzip as any).median),
@@ -51,7 +68,7 @@ writeFileSync(
       bodyEditRaw: pct(forg29.bodyEdit.raw, a.bodyEdit.raw),
       bodyEditGzip: pct(forg29.bodyEdit.gzip, a.bodyEdit.gzip),
     },
-    representative: { before: rep(before.measured), after: rep(after.measured) },
+    representative: { before: rep(before.measured), main: rep(main.measured), after: rep(after.measured) },
   }),
 );
 console.log(JSON.stringify({ forg29, after: a }, null, 1));

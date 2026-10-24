@@ -1,0 +1,392 @@
+{
+  "date": "2026-10-24",
+  "issue": "FORG-33",
+  "local": true,
+  "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+  "node": "v24.14.0",
+  "targets": {
+    "linker-dynamic-fallback": {
+      "exitCode": 0,
+      "linker": {
+        "childLabels": [
+          "http-route",
+          "queue-consumer",
+          "runtime",
+          "workflow"
+        ],
+        "denials": [],
+        "dispatchChildren": [
+          {
+            "calls": 114,
+            "closureHash": "sha256:8cf71660d4a1f27fa9142aa8114e42a64578dbe3e702db3f74f6c1a2c920ea87",
+            "isSweepClosure": true,
+            "privileged": false
+          }
+        ],
+        "distinctChildren": 53,
+        "fallbacks": [],
+        "privilegedChildren": [],
+        "refused": []
+      },
+      "passed": 15,
+      "scenarios": [
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.concurrency",
+          "passed": true,
+          "steps": 5
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.customer-crud",
+          "passed": true,
+          "steps": 18
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.idempotency",
+          "passed": true,
+          "steps": 4
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.pagination",
+          "passed": true,
+          "steps": 10
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.site-references",
+          "passed": true,
+          "steps": 11
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m3.changesets",
+          "passed": true,
+          "steps": 19
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m3.integrity",
+          "passed": true,
+          "steps": 13
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m4.blobs",
+          "passed": true,
+          "steps": 19
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m4.csv-import",
+          "passed": true,
+          "steps": 7
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m5.messaging",
+          "passed": true,
+          "steps": 13
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m6.temporal-hierarchy",
+          "passed": true,
+          "steps": 24
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m6.views-projections-cache",
+          "passed": true,
+          "steps": 24
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m7.schedules",
+          "passed": true,
+          "steps": 7
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m7.workflows",
+          "passed": true,
+          "steps": 29
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m8.limits",
+          "passed": true,
+          "steps": 18
+        }
+      ],
+      "steps": 221,
+      "total": 15
+    },
+    "linker-dynamic-strict": {
+      "exitCode": 0,
+      "linker": {
+        "childLabels": [
+          "http-route",
+          "queue-consumer",
+          "runtime",
+          "workflow"
+        ],
+        "denials": [],
+        "dispatchChildren": [
+          {
+            "calls": 114,
+            "closureHash": "sha256:8cf71660d4a1f27fa9142aa8114e42a64578dbe3e702db3f74f6c1a2c920ea87",
+            "isSweepClosure": true,
+            "privileged": false
+          }
+        ],
+        "distinctChildren": 53,
+        "fallbacks": [],
+        "privilegedChildren": [],
+        "refused": []
+      },
+      "passed": 15,
+      "scenarios": [
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.concurrency",
+          "passed": true,
+          "steps": 5
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.customer-crud",
+          "passed": true,
+          "steps": 18
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.idempotency",
+          "passed": true,
+          "steps": 4
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.pagination",
+          "passed": true,
+          "steps": 10
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.site-references",
+          "passed": true,
+          "steps": 11
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m3.changesets",
+          "passed": true,
+          "steps": 19
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m3.integrity",
+          "passed": true,
+          "steps": 13
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m4.blobs",
+          "passed": true,
+          "steps": 19
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m4.csv-import",
+          "passed": true,
+          "steps": 7
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m5.messaging",
+          "passed": true,
+          "steps": 13
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m6.temporal-hierarchy",
+          "passed": true,
+          "steps": 24
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m6.views-projections-cache",
+          "passed": true,
+          "steps": 24
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m7.schedules",
+          "passed": true,
+          "steps": 7
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m7.workflows",
+          "passed": true,
+          "steps": 29
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m8.limits",
+          "passed": true,
+          "steps": 18
+        }
+      ],
+      "steps": 221,
+      "total": 15
+    },
+    "whole-app-local": {
+      "exitCode": 0,
+      "passed": 15,
+      "scenarios": [
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.concurrency",
+          "passed": true,
+          "steps": 5
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.customer-crud",
+          "passed": true,
+          "steps": 18
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.idempotency",
+          "passed": true,
+          "steps": 4
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.pagination",
+          "passed": true,
+          "steps": 10
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m2.site-references",
+          "passed": true,
+          "steps": 11
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m3.changesets",
+          "passed": true,
+          "steps": 19
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m3.integrity",
+          "passed": true,
+          "steps": 13
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m4.blobs",
+          "passed": true,
+          "steps": 19
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m4.csv-import",
+          "passed": true,
+          "steps": 7
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m5.messaging",
+          "passed": true,
+          "steps": 13
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m6.temporal-hierarchy",
+          "passed": true,
+          "steps": 24
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m6.views-projections-cache",
+          "passed": true,
+          "steps": 24
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m7.schedules",
+          "passed": true,
+          "steps": 7
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m7.workflows",
+          "passed": true,
+          "steps": 29
+        },
+        {
+          "failureCodes": [],
+          "failures": 0,
+          "id": "m8.limits",
+          "passed": true,
+          "steps": 18
+        }
+      ],
+      "steps": 221,
+      "total": 15
+    }
+  },
+  "uncovered": [],
+  "version": "r2-linker-dynamic/1"
+}
