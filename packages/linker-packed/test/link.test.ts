@@ -101,6 +101,14 @@ describe("packed linker over examples/acme", async () => {
       expect(script("forge:sweep").dispatchOwner).toBe(true);
       // The planner declares queue and realtime bindings for SubmitOrder's publish; a sliced script forwards delivery, so they are reported unused.
       expect(script("POST /v1/orders/{order}/submit").capabilities.unused.map((b) => b.name).sort()).toEqual(["Q_FULFILL_ORDER", "REALTIME"]);
+      // FORG-34: handles declared for other scripts are withheld, and the runtime gets a stub that answers 403 CapabilityDenied.
+      expect(script("POST /v1/customers").withheld).toEqual([
+        { type: "r2", name: "BLOBS" },
+        { type: "queue-producer", name: "Q_FULFILL_ORDER" },
+        { type: "workflow", name: "WF_PROCESS_ORDER" },
+      ]);
+      expect(script("POST /v1/orders/{order}/process").withheld).toEqual([{ type: "r2", name: "BLOBS" }]);
+      expect(script("forge:sweep").withheld).toEqual([]);
     });
 
     it("reports what the planner leaves undeclared instead of guessing", () => {

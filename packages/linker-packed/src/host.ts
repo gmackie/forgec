@@ -1,12 +1,15 @@
 // The thin host every packed script runs (bundled into the script; runs inside workerd).
 // It wraps the runtime's Cloudflare host with what the linker decided for the group:
 //   - capability injection: the runtime sees only the bindings the manifest declares for the group's
-//     entry points (plus host bindings). An undeclared binding is absent, so it fails closed;
+//     entry points (plus host bindings). A binding the manifest declares elsewhere but not here is
+//     withheld: the runtime gets a stub that refuses every use with 403 CapabilityDenied (FORG-34),
+//     rather than nothing, which would silently fall back (BLOBS to memory, Workflows to the cron);
 //   - routing: the script answers only its own entry points' routes and refuses everything else;
 //   - dispatch: a sliced script knows only part of the subscription table, so it never sweeps the
 //     outbox itself; it hands the nudge to the dispatch owner over a service binding.
 import { createRealtimeObject, createWorker, createWorkflowEntrypoint, type WorkerEnv, type WorkerOptions } from "@forgegraph/runtime/cloudflare";
 import type { AppBundle } from "@forgegraph/runtime";
+import { capabilityDeniedError } from "@forgegraph/runtime/errors";
 
 export interface HostRoute {
   method: string;
@@ -20,6 +23,8 @@ export interface HostConfig {
   deny: HostRoute[];
   /** Binding names handed to the runtime. Everything else in `env` is withheld. */
   bindings: string[];
+  /** Bindings the manifest declares for other scripts: the runtime gets a refusing stub for each. */
+  withheld: Array<{ type: string; name: string }>;
   /** `forward`: post-commit work goes to the dispatch owner through the FORGE_DISPATCH service binding. */
   dispatch: "local" | "forward";
   /** Serve the internal dispatch endpoint (the dispatch owner, reached only through service bindings). */
@@ -40,9 +45,18 @@ function matcher(routes: HostRoute[]): (method: string, path: string) => boolean
   return (method, path) => compiled.some((c) => c.method === method && c.re.test(path));
 }
 
-function narrow(env: Record<string, unknown>, names: string[], forward: Fetcher | undefined): WorkerEnv {
+/** A handle whose every method refuses: what the runtime holds for a withheld binding. */
+function refusing(script: string, b: { type: string; name: string }): unknown {
+  const deny = () => {
+    throw capabilityDeniedError({ capability: `binding:${b.type}:${b.name}`, entryPoint: script, detail: `${script} is not linked with ${b.type} ${b.name}` });
+  };
+  return new Proxy({}, { get: (_t, key) => (key === "then" || typeof key === "symbol" ? undefined : deny) });
+}
+
+function narrow(env: Record<string, unknown>, config: HostConfig, forward: Fetcher | undefined): WorkerEnv {
   const out: Record<string, unknown> = {};
-  for (const n of names) if (n in env) out[n] = env[n];
+  for (const b of config.withheld) out[b.name] = refusing(config.script, b);
+  for (const n of config.bindings) if (n in env) out[n] = env[n];
   if (forward) Object.defineProperty(out, FORWARD, { value: forward, enumerable: false });
   return out as WorkerEnv;
 }
@@ -68,7 +82,7 @@ export function packed(app: AppBundle, units: Pick<WorkerOptions, "functions" | 
   };
   const worker = createWorker(app, options);
   const seen = new Set<string>();
-  const envFor = (env: Record<string, unknown>) => narrow(env, config.bindings, config.dispatch === "forward" ? (env[DISPATCH_BINDING] as Fetcher | undefined) : undefined);
+  const envFor = (env: Record<string, unknown>) => narrow(env, config, config.dispatch === "forward" ? (env[DISPATCH_BINDING] as Fetcher | undefined) : undefined);
 
   return {
     worker: {
