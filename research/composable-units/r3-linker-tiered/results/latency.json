@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-24",
+  "issue": "FORG-43",
+  "local": true,
+  "node": "v24.14.0",
+  "note": "local workerd via Miniflare, client wall time over loopback; not a deployed reading",
+  "packed": {
+    "GET /v1/customers": {
+      "medianMs": 33.6,
+      "n": 30,
+      "p95Ms": 78.28
+    },
+    "POST /v1/orders": {
+      "medianMs": 34.6,
+      "n": 30,
+      "p95Ms": 52.28
+    },
+    "POST …/submit": {
+      "medianMs": 24.97,
+      "n": 30,
+      "p95Ms": 63.11
+    }
+  },
+  "runs": 30,
+  "tiered": {
+    "GET /v1/customers (packed, through the tiered router)": {
+      "medianMs": 44.37,
+      "n": 30,
+      "p95Ms": 162.37
+    },
+    "POST /v1/orders (dynamic, warm)": {
+      "medianMs": 33.48,
+      "n": 30,
+      "p95Ms": 100
+    },
+    "POST …/submit (dynamic): first request, cold child": {
+      "isolate": "cold",
+      "ms": 91.85,
+      "tier": "dynamic"
+    },
+    "POST …/submit (dynamic, warm)": {
+      "medianMs": 45.93,
+      "n": 30,
+      "p95Ms": 105.25
+    },
+    "POST …/submit (packed-fallback: LoadFailed, then the packed script)": {
+      "medianMs": 33.46,
+      "n": 30,
+      "p95Ms": 130.71
+    }
+  },
+  "version": "r3-latency/1"
+}

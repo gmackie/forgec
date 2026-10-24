@@ -1,0 +1,45 @@
+{
+  "name": "@forgegraph/linker-tiered",
+  "version": "0.5.0",
+  "private": true,
+  "description": "Research (FORG-43): Linker C. Packed scripts (linker A) by default, and the dynamic host (linker B) for closures a link-time policy marks dynamic; a dynamic miss falls back to the packed script and is reported.",
+  "license": "Apache-2.0",
+  "author": "ForgeGraph contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmackie/forgec.git",
+    "directory": "packages/linker-tiered"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./host": "./src/host.ts"
+  },
+  "bin": {
+    "forge-link-tiered": "./src/cli.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forgegraph/linker-dynamic": "workspace:*",
+    "@forgegraph/linker-packed": "workspace:*",
+    "@forgegraph/runtime": "workspace:*",
+    "@forgegraph/units": "workspace:*",
+    "esbuild": "^0.27.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "miniflare": "5.20260918.0-alpha",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0"
+  },
+  "forgegraph": {
+    "stability": "internal"
+  }
+}
