@@ -8,6 +8,8 @@ import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { describe, expect, it } from "vitest";
 import type { AppBundle } from "@forgegraph/runtime";
 import type { SqlExecutor, SqlStatement } from "@forgegraph/runtime/sql-executor";
+import { cloudflareObjects } from "@forgegraph/runtime/cloudflare";
+import { allFeatures } from "@forgegraph/runtime/features";
 import { packed, type HostConfig } from "../src/host.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
@@ -53,7 +55,7 @@ const config = (bindings: string[], withheld: HostConfig["withheld"]): HostConfi
 
 async function finalizeWithoutBytes(cfg: HostConfig) {
   const env: Record<string, unknown> = { DB: sqlite(), BLOBS: emptyBucket, CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers" };
-  const { worker } = packed(bundle, { functions: [], externals: {} }, cfg);
+  const { worker } = packed(bundle, { functions: [], externals: {}, features: allFeatures, objects: cloudflareObjects }, cfg);
   const h = { "content-type": "application/json", "x-forge-tenant": "t1", "x-forge-actor": "a" };
   const call = async (path: string, body: unknown, version?: number) => {
     const headers = version === undefined ? h : { ...h, "if-match": `"${version}"` };

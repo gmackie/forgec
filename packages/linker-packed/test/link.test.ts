@@ -111,6 +111,18 @@ describe("packed linker over examples/acme", async () => {
       expect(script("forge:sweep").withheld).toEqual([]);
     });
 
+    it("links only the runtime features a slice uses, and every feature into the fallback groups (FORG-37)", () => {
+      const features = (id: string) => script(id).features;
+      expect(features("GET /v1/customers/{id}")).toEqual({ mode: "slice", names: [] });
+      expect(features("GET /v1/order-documents/{id}/content")).toEqual({ mode: "slice", names: ["blobs", "governance"] });
+      expect(features("@acme/commerce/_/NightlyReconciliation").names).toEqual(["schedules"]);
+      expect(features("@acme/commerce/_/ProcessOrder").names).toContain("workflows");
+      // Sliced scripts forward dispatch, so none links local outbox delivery.
+      expect(per.scripts.filter((s) => s.slice.mode === "slice" && s.features.names.includes("dispatch"))).toEqual([]);
+      for (const id of ["forge:sweep", "forge:residual"]) expect(features(id)).toEqual({ mode: "all", names: ["blobs", "changesets", "dispatch", "governance", "imports", "portability", "readModels", "realtime", "schedules", "workflows"] });
+      expect(one.scripts[0]!.features.mode).toBe("all");
+    });
+
     it("reports what the planner leaves undeclared instead of guessing", () => {
       expect(script("POST /v1/workflows/process-order/{id}/cancel").capabilities.warnings).toEqual([expect.stringMatching(/declares no workflow WF_PROCESS_ORDER/)]);
     });
