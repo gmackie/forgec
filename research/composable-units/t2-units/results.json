@@ -1,0 +1,202 @@
+{
+  "issue": "FORG-28",
+  "measured": {
+    "artifacts": {
+      "manifestBytes": 119883,
+      "planBytes": 404080
+    },
+    "entryPoints": {
+      "byKind": {
+        "cron": 2,
+        "durable-object": 1,
+        "http-route": 55,
+        "queue-consumer": 1,
+        "workflow": 1,
+        "workflow-step": 4
+      },
+      "closureSize": {
+        "max": 7,
+        "median": 1,
+        "min": 1
+      },
+      "largestClosures": [
+        "POST /v1/orders/{order}/process",
+        "POST /v1/workflows/process-order/signals/{message}",
+        "@acme/commerce/_/ProcessOrder"
+      ],
+      "runtimeServed": [
+        {
+          "id": "forge:sweep",
+          "service": "outbox-and-workflow-sweep"
+        },
+        {
+          "id": "ForgeRealtime",
+          "service": "realtime-fanout"
+        },
+        {
+          "id": "GET /v1/workflows/process-order/{id}",
+          "service": "workflow-instances"
+        },
+        {
+          "id": "POST /v1/workflows/process-order/{id}/cancel",
+          "service": "workflow-instances"
+        }
+      ],
+      "total": 64
+    },
+    "jsUnits": [
+      {
+        "findings": [],
+        "libraries": {
+          "@forgegraph/runtime": "0.5.0",
+          "effect": "4.0.3"
+        },
+        "module": {
+          "minified": 231,
+          "minifiedGzip": 191,
+          "raw": 377
+        },
+        "role": "function",
+        "source": "impl/fulfill-order.ts",
+        "standaloneWithLibraries": {
+          "awsSdkBytesInOutput": 0,
+          "minified": 85488,
+          "minifiedGzip": 29901
+        },
+        "symbol": "@acme/commerce/_/FulfillOrder",
+        "unitHash": "sha256:289bb53e4153179ffb21be87ac603b2aebdb604b4e0c89531b96e2501cfe31e7"
+      },
+      {
+        "findings": [],
+        "libraries": {
+          "@forgegraph/runtime": "0.5.0",
+          "effect": "4.0.3"
+        },
+        "module": {
+          "minified": 183,
+          "minifiedGzip": 165,
+          "raw": 288
+        },
+        "role": "function",
+        "source": "impl/rebuild-order-summary.ts",
+        "standaloneWithLibraries": {
+          "awsSdkBytesInOutput": 0,
+          "minified": 85442,
+          "minifiedGzip": 29877
+        },
+        "symbol": "@acme/commerce/_/RebuildOrderSummary",
+        "unitHash": "sha256:50d1c419e6f2270b87df3eb44397a46d0f7664490d1c1bf3b83c709edd86ee46"
+      },
+      {
+        "findings": [],
+        "libraries": {
+          "@forgegraph/runtime": "0.5.0",
+          "effect": "4.0.3"
+        },
+        "module": {
+          "minified": 717,
+          "minifiedGzip": 419,
+          "raw": 1065
+        },
+        "role": "function",
+        "source": "impl/submit-order.ts",
+        "standaloneWithLibraries": {
+          "awsSdkBytesInOutput": 0,
+          "minified": 85970,
+          "minifiedGzip": 30122
+        },
+        "symbol": "@acme/commerce/_/SubmitOrder",
+        "unitHash": "sha256:4f2993b5200501460d2d7eaca08a1c880f8dee45f4c6ae7e9007378bb3c13432"
+      },
+      {
+        "findings": [
+          {
+            "match": "Math.random(",
+            "rule": "nondeterminism",
+            "source": "impl/payment-adapter.ts"
+          }
+        ],
+        "libraries": {},
+        "module": {
+          "minified": 331,
+          "minifiedGzip": 255,
+          "raw": 502
+        },
+        "role": "external",
+        "source": "impl/payment-adapter.ts",
+        "standaloneWithLibraries": {
+          "awsSdkBytesInOutput": 0,
+          "minified": 329,
+          "minifiedGzip": 254
+        },
+        "symbol": "@acme/payments/_/AuthorizePayment",
+        "unitHash": "sha256:cdf93d11c90751c7f84b1a5792456164bbd162dcb9b4b0cc426668aacf39f8cb"
+      }
+    ],
+    "manifestHash": "sha256:187cbd8990ca96945eb4500423d262d50a3ab9c00b4602f2da6a9e468ae1d0af",
+    "rawEnv": {
+      "hostEnvReferences": {
+        "BLOBS": 2,
+        "CURSOR_SECRET": 3,
+        "DB": 2,
+        "FORGE_AUTH": 1,
+        "FORGE_CORS": 2,
+        "REALTIME": 5
+      },
+      "hostFile": "packages/runtime/src/hosts/cloudflare.ts",
+      "implFindings": [
+        {
+          "match": "Math.random(",
+          "rule": "nondeterminism",
+          "source": "impl/payment-adapter.ts",
+          "unit": "@acme/payments/_/AuthorizePayment"
+        }
+      ]
+    },
+    "reproducible": {
+      "sameProcess": true,
+      "test": "packages/units/test/units.test.ts (two scratch copies, byte compare of manifest + modules)"
+    },
+    "timingsMs": {
+      "planWithForgecDebugBuild": 280,
+      "sealAndBundle": 27
+    },
+    "toolchain": {
+      "bundler": "esbuild@0.27.7",
+      "forgec": "0.5.0",
+      "units": "@forgegraph/units@0.5.0"
+    },
+    "units": {
+      "byKind": {
+        "forge-native": 52,
+        "js-module": 4
+      },
+      "byRole": {
+        "external": 1,
+        "function": 3,
+        "operation": 51,
+        "workflow": 1
+      },
+      "modules": 4,
+      "total": 56
+    },
+    "wholeApp": {
+      "cloudflareWorker": {
+        "bytesInOutput": {
+          "appJson": 233015,
+          "effect": 92421,
+          "impl": 1178,
+          "runtime": 207686
+        },
+        "minified": 534658,
+        "minifiedGzip": 113844
+      },
+      "implOnly": {
+        "minified": 1465,
+        "minifiedGzip": 680,
+        "raw": 2333
+      }
+    }
+  },
+  "version": "t2-units-results/1"
+}

@@ -9,6 +9,12 @@
   `cloudflareArtifactsObjectSource` supplies base objects from the Artifacts
   Workers binding. Merges in Workers report a conflict for any file both sides
   changed; Git would combine non-overlapping edits. (FORG-22)
+- Research: `forgec build --units` also writes `units/plan.json`, which splits a
+  deployment into composable units with DomainIR-derived interface hashes,
+  capability imports and Cloudflare bindings. The private `@forgegraph/units`
+  package bundles each `impl/` unit with esbuild and seals a content-addressed
+  Closure Manifest (`schemas/closure-manifest.schema.json`). Without the flag,
+  build output is unchanged. (FORG-28)
 
 ## 0.5.0 (2026-10-06)
 
