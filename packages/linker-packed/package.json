@@ -1,0 +1,43 @@
+{
+  "name": "@forgegraph/linker-packed",
+  "version": "0.5.0",
+  "private": true,
+  "description": "Research (FORG-29): Linker A. Turns a sealed Closure Manifest into packed Cloudflare Worker scripts, one per closure group, each with only its units, a slice of app.json and a thin capability-narrowing host.",
+  "license": "Apache-2.0",
+  "author": "ForgeGraph contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmackie/forgec.git",
+    "directory": "packages/linker-packed"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./host": "./src/host.ts"
+  },
+  "bin": {
+    "forge-link-packed": "./src/cli.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forgegraph/runtime": "workspace:*",
+    "@forgegraph/units": "workspace:*",
+    "esbuild": "^0.27.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "miniflare": "5.20260918.0-alpha",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0"
+  },
+  "forgegraph": {
+    "stability": "internal"
+  }
+}

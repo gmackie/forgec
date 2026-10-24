@@ -19,7 +19,8 @@
     "pg:migrate": "psql \"$FORGE_PG_URL\" -v ON_ERROR_STOP=1 -f migrations/postgres/0001_init.sql",
     "node:bundle": "node deploy/node/bundle.mjs",
     "cf:config": "node deploy/cloudflare/resolve-config.mjs",
-    "units:build": "cargo run -q -p forgegraph-cli -- build . --units && node ../../packages/units/src/cli.ts ."
+    "units:build": "cargo run -q -p forgegraph-cli -- build . --units && node ../../packages/units/src/cli.ts .",
+    "units:link": "node ../../packages/linker-packed/src/cli.ts ."
   },
   "dependencies": {
     "@forgegraph/runtime": "workspace:*",
