@@ -1,0 +1,333 @@
+{
+  "changeVsForg29Percent": {
+    "bodyEditGzip": -17,
+    "bodyEditRaw": -26.1,
+    "deployGzip": 19.6,
+    "deployRaw": 22.4,
+    "perScriptGzipMedian": -18.4,
+    "perScriptRawMedian": -17.3,
+    "perScriptRawMin": -22.5
+  },
+  "changeVsMainPercent": {
+    "bodyEditGzip": -14.4,
+    "bodyEditRaw": -13.7,
+    "deployGzip": -17,
+    "deployRaw": -16,
+    "perScriptGzipMedian": -19.2,
+    "perScriptRawMax": 0.6,
+    "perScriptRawMedian": -18,
+    "perScriptRawMin": -20.2,
+    "scripts": [
+      87,
+      87
+    ]
+  },
+  "issue": "FORG-37",
+  "representative": {
+    "after": {
+      "@acme/commerce/_/ProcessOrder": {
+        "effect": 92378,
+        "features": {
+          "mode": "slice",
+          "names": [
+            "realtime",
+            "workflows"
+          ],
+          "objects": false
+        },
+        "gzip": 89061,
+        "raw": 311043,
+        "runtime": 160889,
+        "runtimeModules": 35,
+        "what": "workflow class with its steps"
+      },
+      "GET /v1/customers/{id}": {
+        "effect": 92378,
+        "features": {
+          "mode": "slice",
+          "names": [],
+          "objects": false
+        },
+        "gzip": 79791,
+        "raw": 254541,
+        "runtime": 143007,
+        "runtimeModules": 33,
+        "what": "simple CRUD read"
+      },
+      "POST /v1/orders/{order}/submit": {
+        "effect": 92378,
+        "features": {
+          "mode": "slice",
+          "names": [
+            "realtime"
+          ],
+          "objects": false
+        },
+        "gzip": 83110,
+        "raw": 287852,
+        "runtime": 145005,
+        "runtimeModules": 33,
+        "what": "write with outbox (function unit, forwards dispatch)"
+      },
+      "forge:sweep": {
+        "effect": 92421,
+        "features": {
+          "mode": "slice",
+          "names": [
+            "dispatch",
+            "readModels",
+            "realtime",
+            "schedules",
+            "workflows"
+          ],
+          "objects": false
+        },
+        "gzip": 95707,
+        "raw": 332830,
+        "runtime": 180440,
+        "runtimeModules": 37,
+        "what": "sweep (dispatch owner, whole app.json)"
+      },
+      "fulfill-order": {
+        "effect": 92378,
+        "features": {
+          "mode": "slice",
+          "names": [
+            "realtime"
+          ],
+          "objects": false
+        },
+        "gzip": 82640,
+        "raw": 286013,
+        "runtime": 145005,
+        "runtimeModules": 33,
+        "what": "queue consumer"
+      }
+    },
+    "before": {
+      "@acme/commerce/_/ProcessOrder": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 104052,
+        "raw": 359373,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "workflow class with its steps"
+      },
+      "GET /v1/customers/{id}": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 100048,
+        "raw": 320584,
+        "runtime": 209334,
+        "runtimeModules": 42,
+        "what": "simple CRUD read"
+      },
+      "POST /v1/orders/{order}/submit": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 102722,
+        "raw": 352021,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "write with outbox (function unit, forwards dispatch)"
+      },
+      "forge:sweep": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 115354,
+        "raw": 538605,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "sweep (dispatch owner, whole app.json)"
+      },
+      "fulfill-order": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 102257,
+        "raw": 350230,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "queue consumer"
+      }
+    },
+    "main": {
+      "@acme/commerce/_/ProcessOrder": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 104142,
+        "raw": 359561,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "workflow class with its steps"
+      },
+      "GET /v1/customers/{id}": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 100156,
+        "raw": 320899,
+        "runtime": 209334,
+        "runtimeModules": 42,
+        "what": "simple CRUD read"
+      },
+      "POST /v1/orders/{order}/submit": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 102815,
+        "raw": 352257,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "write with outbox (function unit, forwards dispatch)"
+      },
+      "forge:sweep": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 104614,
+        "raw": 361745,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "sweep (dispatch owner, whole app.json)"
+      },
+      "fulfill-order": {
+        "effect": 92421,
+        "features": null,
+        "gzip": 102349,
+        "raw": 350418,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "what": "queue consumer"
+      }
+    }
+  },
+  "rows": {
+    "FORG-29 (t3 results)": {
+      "bodyEdit": {
+        "gzip": 641314,
+        "raw": 2496501,
+        "scripts": 6
+      },
+      "deployGzip": 6185744,
+      "deployRaw": 21200030,
+      "perScriptGzip": {
+        "count": 61,
+        "max": 115013,
+        "median": 101191,
+        "min": 99346,
+        "total": 6184453
+      },
+      "perScriptRaw": {
+        "count": 61,
+        "max": 539571,
+        "median": 345508,
+        "min": 318819,
+        "total": 21194796
+      },
+      "single": 537142,
+      "singleBodyEdit": {
+        "gzip": 114799,
+        "raw": 537142
+      },
+      "wholeApp": {
+        "gzip": 113964,
+        "raw": 534986
+      }
+    },
+    "after (760137e)": {
+      "bodyEdit": {
+        "gzip": 532147,
+        "raw": 1845816,
+        "scripts": 6
+      },
+      "deployGzip": 7400600,
+      "deployRaw": 25941622,
+      "perScriptGzip": {
+        "count": 87,
+        "max": 115665,
+        "median": 82560,
+        "min": 78796,
+        "total": 7398667
+      },
+      "perScriptRaw": {
+        "count": 87,
+        "max": 541032,
+        "median": 285719,
+        "min": 247110,
+        "total": 25934045
+      },
+      "single": 542264,
+      "singleBodyEdit": {
+        "gzip": 116236,
+        "raw": 542264
+      },
+      "wholeApp": {
+        "gzip": 115225,
+        "raw": 539730
+      }
+    },
+    "before (bfee5b2)": {
+      "bodyEdit": {
+        "gzip": 645282,
+        "raw": 2506550,
+        "scripts": 6
+      },
+      "deployGzip": 6228331,
+      "deployRaw": 21306592,
+      "perScriptGzip": {
+        "count": 61,
+        "max": 115656,
+        "median": 101893,
+        "min": 100046,
+        "total": 6227040
+      },
+      "perScriptRaw": {
+        "count": 61,
+        "max": 541215,
+        "median": 347265,
+        "min": 320576,
+        "total": 21301358
+      },
+      "single": 538786,
+      "singleBodyEdit": {
+        "gzip": 115453,
+        "raw": 538786
+      },
+      "wholeApp": {
+        "gzip": 114426,
+        "raw": 536243
+      }
+    },
+    "main (c0e7558)": {
+      "bodyEdit": {
+        "gzip": 621567,
+        "raw": 2138367,
+        "scripts": 6
+      },
+      "deployGzip": 8918184,
+      "deployRaw": 30877218,
+      "perScriptGzip": {
+        "count": 87,
+        "max": 114953,
+        "median": 102220,
+        "min": 98677,
+        "total": 8916251
+      },
+      "perScriptRaw": {
+        "count": 87,
+        "max": 537742,
+        "median": 348583,
+        "min": 309772,
+        "total": 30869641
+      },
+      "single": 538974,
+      "singleBodyEdit": {
+        "gzip": 115537,
+        "raw": 538974
+      },
+      "wholeApp": {
+        "gzip": 114426,
+        "raw": 536243
+      }
+    }
+  },
+  "version": "r2-runtime-split-summary/1"
+}

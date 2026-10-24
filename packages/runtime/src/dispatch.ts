@@ -4,7 +4,7 @@
  * At-least-once: a transport may be told twice; consumers dedup by messageId.
  * Poison rows park as `dead` after maxAttempts and can be redriven.
  */
-import { sha256, stableJson } from "./engine.js";
+import { sha256, stableJson } from "./hashing.js";
 import { SubscriptionDelivery } from "./subscription-delivery.js";
 import { Effect } from "effect";
 import type { Model } from "./model.js";

@@ -6,8 +6,10 @@ import { readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
 import { describe, expect, it } from "vitest";
-import type { AppBundle } from "@forgegraph/runtime";
+import { Model, type AppBundle } from "@forgegraph/runtime";
 import type { SqlExecutor, SqlStatement } from "@forgegraph/runtime/sql-executor";
+import { cloudflareObjects } from "@forgegraph/runtime/cloudflare";
+import { allFeatures, featuresNamed, requiredFeatures, type Feature } from "@forgegraph/runtime/features";
 import { packed, type HostConfig } from "../src/host.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
@@ -51,9 +53,12 @@ const config = (bindings: string[], withheld: HostConfig["withheld"]): HostConfi
   sweeps: { outbox: false, schedules: false, workflows: false },
 });
 
-async function finalizeWithoutBytes(cfg: HostConfig) {
+/** FORG-37: what the linker links for a group like this one, the model's features plus local dispatch. */
+const sliceFeatures = featuresNamed([...requiredFeatures(new Model(bundle)), "dispatch"]);
+
+async function finalizeWithoutBytes(cfg: HostConfig, features: readonly Feature[] = allFeatures) {
   const env: Record<string, unknown> = { DB: sqlite(), BLOBS: emptyBucket, CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers" };
-  const { worker } = packed(bundle, { functions: [], externals: {} }, cfg);
+  const { worker } = packed(bundle, { functions: [], externals: {}, features, objects: cloudflareObjects }, cfg);
   const h = { "content-type": "application/json", "x-forge-tenant": "t1", "x-forge-actor": "a" };
   const call = async (path: string, body: unknown, version?: number) => {
     const headers = version === undefined ? h : { ...h, "if-match": `"${version}"` };
@@ -81,5 +86,41 @@ describe("packed host: request-time narrowing (FORG-34)", () => {
     const r = await finalizeWithoutBytes(config(["DB", "CURSOR_SECRET", "FORGE_AUTH"], [{ type: "r2", name: "BLOBS" }]));
     expect(r.status).toBe(403);
     expect(r.json).toMatchObject({ code: "CapabilityDenied", retryable: false, capability: "binding:r2:BLOBS", entryPoint: "forge-acme-test-finalize" });
+  });
+
+  // FORG-37: the runtime split does not change either answer. Blob storage comes with the blobs feature,
+  // and it still reads BLOBS from the narrowed env, so the stub still refuses.
+  it("with only the features its slice uses, a declared bucket and a withheld one answer as before", async () => {
+    expect(sliceFeatures.map((f) => f.name)).not.toContain("changesets");
+    expect((await finalizeWithoutBytes(config(["DB", "BLOBS", "CURSOR_SECRET", "FORGE_AUTH"], []), sliceFeatures)).status).toBe(422);
+    const r = await finalizeWithoutBytes(config(["DB", "CURSOR_SECRET", "FORGE_AUTH"], [{ type: "r2", name: "BLOBS" }]), sliceFeatures);
+    expect(r.status).toBe(403);
+    expect(r.json).toMatchObject({ code: "CapabilityDenied", capability: "binding:r2:BLOBS" });
+  });
+
+  it("a script linked without the blobs feature has no blob operation to reach the withheld bucket, and a blob model without it fails at build", () => {
+    // A model with blob resources needs blobs (and its storage): refused when the host is built, i.e. at link time.
+    expect(() => packed(bundle, { functions: [], externals: {}, features: featuresNamed(["dispatch"]) }, config(["DB"], [{ type: "r2", name: "BLOBS" }]))).toThrow(/needs the blobs, governance/);
+    expect(() => packed(bundle, { functions: [], externals: {}, features: sliceFeatures }, config(["DB"], []))).toThrow(/blobs feature needs objects/);
+  });
+
+  it("without the blobs feature, blob routes do not exist: 404, and the withheld stub is never reached", async () => {
+    const noBlobs = structuredClone(bundle);
+    for (const m of noBlobs.ir.modules) {
+      m.resources = m.resources.filter((r) => r.kind !== "blob");
+      m.workflows = [];
+      m.sources = [];
+      m.views = [];
+      m.projections = [];
+      m.caches = [];
+      m.channels = (m.channels ?? []).map(({ websocket: _, ...c }) => c);
+    }
+    const cfg = { ...config(["DB", "CURSOR_SECRET", "FORGE_AUTH"], [{ type: "r2", name: "BLOBS" }]), dispatch: "forward" as const };
+    const { worker } = packed(noBlobs, { functions: [], externals: {}, features: [] }, cfg);
+    const env: Record<string, unknown> = { DB: sqlite(), BLOBS: emptyBucket, CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers" };
+    const res = await worker.fetch(new Request("https://forge.test/v1/order-documents/x/finalize", { method: "POST", headers: { "content-type": "application/json", "x-forge-tenant": "t1", "x-forge-actor": "a" }, body: "{}" }), env, { waitUntil: () => undefined });
+    expect(res.status).toBe(404);
+    const bytes = await worker.fetch(new Request("https://forge.test/_forge/objects/token"), env, { waitUntil: () => undefined });
+    expect(bytes.status).not.toBe(200);
   });
 });

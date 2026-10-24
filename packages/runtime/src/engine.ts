@@ -10,18 +10,19 @@ import { canonicalize, decodeObject, evalExpr, SELF_REFERENCE, type Wire } from 
 import { err, ForgeError } from "./errors.js";
 import { fieldOf, scaleOf, type List, type Model, type Operation, type Resource, type Transition, type Unique } from "./model.js";
 import { Clock, CursorSecret, IdGen, Storage, type AtomicAbsenceGuard, type ClaimChange, type CommitPlan, type Receipt, type ReferenceGuard, type RuntimeServices, type StorageAdapter, type StoredRecord } from "./services.js";
-import { Changesets } from "./changeset.js";
-import { Blobs } from "./blobs.js";
-import { Imports } from "./imports.js";
+import type { Changesets } from "./changeset.js";
+import type { Blobs } from "./blobs.js";
+import type { Imports } from "./imports.js";
 import { Functions, type ExternalBinding, type FunctionImpl } from "./functions.js";
 import { Temporal } from "./temporal.js";
-import { ReadModels } from "./readmodels.js";
-import { Workflows } from "./workflows.js";
-import { Schedules } from "./schedules.js";
-import { Realtime } from "./realtime.js";
+import type { ReadModels } from "./readmodels.js";
+import type { Workflows } from "./workflows.js";
+import type { Schedules } from "./schedules.js";
+import type { Realtime } from "./realtime.js";
 import { Telemetry, type TraceContext } from "./telemetry.js";
-import { Portability } from "./portability.js";
-import { Governance } from "./governance.js";
+import { writesFenced, type Portability } from "./portability.js";
+import type { Governance } from "./governance.js";
+import { allFeatures, checkFeatures, type Feature, type FeatureMap, type FeatureName } from "./features.js";
 import { Scope } from "./scope.js";
 import { Gatekeeper } from "./gatekeeper.js";
 import {checkPublishedOAuth, type VerifiedOAuthAccess} from "./oauth-operation.js";
@@ -53,17 +54,8 @@ export interface CallContext {
 export const PAGE_DEFAULT = 50;
 export const PAGE_MAX = 100;
 
-export async function sha256(text: string): Promise<string> {
-  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
-}
-
-/** Stable JSON for request hashing (sorted keys). */
-export function stableJson(v: unknown): string {
-  if (Array.isArray(v)) return `[${v.map(stableJson).join(",")}]`;
-  if (v && typeof v === "object") return `{${Object.keys(v as object).sort().map((k) => `${JSON.stringify(k)}:${stableJson((v as Wire)[k])}`).join(",")}}`;
-  return JSON.stringify(v);
-}
+import { sha256, stableJson } from "./hashing.js";
+export { sha256, stableJson } from "./hashing.js";
 
 export interface AtomicMutation { operation: string; input: Wire }
 export interface AtomicOptions {
@@ -79,17 +71,58 @@ export interface EngineOptions {
   externals?: Record<string, ExternalBinding>;
   /** Explicit reviewed security publication; enforces required OAuth on Engine.call. */
   oauthPublication?: ValidatedApiPublication;
+  /**
+   * The optional features linked into the engine (`@forgegraph/runtime/features`, FORG-37). `Engine`
+   * links every feature when unset; `EngineCore` links exactly these, and refuses a model that uses a
+   * feature it was not given (`checkFeatures`).
+   */
+  features?: readonly Feature[];
 }
 
-export class Engine {
+/**
+ * The engine without its optional features. Workflows, schedules, read models, realtime, blobs,
+ * changesets, imports, portability, governance and local outbox delivery are linked in through
+ * `options.features`, so a host bundling only `EngineCore` and the features a slice uses carries none of
+ * the others' code. `Engine` is this with every feature linked.
+ */
+export class EngineCore {
   readonly functions: Functions;
   readonly oauthPublication: ValidatedApiPublication | undefined;
   private readonly secrets: import("./credentials.js").SecretAdapter | undefined;
+  private readonly linked = new Map<FeatureName, unknown>();
   constructor(readonly model: Model, readonly layer: Layer.Layer<RuntimeServices>, options: EngineOptions = {}) {
     this.secrets = options.secrets;
     this.oauthPublication = options.oauthPublication;
     this.functions = new Functions(this, options.functions ?? [], options.externals ?? {});
+    const features = options.features ?? [];
+    checkFeatures(model, features);
+    for (const f of features) if (!this.linked.has(f.name)) this.linked.set(f.name, f.create(this));
   }
+
+  /** The named feature, or `undefined` when it is not linked into this engine. */
+  feature<N extends FeatureName>(name: N): FeatureMap[N] | undefined {
+    return this.linked.get(name) as FeatureMap[N] | undefined;
+  }
+
+  /** Names of the features linked into this engine. */
+  get features(): FeatureName[] {
+    return [...this.linked.keys()];
+  }
+
+  private need<N extends FeatureName>(name: N): FeatureMap[N] {
+    const f = this.feature(name);
+    if (!f) throw new Error(`forge: the ${name} feature is not linked into this engine`);
+    return f;
+  }
+  get changesets(): Changesets { return this.need("changesets"); }
+  get blobs(): Blobs { return this.need("blobs"); }
+  get imports(): Imports { return this.need("imports"); }
+  get readModels(): ReadModels { return this.need("readModels"); }
+  get workflows(): Workflows { return this.need("workflows"); }
+  get schedules(): Schedules { return this.need("schedules"); }
+  get realtime(): Realtime { return this.need("realtime"); }
+  get portability(): Portability { return this.need("portability"); }
+  get governance(): Governance { return this.need("governance"); }
 
   call(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError> {
     const self = this;
@@ -131,6 +164,9 @@ export class Engine {
 
   private program(opId: string, input: unknown, ctx: CallContext): Effect.Effect<any, ForgeError, RuntimeServices> {
     const self = this;
+    const served = /\/(changesets)\.(?:propose|preview|approve|commit|get)$|\/(imports)\.(?:inspect|stage)$|\/admin\.(?:(export|import|verify|fence)|(subjects\.locate|inspect))$/.exec(opId);
+    const unlinked = served && ((served[1] && "changesets") || (served[2] && "imports") || (served[3] && "portability") || "governance");
+    if (unlinked && !self.linked.has(unlinked)) return Effect.fail(err("MethodNotAllowed", `${opId} is not served here: the ${unlinked} feature is not linked into this engine`));
     if (/\/changesets\.(propose|preview|approve|commit|get)$/.test(opId)) {
       return self.changesets.handle(opId.slice(opId.lastIndexOf(".") + 1), (input ?? {}) as Wire, ctx);
     }
@@ -418,7 +454,7 @@ export class Engine {
   private authorizedPlan(opId: string, body: Wire, ctx: CallContext): Effect.Effect<CommitPlan, ForgeError, RuntimeServices> {
     const self = this;
     return Effect.gen(function* () {
-      if (yield* self.portability.isFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
+      if (yield* writesFenced(ctx.tenant)) return yield* Effect.fail(err("WriteFenced", "writes are fenced for a data migration; retry after cutover"));
       const ref = self.model.operation(opId);
       if (ref?.op.kind === "create") yield* self.suppression.guard(ref.resource, "create", body as StoredRecord, ctx);
       const plan = yield* self.planFor(opId, body, ctx);
@@ -437,20 +473,11 @@ export class Engine {
     });
   }
 
-  readonly changesets = new Changesets(this);
-  readonly blobs = new Blobs(this);
-  readonly temporal = new Temporal(this);
-  readonly imports = new Imports(this);
-  readonly readModels = new ReadModels(this);
-  readonly workflows = new Workflows(this);
-  readonly schedules = new Schedules(this);
-  readonly realtime = new Realtime(this);
-  readonly telemetry = new Telemetry(this);
-  readonly portability = new Portability(this);
-  readonly governance = new Governance(this);
-  readonly scope = new Scope(this);
-  readonly gatekeeper = new Gatekeeper(this);
-  readonly suppression = new Suppression(this);
+  readonly temporal: Temporal = new Temporal(this);
+  readonly telemetry: Telemetry = new Telemetry(this);
+  readonly scope: Scope = new Scope(this);
+  readonly gatekeeper: Gatekeeper = new Gatekeeper(this);
+  readonly suppression: Suppression = new Suppression(this);
 
   /** Test hook: advance the deterministic test clock (no effect with production clocks). */
   testClockJump(ms: number): void {
@@ -942,6 +969,16 @@ export class Engine {
         return yield* inner.pipe(Effect.provideService(Storage, wrapped));
       });
     }
+  }
+}
+
+/**
+ * The whole engine: `EngineCore` with every feature linked (or exactly `options.features` when given).
+ * What every host builds unless it links features itself.
+ */
+export class Engine extends EngineCore {
+  constructor(model: Model, layer: Layer.Layer<RuntimeServices>, options: EngineOptions = {}) {
+    super(model, layer, { ...options, features: options.features ?? allFeatures });
   }
 }
 

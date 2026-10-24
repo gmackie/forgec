@@ -6,8 +6,10 @@
 //     rather than nothing, which would silently fall back (BLOBS to memory, Workflows to the cron);
 //   - routing: the script answers only its own entry points' routes and refuses everything else;
 //   - dispatch: a sliced script knows only part of the subscription table, so it never sweeps the
-//     outbox itself; it hands the nudge to the dispatch owner over a service binding.
-import { createRealtimeObject, createWorker, createWorkflowEntrypoint, type WorkerEnv, type WorkerOptions } from "@forgegraph/runtime/cloudflare";
+//     outbox itself; it hands the nudge to the dispatch owner over a service binding;
+//   - features (FORG-37): the runtime links only the features the generated entry passes (those the
+//     group's slice uses), so the script bundles none of the others' code.
+import { createRealtimeObjectWith, createWorkerWith, createWorkflowEntrypointWith, type FeatureWorkerOptions, type WorkerEnv } from "@forgegraph/runtime/cloudflare";
 import type { AppBundle } from "@forgegraph/runtime";
 import { capabilityDeniedError } from "@forgegraph/runtime/errors";
 
@@ -72,7 +74,10 @@ function refused(script: string, method: string, path: string): Response {
   return new Response(JSON.stringify(body), { status: 404, headers: { "content-type": "application/problem+json" } });
 }
 
-export function packed(app: AppBundle, units: Pick<WorkerOptions, "functions" | "externals">, config: HostConfig) {
+/** What the generated entry links: the group's unit modules, and the runtime features and blob storage its slice uses. */
+export type HostUnits = Pick<FeatureWorkerOptions, "functions" | "externals" | "features" | "objects">;
+
+export function packed(app: AppBundle, units: HostUnits, config: HostConfig) {
   const serves = config.routes ? matcher(config.routes) : () => true;
   const denied = matcher(config.deny);
   const onPath = (path: string) => (config.pathRoutes ?? []).some((r) => matcher([{ ...r, method: "*" }])("*", path));
@@ -83,12 +88,12 @@ export function packed(app: AppBundle, units: Pick<WorkerOptions, "functions" | 
     if (!target) return Promise.reject(new Error(`${config.script}: no ${DISPATCH_BINDING} service binding`));
     return target.fetch(`https://dispatch${DISPATCH_PATH}`, { method: "POST", body: JSON.stringify({ tenant, sweep }), headers: { "content-type": "application/json" } });
   };
-  const options: WorkerOptions = {
+  const options: FeatureWorkerOptions = {
     ...units,
     sweeps: config.sweeps,
     ...(config.dispatch === "forward" ? { postCommit: (env: WorkerEnv, tenant: string) => forward(env, tenant, true) } : {}),
   };
-  const worker = createWorker(app, options);
+  const worker = createWorkerWith(app, options);
   const seen = new Set<string>();
   const envFor = (env: Record<string, unknown>) => narrow(env, config, config.dispatch === "forward" ? (env[DISPATCH_BINDING] as Fetcher | undefined) : undefined);
 
@@ -122,7 +127,7 @@ export function packed(app: AppBundle, units: Pick<WorkerOptions, "functions" | 
     },
     /** `Base` is `WorkflowEntrypoint` from `cloudflare:workers`. */
     workflow<B extends abstract new (...args: any[]) => any>(Base: B) {
-      const Inner = createWorkflowEntrypoint(Base, app, options);
+      const Inner = createWorkflowEntrypointWith(Base, app, options);
       abstract class PackedWorkflow extends Inner {
         constructor(...args: any[]) {
           super(args[0], envFor(args[1] as Record<string, unknown>));
@@ -132,7 +137,7 @@ export function packed(app: AppBundle, units: Pick<WorkerOptions, "functions" | 
     },
     /** `Base` is `DurableObject` from `cloudflare:workers`. */
     realtime<B extends abstract new (...args: any[]) => any>(Base: B) {
-      const Inner = createRealtimeObject(Base, app, options);
+      const Inner = createRealtimeObjectWith(Base, app, options);
       abstract class PackedRealtime extends Inner {
         constructor(...args: any[]) {
           super(args[0], envFor(args[1] as Record<string, unknown>));
