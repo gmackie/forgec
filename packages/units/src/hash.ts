@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 
 export const UNIT_DOMAIN = "forge:unit:";
 export const IMPLEMENTATION_DOMAIN = "forge:unit-impl:";
+export const CLOSURE_DOMAIN = "forge:closure:";
 export const MANIFEST_DOMAIN = "forge:closure-manifest:";
 
 export function canonical(value: unknown): unknown {

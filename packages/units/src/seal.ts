@@ -1,12 +1,12 @@
 // Seals a forgec unit plan (`forgec build --units`) into a Closure Manifest
 // (schemas/closure-manifest.schema.json): bundles every js-module unit, hashes implementations,
-// derives unit hashes bottom-up through dependencies, resolves each entry point's closure, and
-// content-addresses the result. Missing implementations and dependency cycles fail here, at
-// resolve time, never when a request arrives.
+// derives unit hashes, resolves each entry point's closure and pins it with a closure hash, and
+// content-addresses the result. Missing implementations and dependencies fail here, at resolve
+// time, never when a request arrives.
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { BUNDLER, bundleUnit, libraryVersion, type Finding } from "./bundle.ts";
-import { digest, IMPLEMENTATION_DOMAIN, MANIFEST_DOMAIN, sha256, stableJson, UNIT_DOMAIN } from "./hash.ts";
+import { CLOSURE_DOMAIN, digest, IMPLEMENTATION_DOMAIN, MANIFEST_DOMAIN, sha256, stableJson, UNIT_DOMAIN } from "./hash.ts";
 import { locateImpl, type LocateOptions } from "./locate.ts";
 import pkg from "../package.json" with { type: "json" };
 
@@ -48,6 +48,7 @@ export interface SealedUnit {
   interfaceHash: string;
   implementationHash: string;
   implementation: Record<string, unknown>;
+  /** Unit hashes the dependencies resolve to in this manifest; identity uses their interface hashes. */
   dependencies: string[];
   imports: Array<{ capability: string; provider: Provider }>;
   bindings: Binding[];
@@ -70,6 +71,7 @@ export interface ClosureManifest {
     root: string | null;
     runtimeService?: string;
     closure: string[];
+    closureHash: string;
     imports: Array<{ unit: string; capability: string; provider: Provider }>;
     bindings: Binding[];
   }>;
@@ -116,23 +118,21 @@ export async function seal(plan: UnitPlan, appRoot: string, options: LocateOptio
     impl.set(u.symbol, { implementation: { module: blob, export: "default", abi, libraries: m.libraries }, findings: m.findings });
   }
 
-  // Unit hashes bottom-up; a cycle has no well-founded hash and is refused.
+  // A unit's identity covers the interfaces it calls, not their implementations, so a body edit
+  // re-identifies only that unit. Which implementations run is pinned per entry point by the
+  // closure hash below.
   const bySymbol = new Map<string, string>();
-  const visiting = new Set<string>();
-  const unitHash = (symbol: string, path: string[]): string => {
-    const done = bySymbol.get(symbol);
-    if (done) return done;
-    const u = planned.get(symbol);
-    if (!u) throw new Error(`missing unit: ${path.join(" -> ")} -> ${symbol}`);
-    if (visiting.has(symbol)) throw new Error(`dependency cycle: ${[...path, symbol].join(" -> ")}`);
-    visiting.add(symbol);
-    const deps = u.dependencies.map((d) => unitHash(d, [...path, symbol])).sort();
-    visiting.delete(symbol);
-    const h = digest(UNIT_DOMAIN, { interface: u.interfaceHash, implementation: digest(IMPLEMENTATION_DOMAIN, impl.get(symbol)!.implementation), dependencies: deps });
-    bySymbol.set(symbol, h);
-    return h;
-  };
-  for (const u of plan.units) unitHash(u.symbol, []);
+  for (const u of plan.units) {
+    const deps = u.dependencies.map((d) => {
+      const dep = planned.get(d);
+      if (!dep) throw new Error(`missing unit: ${u.symbol} -> ${d}`);
+      return dep.interfaceHash;
+    });
+    const h = digest(UNIT_DOMAIN, { interface: u.interfaceHash, implementation: digest(IMPLEMENTATION_DOMAIN, impl.get(u.symbol)!.implementation), dependencies: [...deps].sort() });
+    const clash = [...bySymbol].find(([, other]) => other === h);
+    if (clash) throw new Error(`${u.symbol} and ${clash[0]} are the same unit (${h}); the manifest keys units by hash and cannot bind both`);
+    bySymbol.set(u.symbol, h);
+  }
 
   const units: Record<string, SealedUnit> = {};
   const provider = (p: PlanProvider): Provider => (p.kind === "unit" ? { kind: "unit", unit: bySymbol.get(p.symbol)! } : p);
@@ -176,6 +176,7 @@ export async function seal(plan: UnitPlan, appRoot: string, options: LocateOptio
       root: root ?? null,
       ...(e.runtimeService ? { runtimeService: e.runtimeService } : {}),
       closure,
+      closureHash: digest(CLOSURE_DOMAIN, closure),
       imports,
       bindings: sortBindings([...e.bindings, ...closure.flatMap((h) => units[h]!.bindings)]),
     };

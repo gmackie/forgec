@@ -76,7 +76,7 @@
   <div class="decisions">
     <div class="decision reveal" style="--i:4"><strong>Vision = symbol-level composition; steps = forgec→WASM, then units</strong><span class="muted">Iterate on each step separately. Neither step is the final goal.</span></div>
     <div class="decision reveal" style="--i:5"><strong>Languages: TS/Effect → JS modules, plus Rust → WASM components, for now</strong><span class="muted">Long-term aim is a Forge-native behaviour language. WASM-everywhere must remain possible.</span></div>
-    <div class="decision reveal" style="--i:6"><strong>A unit's format is an attribute of the artifact, never part of its identity</strong><span class="muted"><code>kind</code> ∈ js-module | wasm-component | forge-native is metadata. Identity = interface hash + implementation hash + dependency hashes.</span></div>
+    <div class="decision reveal" style="--i:6"><strong>A unit's format is an attribute of the artifact, never part of its identity</strong><span class="muted"><code>kind</code> ∈ js-module | wasm-component | forge-native is metadata. Identity = interface hash + implementation hash + dependency <em>interface</em> hashes, so a body edit re-identifies only that unit. Closure identity covers the resolved <code>unitHash</code>es and pins the exact implementations.</span></div>
     <div class="decision reveal" style="--i:7"><strong>Linking is pluggable; explore strategies in parallel</strong><span class="muted">Every linker consumes the same Closure Manifest and is checked against the same conformance suite.</span></div>
     <div class="decision reveal" style="--i:8"><strong>Capabilities, not <code>env</code></strong><span class="muted">Units declare capabilities, and the linker injects narrowed handles. This enables sandboxing, maps cleanly to WIT imports, and is the cost of giving up direct <code>env.DB</code> access.</span></div>
   </div>
@@ -109,8 +109,8 @@
     <thead><tr><th>Concept</th><th>Definition</th></tr></thead>
     <tbody>
       <tr><td><strong>Unit</strong></td><td>The smallest compiled thing. In v1, a forgec function, transition, workflow step or handler plus the Loom symbols it reaches. Later it can be a single symbol. Fields: <code>interfaceHash</code>, <code>unitHash</code>, <code>kind</code>.</td></tr>
-      <tr><td><strong>Interface</strong></td><td>Inputs, outputs, errors, effects and required capabilities, all taken from <code>domain-ir</code>. WIT is <em>generated</em> from this, never hand-written and never taken from TS types.</td></tr>
-      <tr><td><strong>Closure Manifest</strong></td><td>Content-addressed. Each entry point (route, queue consumer, cron, workflow step or DO class) maps to a root unit plus its resolved dependency closure, capability imports bound to providers, and required bindings.</td></tr>
+      <tr><td><strong>Interface</strong></td><td>Inputs, outputs, errors, effects and required capabilities, all taken from <code>domain-ir</code>. Structural: the symbol is the binding name, not part of the interface hash, so a JS unit and a WASM unit of the same shape share one. WIT is <em>generated</em> from this, never hand-written and never taken from TS types.</td></tr>
+      <tr><td><strong>Closure Manifest</strong></td><td>Content-addressed. Each entry point (route, queue consumer, cron, workflow step or DO class) maps to a root unit plus its resolved dependency closure, capability imports bound to providers, and required bindings. Its <code>closureHash</code> covers the closure's <code>unitHash</code>es, so it changes whenever any implementation it runs changes.</td></tr>
       <tr><td><strong>Linker</strong></td><td>Turns a manifest into something that runs. A: deploy-time packed scripts. B: a host Worker plus Dynamic Worker Loader, with isolates cached by closure hash. C: A by default, B for closures marked <code>dynamic</code> (previews, Sessions, tenant extensions).</td></tr>
     </tbody>
   </table></div>

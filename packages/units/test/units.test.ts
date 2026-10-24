@@ -81,7 +81,7 @@ describe("closure manifest for examples/acme", async () => {
     });
   });
 
-  it("changing an impl body changes unitHash but not interfaceHash, and propagates to dependants only", async () => {
+  it("changing an impl body re-identifies only that unit and the closures that contain it", async () => {
     const edited = await build(
       copyAcme((app) => {
         const f = join(app, "impl/rebuild-order-summary.ts");
@@ -92,10 +92,22 @@ describe("closure manifest for examples/acme", async () => {
     expect(b.interfaceHash).toBe(a.interfaceHash);
     expect(b.implementationHash).not.toBe(a.implementationHash);
     expect(b.unitHash).not.toBe(a.unitHash);
-    // ProcessOrder calls it: same interface, new identity. SubmitOrder does not: unchanged.
-    expect(unit(edited, "ProcessOrder").interfaceHash).toBe(unit(base, "ProcessOrder").interfaceHash);
-    expect(unit(edited, "ProcessOrder").unitHash).not.toBe(unit(base, "ProcessOrder").unitHash);
-    expect(unit(edited, "SubmitOrder").unitHash).toBe(unit(base, "SubmitOrder").unitHash);
+    // Callers depend on the interface, so ProcessOrder keeps its identity; no other unit moves.
+    expect(unit(edited, "ProcessOrder").unitHash).toBe(unit(base, "ProcessOrder").unitHash);
+    const moved = [...edited.bySymbol].filter(([s, h]) => base.bySymbol.get(s) !== h).map(([s]) => s);
+    expect(moved).toEqual(["@acme/commerce/_/RebuildOrderSummary"]);
+    // The exact implementation is pinned by every entry point whose closure contains it.
+    const before = new Map(base.manifest.entryPoints.map((e) => [e.id, e]));
+    let containing = 0;
+    for (const e of edited.manifest.entryPoints) {
+      const old = before.get(e.id)!;
+      const contains = old.closure.includes(a.unitHash);
+      if (contains) containing++;
+      expect(e.closure.includes(b.unitHash), e.id).toBe(contains);
+      expect(e.closureHash !== old.closureHash, e.id).toBe(contains);
+    }
+    // the cron, its workflow step, the workflow class, its start and signal routes
+    expect(containing).toBe(5);
   });
 
   it("changing a signature changes both interfaceHash and unitHash", async () => {
@@ -112,6 +124,9 @@ describe("closure manifest for examples/acme", async () => {
     expect(b.interfaceHash).not.toBe(a.interfaceHash);
     expect(b.unitHash).not.toBe(a.unitHash);
     expect(b.implementationHash).toBe(a.implementationHash);
+    // A caller's identity covers the interfaces it calls, so ProcessOrder moves with this one.
+    expect(unit(edited, "ProcessOrder").interfaceHash).toBe(unit(base, "ProcessOrder").interfaceHash);
+    expect(unit(edited, "ProcessOrder").unitHash).not.toBe(unit(base, "ProcessOrder").unitHash);
   });
 
   it("refuses a plan whose js-module unit has no implementation", async () => {

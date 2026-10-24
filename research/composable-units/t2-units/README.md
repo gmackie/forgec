@@ -30,15 +30,20 @@ One command for acme: `pnpm --filter @acme/commerce-deploy units:build`.
 
 ### Identity
 
-- `interfaceHash` = H(`forge:unit-interface:`, canonical interface). The interface holds the symbol,
-  input, output, sorted errors, effects (sends, workflow waits), required capabilities, purpose,
+- `interfaceHash` = H(`forge:unit-interface:`, canonical interface). The interface is structural.
+  It holds the input, output, sorted errors, effects (sends, workflow waits), required capabilities, purpose,
   and the transitive closure of every named type the signature reaches. Shapes, enums, the
   fields of `X.Record`, lifecycle states and channel messages are expanded. References stay ids.
-  `doc` is removed everywhere. Routes, SLOs, `generated` and the unit's role are left out.
+  `doc` is removed everywhere. The symbol, routes, SLOs, `generated` and the unit's role are left
+  out, so two units of the same shape share an interface hash. The symbol stays in the manifest as
+  the binding name.
 - `implementationHash` = H(`forge:unit-impl:`, implementation). A js-module implementation is
   {module blob sha256, export, ABI, shared library versions}. A forge-native implementation is
   {declaration digest, executor `@forgegraph/runtime@x`}.
-- `unitHash` = H(`forge:unit:`, {interface, implementation, sorted dependency unitHashes}).
+- `unitHash` = H(`forge:unit:`, {interface, implementation, sorted dependency *interface* hashes}).
+  A body edit re-identifies only the edited unit, not its callers.
+- `closureHash` = H(`forge:closure:`, sorted unit hashes of an entry point's closure). It pins the
+  exact implementations an entry point runs, so it changes whenever any of them changes.
 - `manifestHash` = H(`forge:closure-manifest:`, manifest without `manifestHash`).
 - `kind` does not enter any of these digests.
 
@@ -49,15 +54,18 @@ One command for acme: `pnpm --filter @acme/commerce-deploy units:build`.
   move the operation's implementation digest). Adding an error, changing an input-shape field
   (reached transitively, so it also moves the workflow sharing the shape) or changing a
   capability each move `interfaceHash`. Changing a workflow graph (`sleep 5s` → `10s`) moves
-  only the implementation.
+  only the implementation. Two functions with identical signatures and different names share an
+  interface hash.
 - `packages/units/test/units.test.ts`, end to end through the real `forgec` binary on scratch copies
   of acme:
   - Two builds in different temp directories produce byte-identical `manifest.json` and
     `modules/*`.
-  - Editing an impl body changes `unitHash` and `implementationHash` but not `interfaceHash`. The
-    change reaches the workflow that calls the unit and no unrelated unit.
+  - Editing an impl body changes that unit's `unitHash` and `implementationHash` but not its
+    `interfaceHash`. No other unit hash moves; `ProcessOrder`, which calls it, keeps its own. The
+    `closureHash` of exactly the 5 entry points whose closure contains the unit changes (the cron,
+    the workflow step, the workflow class, and its start and signal routes).
   - Adding an error to the `.forge` signature changes `interfaceHash` and `unitHash`, and leaves
-    `implementationHash` unchanged.
+    `implementationHash` unchanged. The calling workflow's `unitHash` moves with it.
   - The manifest validates against the schema, a missing body fails at seal time, and each
     route's closure is checked.
 
@@ -72,8 +80,8 @@ One command for acme: `pnpm --filter @acme/commerce-deploy units:build`.
 | entry points | 64: 55 HTTP routes, 1 queue consumer, 2 crons (one schedule plus the host sweep), 1 workflow class, 4 workflow steps, 1 Durable Object class |
 | served by the runtime alone (no root unit) | 4: the `*/5` outbox/workflow sweep, the `ForgeRealtime` DO, workflow status and cancel routes |
 | closure size (units per rooted entry point) | min 1, median 1, max 7 (`ProcessOrder` start, its signal route, the workflow class) |
-| unit plan / manifest | 404,080 B / 119,883 B |
-| plan + seal time | 280 ms (debug forgec, including the normal build) + 27 ms (bundle 4 units and seal) |
+| unit plan / manifest | 400,919 B / 126,027 B |
+| plan + seal time | 274 ms (debug forgec, including the normal build) + 30 ms (bundle 4 units and seal) |
 | reproducibility | byte-identical across two builds in different directories (test), and across two seals in one process |
 
 Unit module sizes compared with the whole app (bytes; minified / minified+gzip -9):
@@ -159,26 +167,34 @@ The four unit modules together (1,462 B minified) are the same size as the impl-
     `node:*` and AWS SDK modules, which tree-shake to 0 bytes but must be externalized to bundle
     a unit standalone.
 
+## Decided
+
+- **Dependencies enter `unitHash` by interface hash.** Under the original rule (dependency unit
+  hashes) a leaf body edit re-identified every caller up to the roots; the first version of this
+  spike showed an edit to `RebuildOrderSummary` re-identifying `ProcessOrder`. Exact
+  implementations are now pinned per entry point by `closureHash` (and by `buildHash`).
+- **`symbol` is not part of the interface.** Interfaces are structural, so a JS unit can be
+  swapped for a WASM unit of the same shape under the same binding name.
+- Because unit identity no longer depends on dependency identities, a dependency cycle now has
+  well-defined hashes and is no longer refused. Closures handle cycles.
+- With structural interfaces, two units can in principle hash identically (same shape, same
+  body, same dependency interfaces). The manifest keys units by hash, so the sealer refuses that
+  case with an explicit error rather than silently dropping one symbol. acme has no such pair.
+
 ## Open questions (need a decision)
 
-1. **Should dependencies enter `unitHash` by unit hash (the design as written) or by interface
-   hash?** With unit hashes, editing a leaf body gives every caller up to the roots a new
-   identity. The test shows this: an edit to `RebuildOrderSummary` re-identifies `ProcessOrder`.
-   Caller identities then do not survive dependency edits, which works against "link unit
-   hashes against interfaces". Hashing dependencies by interface hash, with implementations
-   resolved only in the manifest, keeps callers stable.
-2. **Should `symbol` be part of the interface?** It is now, so two functions with identical
-   signatures have different interface hashes, and a JS↔WASM swap must keep the symbol. Dropping
-   it makes the interface purely structural.
-3. **Unit = function or a single Loom symbol?** In acme each impl function is one file with one
+1. **Type closure keys are still nominal.** Named shapes and enums are keyed by their stable id
+   in the interface's type closure, so two structurally equal shapes with different names still
+   give different interfaces. Should named types be fully structural too?
+2. **Unit = function or a single Loom symbol?** In acme each impl function is one file with one
    export and no shared helpers, so function and symbol coincide; acme cannot tell the two
    apart. Generated code is finer than a symbol: one resource yields 7–11 operation units. A
    package with shared helper modules is needed to decide. Today such a helper would be
    duplicated into every unit that imports it.
-4. **Generated operations: one unit per operation or one per resource?** See boundary finding 1.
-5. **Target-specific bindings in the manifest.** Bindings are Cloudflare names, so the manifest
+3. **Generated operations: one unit per operation or one per resource?** See boundary finding 1.
+4. **Target-specific bindings in the manifest.** Bindings are Cloudflare names, so the manifest
    is target-specific. This argues for keeping it a **sibling of `contract.json`**, which is
    target-independent, rather than part of it. A target-neutral manifest would carry logical
    bindings, and each linker would map them.
-6. **Who owns an external binding unit:** the package that declares the interface, or the
+5. **Who owns an external binding unit:** the package that declares the interface, or the
    deployment that supplies the body?

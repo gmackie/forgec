@@ -211,3 +211,26 @@ fn function_units_import_capabilities_from_uses() {
     );
     assert_eq!(f.dependencies, ["@t/units/_/Ticket.status.close"]);
 }
+
+#[test]
+fn interface_hash_is_structural_not_nominal() {
+    // Two functions with the same signature and different names share an interface: either body
+    // (a JS module or a WASM component of the same shape) can be bound to either symbol.
+    let twin = BASE.replace(
+        "workflow Resolve {",
+        "function Reopen {\n  input EscalateInput\n  output Ticket.Record\n  uses {\n    Ticket read\n    Ticket.status.close\n  }\n  errors {\n    AlreadyClosed\n  }\n}\n\nworkflow Resolve {",
+    );
+    let p = unit_plan(&twin);
+    let (a, b) = (unit(&p, "Escalate"), unit(&p, "Reopen"));
+    assert_ne!(a.symbol, b.symbol);
+    assert_eq!(a.interface_hash, b.interface_hash);
+    // The symbol stays the binding name; a different signature still differs.
+    let other = unit_plan(&twin.replace(
+        "  errors {\n    AlreadyClosed\n  }\n}\n\nworkflow",
+        "  errors {\n    Locked\n  }\n}\n\nworkflow",
+    ));
+    assert_ne!(
+        unit(&other, "Escalate").interface_hash,
+        unit(&other, "Reopen").interface_hash
+    );
+}

@@ -58,7 +58,8 @@ pub struct PlannedUnit {
     pub interface_hash: String,
     /// forge-native: `{ declaration }` digest. js-module: where the bundler finds the body.
     pub implementation: Value,
-    /// Symbols of the units this unit calls; their unit hashes enter this unit's hash.
+    /// Symbols of the units this unit calls. Their interface hashes enter this unit's hash; the
+    /// exact implementations are pinned by the closure hash of each entry point.
     pub dependencies: Vec<String>,
     pub imports: Vec<CapabilityImport>,
     pub bindings: Vec<Binding>,
@@ -547,9 +548,9 @@ fn function_unit(
         bindings.extend(sends_bindings(&s.channel, &s.message));
     }
     let roots: Vec<&TypeSpec> = f.input.iter().chain(f.output.iter()).collect();
-    // `role` is left out: calling a function declared here or in a dependency is the same contract.
+    // Structural: no symbol (the manifest keeps it as the binding name) and no role, so units of the
+    // same shape share an interface hash whatever they are called or wherever they are declared.
     let interface = json!({
-        "symbol": f.id,
         "input": f.input,
         "output": f.output,
         "errors": sorted(f.errors.iter().cloned()),
@@ -619,7 +620,6 @@ fn operation_unit(
         field_types.extend(t.input.iter().map(|f| f.ty.clone()));
     }
     let interface = json!({
-        "symbol": op.id,
         "operation": { "kind": op.kind, "query": op.query, "action": op.action },
         "resource": r.id,
         "detail": detail,
@@ -759,7 +759,6 @@ fn workflow_unit(scope: &Scope, w: &Workflow, cf_binding: Option<&str>) -> Plann
     }
     let roots: Vec<&TypeSpec> = w.input.iter().chain(w.output.iter()).collect();
     let interface = json!({
-        "symbol": w.id,
         // In-flight instances pin the version: it is part of what callers rely on.
         "version": w.version,
         "input": w.input,
