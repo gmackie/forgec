@@ -551,10 +551,18 @@ fn function_unit(
         });
         bindings.extend(sends_bindings(&s.channel, &s.message));
     }
-    let roots: Vec<&TypeSpec> = f.input.iter().chain(f.output.iter()).collect();
+    // An implementation sees its capabilities' types as much as its own signature's (FORG-36):
+    // they enter the interface as the WIT world's imports carry them.
+    let (surface, reached) = crate::wit::capability_surface(scope, &imports);
+    let roots: Vec<&TypeSpec> = f
+        .input
+        .iter()
+        .chain(f.output.iter())
+        .chain(&reached)
+        .collect();
     // Structural: no symbol (the manifest keeps it as the binding name) and no role, so units of the
     // same shape share an interface hash whatever they are called or wherever they are declared.
-    let interface = json!({
+    let mut interface = json!({
         "input": f.input,
         "output": f.output,
         "errors": sorted(f.errors.iter().cloned()),
@@ -563,6 +571,10 @@ fn function_unit(
         "purpose": f.purpose,
         "types": scope.types(&roots),
     });
+    // Only units with capabilities carry it, so a pure unit's interface hash is unchanged.
+    if !surface.is_empty() {
+        interface["capabilitySignatures"] = json!(surface);
+    }
     let imports = sorted(imports);
     let wit = (!f.generated).then(|| crate::wit::function_world(scope, f, &imports));
     let (kind, implementation) = if f.generated {

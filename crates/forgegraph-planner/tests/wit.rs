@@ -72,17 +72,37 @@ fn pricing_quote_order_world_and_lowering() {
 
 #[test]
 fn committed_component_wit_matches_the_generated_world() {
-    // The Rust unit is built against a checked-in copy; it must never drift from the compiler.
+    // The Rust units are built against checked-in copies; they must never drift from the compiler.
     let ir = compile_dir("pricing", &[]);
     let p = unit_plan(&ir, &[]);
-    let committed =
-        std::fs::read_to_string(examples().join("pricing/impl/quote-order-rs/wit/unit.wit"))
-            .unwrap();
-    assert_eq!(
-        committed,
-        world(&p, "QuoteOrder"),
-        "regenerate with `forgec wit examples/pricing --unit QuoteOrder > examples/pricing/impl/quote-order-rs/wit/unit.wit`"
-    );
+    for (unit, krate) in [
+        ("QuoteOrder", "quote-order-rs"),
+        ("PriceCart", "price-cart-rs"),
+    ] {
+        let committed =
+            std::fs::read_to_string(examples().join(format!("pricing/impl/{krate}/wit/unit.wit")))
+                .unwrap();
+        assert_eq!(
+            committed,
+            world(&p, unit),
+            "regenerate with `forgec wit examples/pricing --unit {unit} > examples/pricing/impl/{krate}/wit/unit.wit`"
+        );
+    }
+}
+
+#[test]
+fn pricing_price_cart_imports_a_resource_read() {
+    // FORG-36: the reference unit for capability calls from WASM.
+    let ir = compile_dir("pricing", &[]);
+    let p = unit_plan(&ir, &[]);
+    insta::assert_snapshot!("pricing_price_cart_wit", world(&p, "PriceCart"));
+    let UnitWit::Ok { lowering, .. } = wit_of(&p, "PriceCart") else {
+        unreachable!()
+    };
+    let imports = lowering["imports"].as_array().unwrap();
+    assert_eq!(imports.len(), 1);
+    assert_eq!(imports[0]["interface"], "forge:unit/resource-product-read");
+    assert_eq!(imports[0]["functions"][0]["error"], "fault");
 }
 
 #[test]
