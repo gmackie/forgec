@@ -12,7 +12,10 @@ export interface SqlSchema {
 export interface Policy {
   /** What the policy was derived from, for logs and problems. */
   label: string;
-  /** Unrestricted runtime child (the sweep, and `uncovered` fallback). Always reported. */
+  /**
+   * Unrestricted runtime child. Since FORG-33 only the opt-in `uncovered` fallback, and the sweep
+   * of a manifest sealed before FORG-33 (no root), are privileged. Always reported.
+   */
   privileged: boolean;
   tables: { read: string[]; write: string[] };
   /** R2 bindings (object store handles). */
@@ -35,13 +38,18 @@ const WRITE_MODES = new Set(["write", "create", "delete"]);
 /** Runtime-owned tables (receipts, audit, outbox, documents). Not narrowed: see README finding. */
 export const systemTables = (schema: SqlSchema) => schema.systemTables.map((t) => t.name);
 
+export const SWEEP_SERVICE = "outbox-and-workflow-sweep";
+
 export function derivePolicy(manifest: ClosureManifest, entry: EntryPoint, schema: SqlSchema): Policy {
-  if (entry.runtimeService === "outbox-and-workflow-sweep") return privilegedPolicy(manifest, schema, `runtime:${entry.runtimeService}`);
+  if (entry.runtimeService === SWEEP_SERVICE && !entry.root) return privilegedPolicy(manifest, schema, `runtime:${entry.runtimeService}`);
   const tableOf = new Map(schema.tables.map((t) => [t.resource, t]));
   const read = new Set<string>();
   const write = new Set<string>();
   const unlinked: string[] = [];
-  let usesStorage = entry.runtimeService === "workflow-instances";
+  // The runtime's own tables (outbox, ledgers, workflow instances, documents, the schedule index the
+  // runtime records every authenticated tenant in) back every entry point but the object-bytes
+  // route, which answers from R2 before authenticating.
+  let usesStorage = entry.runtimeService !== undefined && entry.runtimeService !== "object-bytes";
   for (const i of entry.imports) {
     const m = /^resource:([^#]+)#([A-Za-z]+)$/.exec(i.capability);
     if (!m) continue;
@@ -107,7 +115,7 @@ export function privilegedPolicy(manifest: ClosureManifest, schema: SqlSchema, l
   };
 }
 
-/** The signed object-bytes route (`/_forge/objects/<token>`) has no manifest entry point (README finding). */
+/** The signed object-bytes route (`/_forge/objects/<token>`) of a manifest sealed before FORG-33, which had no entry point for it. */
 export function objectRoutePolicy(manifest: ClosureManifest): Policy {
   const r2 = sorted(manifest.entryPoints.flatMap((e) => e.bindings).filter((b) => b.type === "r2").map((b) => b.name));
   return { label: "runtime:object-bytes", privileged: false, tables: { read: [], write: [] }, objects: r2, queues: [], workflows: [], egress: [], units: [], unlinked: [] };

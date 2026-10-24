@@ -5,7 +5,7 @@
 //   T3_DIFFERENTIAL=1 pnpm --filter @forgegraph/linker-packed exec vitest run test/differential.test.ts
 //
 // Expects research/composable-units/t3-linker-packed/run.sh to have linked the targets first.
-// Writes research/composable-units/t3-linker-packed/results/conformance.json.
+// Writes research/composable-units/t3-linker-packed/results/conformance.json, or $LINK_RESULTS/conformance.json.
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
@@ -21,7 +21,7 @@ import { scriptsOf, serve, type LocalScript } from "../src/local.ts";
 const root = resolve(import.meta.dirname, "../../..");
 const app = join(root, "examples/acme");
 const linked = join(app, "generated/linked");
-const results = join(root, "research/composable-units/t3-linker-packed/results");
+const results = resolve(process.env["LINK_RESULTS"] ?? join(root, "research/composable-units/t3-linker-packed/results"));
 const env = readJsonc(join(app, "deploy/cloudflare/wrangler.jsonc")) as Environment;
 
 const wholeApp: LocalScript = {

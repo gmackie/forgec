@@ -19,8 +19,11 @@ Each script carries only:
 
 - the unit modules of its group's closures, copied byte for byte from the manifest and re-verified
   against their digests;
-- a slice of `app.json` with the declarations those closures reach (`src/slice.ts`). Groups the
-  manifest cannot describe get the whole `app.json`, marked `fallback` with the reason;
+- a slice of `app.json` with the declarations those closures reach (`src/slice.ts`). Since FORG-33
+  every runtime surface is an entry point, so the residual group (requests no entry point claims)
+  gets an empty slice and the sweep gets its dispatch unit's closure. Contract-metadata routes take
+  the whole `app.json` by design (mode `whole`: they publish the whole contract). Only a manifest
+  that still lists `uncovered` surfaces makes the residual a whole-app `fallback`, with the reason;
 - a thin host (`src/host.ts`) that passes the runtime only the bindings the manifest declares,
   answers only its own routes, and forwards outbox dispatch to the dispatch owner when its model is a
   slice.
@@ -42,4 +45,5 @@ Why a package of its own rather than part of `@forgegraph/units`: units *produce
 host. Every linker (A here, B in FORG-30) is meant to consume the same manifest independently, so the
 schema is the contract between them and neither linker depends on the other.
 
-Results for the reference app: `research/composable-units/t3-linker-packed/`.
+Results for the reference app: `research/composable-units/t3-linker-packed/`, and after FORG-33
+`research/composable-units/r2-coverage/`.

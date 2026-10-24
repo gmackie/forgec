@@ -10,9 +10,19 @@ export interface Binding {
 }
 export type Provider = { kind: "unit"; unit: string } | { kind: "runtime"; service: string };
 
+/** FORG-33: where a unit is declared or implemented. Provenance; only manifestHash covers it. */
+export interface SourceRef {
+  part: "declaration" | "body";
+  package?: string;
+  path: string;
+  start: number;
+  end: number;
+  gitBlob: string;
+}
+
 export interface ManifestUnit {
   symbol: string;
-  role: "function" | "external" | "operation" | "workflow";
+  role: "function" | "external" | "operation" | "workflow" | "view" | "projection" | "cache" | "schedule" | "service";
   kind: "js-module" | "wasm-component" | "forge-native";
   interfaceHash: string;
   implementationHash: string;
@@ -21,10 +31,11 @@ export interface ManifestUnit {
   imports: Array<{ capability: string; provider: Provider }>;
   bindings: Binding[];
   findings: unknown[];
+  sources?: SourceRef[];
 }
 
 export interface EntryPoint {
-  kind: "http-route" | "queue-consumer" | "cron" | "workflow" | "workflow-step" | "durable-object";
+  kind: "http-route" | "queue-consumer" | "cron" | "workflow" | "workflow-step" | "durable-object" | "subscription";
   id: string;
   trigger: Record<string, unknown>;
   root: string | null;
@@ -158,12 +169,17 @@ export async function resolveManifest(manifest: ClosureManifest): Promise<Resolv
   return { manifest, entries, routes, byQueue, byWorkflowClass };
 }
 
-/** The http-route entry point for a request, preferring static segments left to right. */
-export function matchRoute(resolved: Resolved, method: string, pathname: string): EntryPoint | null {
+/**
+ * The http-route entry point for a request, preferring static segments left to right. With
+ * `anyMethod`, the method is ignored: a request whose method no entry point serves on a known path
+ * (a CORS preflight, or what the runtime answers 405) runs in that path's child, whose model has no
+ * route for the method either, so the runtime answers it without reaching any capability.
+ */
+export function matchRoute(resolved: Resolved, method: string, pathname: string, { anyMethod = false } = {}): EntryPoint | null {
   const parts = splitPath(pathname);
   let best: { route: Route; score: string } | null = null;
   for (const r of resolved.routes) {
-    if (r.method !== method.toUpperCase() || r.segments.length !== parts.length) continue;
+    if ((!anyMethod && r.method !== method.toUpperCase()) || r.segments.length !== parts.length) continue;
     if (!r.segments.every((s, i) => s === null || s === parts[i])) continue;
     const score = r.segments.map((s) => (s === null ? "0" : "1")).join("");
     if (!best || score > best.score) best = { route: r, score };

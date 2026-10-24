@@ -22,8 +22,11 @@ const linkError = async (p: Promise<unknown>) => {
 describe("resolveManifest", () => {
   it("resolves the sealed acme manifest", async () => {
     const r = await resolveManifest(acmeManifest());
-    expect(r.entries.size).toBe(64);
-    expect(r.routes.length).toBe(55);
+    expect(r.entries.size).toBe(acmeManifest().entryPoints.length);
+    expect(r.routes.length).toBe(acmeManifest().entryPoints.filter((e) => e.kind === "http-route").length);
+    // FORG-33: every surface the runtime serves is an entry point.
+    expect(acmeManifest().uncovered).toEqual([]);
+    for (const id of ["POST /v1/changesets", "POST /v1/imports/stage", "GET /v1/views/pending-orders", "GET /v1/caches/current-site-policy", "POST /v1/schedules/nightly-reconciliation/tick", "GET /forge/discovery", "GET /_forge/objects/{token}"]) expect(r.entries.has(id), id).toBe(true);
     expect(r.byQueue.get("forge-acme-commerce-fulfill-order")?.id).toBe("fulfill-order");
     expect(r.byWorkflowClass.get("ProcessOrderWorkflow")?.id).toBe("@acme/commerce/_/ProcessOrder");
   });
@@ -35,7 +38,9 @@ describe("resolveManifest", () => {
     expect(matchRoute(r, "get", "/v1/orders/o1/submit")).toBeNull();
     expect(matchRoute(r, "POST", "/v1/orders/o1/submit")?.id).toBe("POST /v1/orders/{order}/submit");
     expect(matchRoute(r, "GET", "/v1/nothing")).toBeNull();
-    expect(matchRoute(r, "POST", "/v1/changesets")).toBeNull();
+    expect(matchRoute(r, "POST", "/v1/changesets")?.id).toBe("POST /v1/changesets");
+    expect(matchRoute(r, "DELETE", "/v1/customers")).toBeNull();
+    expect(matchRoute(r, "DELETE", "/v1/customers", { anyMethod: true })?.id).toMatch(/^(GET|POST) \/v1\/customers$/);
   });
 
   it("refuses a js-module unit whose module hash the manifest does not list", async () => {
@@ -119,11 +124,31 @@ describe("derivePolicy", () => {
     expect(derivePolicy(m, entry(m, "GET /v1/orders/{id}"), schema()).objects).toEqual([]);
   });
 
-  it("only the sweep is privileged", () => {
+  it("no entry point is privileged: the sweep is narrowed to the dispatch unit's closure", () => {
     const m = acmeManifest();
-    for (const e of m.entryPoints) expect(derivePolicy(m, e, schema()).privileged).toBe(e.runtimeService === "outbox-and-workflow-sweep");
+    for (const e of m.entryPoints) expect(derivePolicy(m, e, schema()).privileged, e.id).toBe(false);
+    const sweep = derivePolicy(m, entry(m, "forge:sweep"), schema());
+    expect(sweep.queues).toEqual(["Q_FULFILL_ORDER"]);
+    expect(sweep.workflows).toEqual(["WF_PROCESS_ORDER"]);
+    expect(sweep.tables.write).toEqual(expect.arrayContaining(["order_", "forge_outbox"]));
+    expect(sweep.tables.write).not.toContain("customer");
+    expect(sweep.tables.read).not.toContain("department");
+    // A manifest sealed before FORG-33 (sweep without a root) still gets the reported whole-app child.
+    const old = { ...entry(m, "forge:sweep"), root: null };
+    expect(derivePolicy(m, old, schema()).privileged).toBe(true);
     const all = privilegedPolicy(m, schema(), "x");
     expect(all.tables.write).toEqual(expect.arrayContaining(["customer", "order_", "forge_outbox"]));
+  });
+
+  it("gives changesets every stageable table and the object-bytes route only its bucket", () => {
+    const m = acmeManifest();
+    const cs = derivePolicy(m, entry(m, "POST /v1/changesets"), schema());
+    expect(cs.tables.write).toEqual(expect.arrayContaining(["customer", "department", "order_", "order_document", "site", "site_policy"]));
+    const objects = derivePolicy(m, entry(m, "GET /_forge/objects/{token}"), schema());
+    expect([objects.objects, objects.tables]).toEqual([["BLOBS"], { read: [], write: [] }]);
+    const view = derivePolicy(m, entry(m, "GET /v1/views/pending-orders"), schema());
+    expect(view.tables.read).toContain("order_");
+    expect(view.tables.write).not.toContain("order_");
   });
 
   it("child code never sweeps the outbox in-process and exposes the runtime's dispatch() (FORG-29 hand-off)", () => {

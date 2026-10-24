@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://forge.dev/schemas/closure-manifest.schema.json",
   "title": "Forge Closure Manifest (FORG-28, research)",
-  "description": "Content-addressed description of a deployment as composable units. Each entry point (route, queue consumer, cron, workflow, workflow step, Durable Object class) maps to a root unit, the resolved closure of units it can reach, the capability imports those units bind to runtime providers, and the platform bindings the closure needs. Every linker consumes this one format. Digests are `sha256:` + hex(sha256(domain + canonical JSON)), where canonical JSON sorts object keys and has no whitespace. interfaceHash uses domain `forge:unit-interface:` over the DomainIR-derived interface, which is structural: no symbol, no role, docs removed, so units of the same shape share it. implementationHash uses `forge:unit-impl:` over the unit's `implementation` object. unitHash uses `forge:unit:` over {interface, implementation, dependencies} with the dependencies' interface hashes sorted, so a body edit re-identifies only that unit. closureHash uses `forge:closure:` over an entry point's sorted closure of unit hashes and pins the exact implementations it runs. manifestHash uses `forge:closure-manifest:` over the manifest without `manifestHash`. `kind` is metadata and never enters a digest; `symbol` is the binding name and enters no unit digest.",
+  "description": "Content-addressed description of a deployment as composable units. Each entry point (route, queue consumer, cron, workflow, workflow step, Durable Object class) maps to a root unit, the resolved closure of units it can reach, the capability imports those units bind to runtime providers, and the platform bindings the closure needs. Every linker consumes this one format. Digests are `sha256:` + hex(sha256(domain + canonical JSON)), where canonical JSON sorts object keys and has no whitespace. interfaceHash uses domain `forge:unit-interface:` over the DomainIR-derived interface, which is structural: no symbol, no role, docs removed, so units of the same shape share it. implementationHash uses `forge:unit-impl:` over the unit's `implementation` object. unitHash uses `forge:unit:` over {interface, implementation, dependencies} with the dependencies' interface hashes sorted, so a body edit re-identifies only that unit. closureHash uses `forge:closure:` over an entry point's sorted closure of unit hashes and pins the exact implementations it runs. manifestHash uses `forge:closure-manifest:` over the manifest without `manifestHash`. `kind` is metadata and never enters a digest; `symbol` is the binding name and enters no unit digest. A unit's `sources` (FORG-33: `.forge` declaration and `impl/` body spans with git blob hashes) are provenance: only manifestHash covers them, so moving or re-wording text around a declaration never re-identifies a unit, while a sealed span cannot be altered unnoticed.",
   "type": "object",
   "required": ["version", "manifestHash", "package", "target", "buildHash", "toolchain", "units", "modules", "entryPoints", "hostBindings", "uncovered"],
   "additionalProperties": false,
@@ -44,7 +44,7 @@
     "hostBindings": { "type": "array", "items": { "$ref": "#/$defs/binding" }, "description": "Bindings the runtime host needs whatever closure it runs." },
     "uncovered": {
       "type": "array",
-      "description": "Served surfaces not yet split into units, listed so their absence is explicit.",
+      "description": "Served surfaces not yet split into units, listed so their absence is explicit. Since FORG-33 the planner covers views, projections, caches, schedules, changesets, imports, admin, contract metadata, object bytes and realtime upgrades; an entry here means a declaration the runtime cannot execute as planned (the reason says why). A linker may serve these only through an explicit, reported fallback.",
       "items": {
         "type": "object",
         "required": ["kind", "id", "reason"],
@@ -90,8 +90,8 @@
       "properties": {
         "capability": {
           "type": "string",
-          "pattern": "^(resource:[^#]+#[A-Za-z]+|transition:.+|function:.+|send:[^#]+#.+|wait:[^#]+#.+|sleep)$",
-          "description": "A handle the linker injects. A unit gets exactly these handles, never the raw environment; an undeclared capability gets no handle and fails closed."
+          "pattern": "^(resource:[^#]+#[A-Za-z]+|transition:.+|function:.+|send:[^#]+#.+|wait:[^#]+#.+|sleep|operation:.+|workflow:.+|projection:.+|schedule:.+|service:.+|deliver:.+)$",
+          "description": "A handle the linker injects. A unit gets exactly these handles, never the raw environment; an undeclared capability gets no handle and fails closed. `operation:`, `workflow:`, `projection:`, `schedule:` and `service:` name a unit the importer invokes (read models page through generated operations, the dispatcher resumes workflows and feeds projections). `deliver:<subscription>` is the outbox delivering to a queue subscription or realtime stream (`deliver:realtime:<channel>`). A generated operation of an `@audited` resource imports `send:<Resource>.changes#<Created|Updated|Deleted|Restored|Transitioned>`."
         },
         "provider": { "$ref": "#/$defs/provider" }
       }
@@ -107,13 +107,27 @@
         "source": { "type": "string", "description": "App-relative source file the match came from." }
       }
     },
+    "source": {
+      "type": "object",
+      "required": ["part", "path", "start", "end", "gitBlob"],
+      "additionalProperties": false,
+      "description": "Where a unit is declared or implemented, so a manifest can be checked against a source snapshot (Loom). Enters manifestHash only.",
+      "properties": {
+        "part": { "enum": ["declaration", "body"], "description": "declaration: the `.forge` declaration (an operation's is its resource's). body: the `impl/` definition (the exported statement), or the whole component file." },
+        "package": { "type": "string", "description": "Package whose root `path` is relative to, when it is not the manifest's package (an external function is declared by the package exporting it)." },
+        "path": { "type": "string", "pattern": "^[^/].*$", "description": "Relative to the package root, `/`-separated." },
+        "start": { "type": "integer", "minimum": 0, "description": "Byte offset (UTF-8) of the first byte." },
+        "end": { "type": "integer", "minimum": 0, "description": "Byte offset one past the last byte." },
+        "gitBlob": { "type": "string", "pattern": "^[0-9a-f]{40}$", "description": "`git hash-object` of the whole file: SHA-1 of `blob <length>\\0` followed by its bytes." }
+      }
+    },
     "unit": {
       "type": "object",
-      "required": ["symbol", "role", "kind", "interfaceHash", "implementationHash", "implementation", "dependencies", "imports", "bindings", "findings"],
+      "required": ["symbol", "role", "kind", "interfaceHash", "implementationHash", "implementation", "dependencies", "imports", "bindings", "findings", "sources"],
       "additionalProperties": false,
       "properties": {
         "symbol": { "type": "string", "description": "Stable id of the declaration (specs/language/identity.md): the name callers bind to. Not part of interfaceHash or unitHash." },
-        "role": { "enum": ["function", "external", "operation", "workflow"] },
+        "role": { "enum": ["function", "external", "operation", "workflow", "view", "projection", "cache", "schedule", "service"], "description": "view, projection, cache and schedule units execute their declaration. service units (changesets, imports, admin, schedules, dispatch) are runtime services whose closure the planner owns; they have no source span." },
         "kind": { "enum": ["js-module", "wasm-component", "forge-native"], "description": "Artifact format. Metadata only." },
         "interfaceHash": { "$ref": "#/$defs/digest" },
         "implementationHash": { "$ref": "#/$defs/digest" },
@@ -162,7 +176,8 @@
         "dependencies": { "type": "array", "items": { "$ref": "#/$defs/digest" }, "uniqueItems": true, "description": "Unit hashes the called units resolve to in this manifest. unitHash covers their interface hashes, not these." },
         "imports": { "type": "array", "items": { "$ref": "#/$defs/import" } },
         "bindings": { "type": "array", "items": { "$ref": "#/$defs/binding" } },
-        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } }
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } },
+        "sources": { "type": "array", "items": { "$ref": "#/$defs/source" }, "description": "Declaration first, then body. Empty for runtime-service units." }
       }
     },
     "module": {
@@ -180,14 +195,14 @@
       "required": ["kind", "id", "trigger", "root", "closure", "closureHash", "imports", "bindings"],
       "additionalProperties": false,
       "properties": {
-        "kind": { "enum": ["http-route", "queue-consumer", "cron", "workflow", "workflow-step", "durable-object"] },
+        "kind": { "enum": ["http-route", "queue-consumer", "cron", "workflow", "workflow-step", "durable-object", "subscription"], "description": "subscription: an in-process outbox consumer (a projection fed by `<Resource>.changes`), delivered by the dispatcher." },
         "id": { "type": "string" },
         "trigger": { "type": "object" },
         "root": {
           "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }],
           "description": "Null when the runtime serves the entry point without application code (see runtimeService)."
         },
-        "runtimeService": { "type": "string" },
+        "runtimeService": { "type": "string", "description": "The runtime service serving the entry point: workflow-instances, schedule-status, contract-metadata, object-bytes, realtime-upgrade, realtime-fanout (root null), or outbox-and-workflow-sweep (rooted at the dispatch unit, whose closure is what the sweep may run)." },
         "closure": { "type": "array", "items": { "$ref": "#/$defs/digest" }, "uniqueItems": true, "description": "Root plus every unit reachable through dependencies, sorted." },
         "closureHash": { "$ref": "#/$defs/digest", "description": "Identity of exactly what this entry point runs: H(`forge:closure:`, closure). Changes when any implementation in the closure changes, even when no unit hash outside it does." },
         "imports": {

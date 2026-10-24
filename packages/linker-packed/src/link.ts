@@ -149,23 +149,24 @@ export async function link(options: LinkOptions): Promise<Link> {
     return [...m.values()];
   })();
 
-  // Pass 1: decide every group (slice, capabilities, dispatch mode) before emitting anything.
+  // Pass 1: decide every group (slice, capabilities, dispatch mode) before emitting anything. The
+  // dispatch owner is the sweep's group: it alone sweeps the outbox; every other group forwards.
+  const ownerIds = groups.find((ids) => ids.includes("forge:sweep")) ?? groups.find((ids) => ids.includes(RESIDUAL.id))!;
   const planned = groups.map((ids) => {
     const ms = ids.map((id) => byId.get(id)!);
     const eps = ms.filter((m): m is ManifestEntryPoint => m.kind !== "residual");
     const name = scriptName(manifest.package.name, strategy.name, ids);
-    const sliced = options.appJson === "full" ? { app, report: { ...sliceApp({ app, manifest, entryPoints: [RESIDUAL] }).report, fallbackReason: "linked with appJson: full" } } : sliceApp({ app, manifest, entryPoints: ms });
-    const dispatch: "local" | "forward" = sliced.report.mode === "fallback" ? "local" : "forward";
+    const sliced = options.appJson === "full" ? { app, report: { ...sliceApp({ app, manifest, entryPoints: [] }).report, mode: "fallback" as const, bytesSlice: JSON.stringify(app).length, fallbackReason: "linked with appJson: full" } } : sliceApp({ app, manifest, entryPoints: ms });
+    const dispatch: "local" | "forward" = ids === ownerIds ? "local" : "forward";
     const capabilities = checkCapabilities({ manifest, app, entryPoints: eps, dispatch, ...(options.allowFindings ? { allowFindings: true } : {}) });
     // A fallback group runs the whole app (any operation, every subscription), so it gets every binding the manifest declares.
     if (sliced.report.mode === "fallback") capabilities.injected = [...new Map([...capabilities.injected, ...declaredAll].map((b) => [`${b.type}\0${b.name}`, b])).values()].sort((a, b) => (`${a.type}\0${a.name}` < `${b.type}\0${b.name}` ? -1 : 1));
     const residual = ms.some((m) => m.kind === "residual");
     const routes = residual ? null : eps.map(routeOf).filter((r): r is HostRoute => !!r);
-    const units = [...new Set(residual || ms.some((m) => m.id === "forge:sweep") || options.appJson === "full" ? Object.keys(manifest.units) : eps.flatMap((e) => e.closure))].sort();
+    const units = [...new Set(sliced.report.mode === "fallback" ? Object.keys(manifest.units) : eps.flatMap((e) => e.closure))].sort();
     return { name, ids, eps, residual, sliced, dispatch, capabilities, routes, units };
   });
-  const sweepGroup = planned.find((g) => g.ids.includes("forge:sweep"));
-  const owner = (sweepGroup ?? planned.find((g) => g.residual))!;
+  const owner = planned.find((g) => g.ids === ownerIds)!;
   const ownerOf = (pred: (e: ManifestEntryPoint) => boolean) => planned.find((g) => g.eps.some(pred))?.name;
 
   rmSync(options.out, { recursive: true, force: true });
@@ -179,9 +180,13 @@ export async function link(options: LinkOptions): Promise<Link> {
     const workflows = g.eps.filter((e) => e.kind === "workflow").map((e) => ({ className: (e.trigger as { className: string }).className, workflow: e.id }));
     const realtime = g.eps.find((e) => e.kind === "durable-object");
     const sweepAll = g.ids.includes("forge:sweep");
+    // Manifest routes on the paths this script owns: a method no entry point serves there is a 405
+    // the runtime answers, never another script's route.
+    const owned = new Set((g.routes ?? []).map((r) => r.path));
     const host: HostConfig = {
       script: g.name,
       routes: g.routes,
+      pathRoutes: allRoutes.filter((r) => owned.has(r.path)),
       deny: g.residual && strategy.name !== "single" ? allRoutes : [],
       bindings: g.capabilities.injected.filter((b) => ENV_BINDINGS.has(b.type)).map((b) => b.name),
       dispatch: g.dispatch,
@@ -295,7 +300,9 @@ function routerSource(table: Array<HostRoute & { script: string }>, fallback: st
     `export default {`,
     `  async fetch(request, env) {`,
     `    const path = new URL(request.url).pathname;`,
-    `    const hit = table.find(([m, re]) => m === request.method && re.test(path));`,
+    `    // An exact (method, path) entry; else the script owning the path, whose runtime answers 405 or a`,
+    `    // CORS preflight; else the residual, which authenticates and answers 404.`,
+    `    const hit = table.find(([m, re]) => m === request.method && re.test(path)) ?? table.find(([, re]) => re.test(path));`,
     `    const target = env[hit ? hit[2] : ${JSON.stringify(bindingOf(fallback))}];`,
     `    // Buffer the body: a callee that answers before reading it (413, 401) would otherwise leave the`,
     `    // client's connection half-read across the hop, and the client's next request on it fails.`,

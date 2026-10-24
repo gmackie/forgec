@@ -234,3 +234,160 @@ fn interface_hash_is_structural_not_nominal() {
         unit(&other, "Reopen").interface_hash
     );
 }
+
+#[test]
+fn acme_covers_every_runtime_surface() {
+    let p = acme();
+    assert!(p.uncovered.is_empty(), "{:?}", p.uncovered);
+    let ids: std::collections::BTreeSet<&str> =
+        p.entry_points.iter().map(|e| e.id.as_str()).collect();
+    for id in [
+        "GET /v1/views/pending-orders",
+        "GET /v1/customer-order-summaries/status",
+        "POST /v1/customer-order-summaries/rebuild",
+        "GET /v1/customer-order-summaries/{id}",
+        "GET /v1/caches/current-site-policy",
+        "GET /v1/schedules/nightly-reconciliation",
+        "POST /v1/schedules/nightly-reconciliation/tick",
+        "POST /v1/changesets",
+        "GET /v1/changesets/{id}/preview",
+        "POST /v1/imports/inspect",
+        "POST /v1/admin/fence",
+        "GET /forge/workspace.json",
+        "PUT /_forge/objects/{token}",
+        "GET /v1/live/orders",
+        "projection:CustomerOrderSummary",
+        "forge:sweep",
+    ] {
+        assert!(ids.contains(id), "{id}");
+    }
+    let root = |id: &str| {
+        p.entry_points
+            .iter()
+            .find(|e| e.id == id)
+            .unwrap()
+            .root
+            .clone()
+    };
+    assert_eq!(
+        root("forge:sweep").as_deref(),
+        Some("@acme/commerce/_/dispatch")
+    );
+    assert_eq!(
+        root("POST /v1/schedules/nightly-reconciliation/tick").as_deref(),
+        Some("@acme/commerce/_/schedules")
+    );
+    assert_eq!(root("GET /v1/schedules/nightly-reconciliation"), None);
+    // Read models reach their source through generated operations.
+    assert_eq!(
+        unit(&p, "PendingOrders").dependencies,
+        ["@acme/commerce/_/Order.list.byCustomer"]
+    );
+    assert_eq!(
+        unit(&p, "CurrentSitePolicy").dependencies,
+        ["@acme/commerce/_/SitePolicy.effective.bySite"]
+    );
+    // The dispatcher reaches every subscriber: projections, workflows, schedules, queues, streams.
+    let dispatch: Vec<&str> = unit(&p, "dispatch")
+        .imports
+        .iter()
+        .map(|i| i.capability.as_str())
+        .collect();
+    assert_eq!(
+        dispatch,
+        [
+            "deliver:fulfill-order",
+            "deliver:realtime:@acme/commerce/_/OrderEvents",
+            "projection:@acme/commerce/_/CustomerOrderSummary",
+            "service:@acme/commerce/_/schedules",
+            "workflow:@acme/commerce/_/ProcessOrder",
+        ]
+    );
+    // A changeset may name any operation: every operation of every (non-credential) resource.
+    let ops = p.units.iter().filter(|u| u.role == "operation").count();
+    assert_eq!(unit(&p, "changesets").dependencies.len(), ops);
+    // Audited resources publish the implicit `<Resource>.changes` channel.
+    let create = unit(&p, "Order.create");
+    assert_eq!(
+        create.interface["effects"]["sends"],
+        serde_json::json!(["@acme/commerce/_/Order.changes#Created"])
+    );
+    assert!(
+        create
+            .imports
+            .iter()
+            .any(|i| i.capability == "send:@acme/commerce/_/Order.changes#Created")
+    );
+    let cancel = p
+        .entry_points
+        .iter()
+        .find(|e| e.id == "POST /v1/workflows/process-order/{id}/cancel")
+        .unwrap();
+    assert_eq!(cancel.bindings.len(), 1);
+    assert_eq!(cancel.bindings[0].name, "WF_PROCESS_ORDER");
+    assert!(p.host_bindings.iter().any(|b| b.name == "FORGE_CORS"));
+}
+
+#[test]
+fn git_blob_is_git_hash_object() {
+    // `printf '' | git hash-object --stdin`, `printf 'hello\n' | git hash-object --stdin`
+    assert_eq!(
+        units::git_blob(b""),
+        "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    );
+    assert_eq!(
+        units::git_blob(b"hello\n"),
+        "ce013625030ba8dba906f756967f9e9ca394464a"
+    );
+}
+
+fn sourced(src: &str) -> units::UnitPlan {
+    let pkg = Package::inline("@t/units", vec![("src/index.forge".into(), src.into())]);
+    let out = compile(&pkg, &[]);
+    let ir = out.ir.clone().unwrap();
+    let mut p = units::plan(&ir, &[], &plan(&ir).unwrap());
+    let own = units::PackageSources {
+        package: pkg.name.clone(),
+        files: pkg
+            .files
+            .iter()
+            .map(|f| (f.path.clone(), f.text.clone()))
+            .collect(),
+        index: out.source_index.clone(),
+    };
+    units::attach_sources(&mut p, &own, &[]);
+    p
+}
+
+#[test]
+fn source_spans_locate_declarations_and_never_enter_a_hash() {
+    let base = sourced(BASE);
+    let f = unit(&base, "Escalate");
+    assert_eq!(f.sources.len(), 1);
+    let s = &f.sources[0];
+    assert_eq!(
+        (s.part.as_str(), s.path.as_str()),
+        ("declaration", "src/index.forge")
+    );
+    assert!(
+        BASE[s.start..s.end].contains("function Escalate"),
+        "{}",
+        &BASE[s.start..s.end]
+    );
+    assert_eq!(s.git_blob, units::git_blob(BASE.as_bytes()));
+    // A generated operation is located at its resource.
+    let op = &unit(&base, "Ticket.create").sources[0];
+    assert!(BASE[op.start..op.end].starts_with("resource Ticket"));
+    // Moving every declaration down changes spans and blob hashes, and no hash of any unit.
+    let moved_src = format!("// moved\n{BASE}");
+    let moved = sourced(&moved_src);
+    for (a, b) in base.units.iter().zip(&moved.units) {
+        assert_eq!(a.symbol, b.symbol);
+        assert_eq!(a.interface_hash, b.interface_hash, "{}", a.symbol);
+        assert_eq!(a.implementation, b.implementation, "{}", a.symbol);
+        for (x, y) in a.sources.iter().zip(&b.sources) {
+            assert_eq!(y.start, x.start + "// moved\n".len());
+            assert_ne!(x.git_blob, y.git_blob);
+        }
+    }
+}

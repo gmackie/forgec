@@ -7,7 +7,7 @@ import { WorkerEntrypoint, WorkflowEntrypoint, type WorkflowStepLike } from "clo
 import { childMain, childSource, COMPATIBILITY_DATE, type LinkerKit } from "./child.ts";
 import { digest, LINK_DOMAIN } from "./hash.ts";
 import { LinkError, matchRoute, resolveManifest, type ClosureManifest, type EntryPoint, type Resolved } from "./manifest.ts";
-import { derivePolicy, objectRoutePolicy, privilegedPolicy, type Policy, type SqlSchema } from "./policy.ts";
+import { derivePolicy, objectRoutePolicy, privilegedPolicy, SWEEP_SERVICE, type Policy, type SqlSchema } from "./policy.ts";
 import { checkSql } from "./sql-gate.ts";
 import { R2BlobStore, verifiedBlob, type BlobStore, type R2BucketLike } from "./store.ts";
 
@@ -49,6 +49,8 @@ interface Linked {
 interface ClosureStats {
   closureHash: string;
   label: string;
+  /** The child runs the whole app (the opt-in `uncovered` fallback, or a pre-FORG-33 sweep). */
+  privileged: boolean;
   cold: number;
   warm: number;
   buildMs: number[];
@@ -119,6 +121,7 @@ interface Child {
   stub: WorkerStubLike;
   id: string;
   closureHash: string;
+  privileged: boolean;
   cold: () => boolean;
   buildMs: number;
 }
@@ -157,21 +160,27 @@ async function childFor(env: HostEnv, ctx: { exports: Record<string, (o: { props
       globalOutbound: policy.egress.length ? ctx.exports["Egress"]!({ props: { label: policy.label, allow: policy.egress } satisfies EgressProps }) : null,
     };
   });
-  return { stub, id, closureHash, cold: () => cold, buildMs };
+  return { stub, id, closureHash, privileged: policy.privileged, cold: () => cold, buildMs };
 }
 
 function record(child: Child, label: string, cold: boolean) {
-  const s = stats.closures.get(child.id) ?? { closureHash: child.closureHash, label, cold: 0, warm: 0, buildMs: [] };
+  const s = stats.closures.get(child.id) ?? { closureHash: child.closureHash, label, privileged: child.privileged, cold: 0, warm: 0, buildMs: [] };
   if (cold) s.cold++;
   else s.warm++;
   if (child.buildMs) s.buildMs.push(child.buildMs);
   stats.closures.set(child.id, s);
 }
 
-const sweepEntry = (l: Linked) => l.resolved.manifest.entryPoints.find((e) => e.runtimeService === "outbox-and-workflow-sweep");
+const sweepEntry = (l: Linked) => l.resolved.manifest.entryPoints.find((e) => e.runtimeService === SWEEP_SERVICE);
 
-async function privilegedChild(env: HostEnv, ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, l: Linked, label: string): Promise<Child> {
+/**
+ * The child that runs the runtime's sweep, scheduled() and post-commit dispatch(). Since FORG-33 it
+ * is narrowed to the sweep entry point's closure (the dispatch unit: every subscriber, workflow and
+ * schedule). Only a manifest whose sweep has no root falls back to the whole app, reported.
+ */
+async function dispatchChild(env: HostEnv, ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, l: Linked, label: string): Promise<Child> {
   const sweep = sweepEntry(l);
+  if (sweep?.root) return childFor(env, ctx, l, sweep.closureHash, { ...derivePolicy(l.resolved.manifest, sweep, l.schema), label });
   return childFor(env, ctx, l, sweep?.closureHash ?? "runtime", privilegedPolicy(l.resolved.manifest, l.schema, label));
 }
 
@@ -236,11 +245,12 @@ export default {
       let policy: Policy;
       let closureHash: string;
       if (request.headers.get("upgrade")?.toLowerCase() === "websocket") throw new LinkError("UnlinkedEntryPoint", [`websocket ${url.pathname}: realtime streams are served by a Durable Object, which T4 does not link`]);
-      if (/^\/_forge\/objects\/[^/]+$/.test(url.pathname)) {
+      entry = matchRoute(l.resolved, request.method, url.pathname) ?? matchRoute(l.resolved, request.method, url.pathname, { anyMethod: true });
+      if (!entry && /^\/_forge\/objects\/[^/]+$/.test(url.pathname)) {
+        // A manifest sealed before FORG-33 has no object-bytes entry point.
         policy = objectRoutePolicy(m);
         closureHash = "runtime:object-bytes";
       } else {
-        entry = matchRoute(l.resolved, request.method, url.pathname);
         if (!entry) {
           if (env.LINKER_UNCOVERED !== "runtime") throw new LinkError("UnknownEntryPoint", [`${request.method} ${url.pathname} is not an entry point of manifest ${m.manifestHash}`]);
           stats.fallbacks.push(`${request.method} ${url.pathname}`);
@@ -270,8 +280,11 @@ export default {
       if (tenant && (sweep || !seenTenants.has(tenant))) {
         seenTenants.add(tenant);
         ctx.waitUntil(
-          privilegedChild(env, ctx, l, "runtime:dispatch")
-            .then((c) => c.stub.getEntrypoint("Forge")["dispatch"]!(tenant, { sweep }))
+          dispatchChild(env, ctx, l, "runtime:dispatch")
+            .then(async (c) => {
+              await c.stub.getEntrypoint("Forge")["dispatch"]!(tenant, { sweep });
+              record(c, "runtime:dispatch", c.cold());
+            })
             .catch((e: unknown) => {
               if (!sweep) seenTenants.delete(tenant);
               console.warn("linker: dispatch failed", String(e));
@@ -307,8 +320,8 @@ export default {
     const l = await current(env);
     if (!l) return;
     // The runtime's scheduled() runs the outbox sweep, every due schedule and the workflow sweep at
-    // once, so it needs the whole app; it is not narrowed per cron entry point (README).
-    const child = await privilegedChild(env, ctx, l, `cron:${event.cron ?? "?"}`);
+    // once, so every cron runs in the sweep's child: its closure covers all three (README).
+    const child = await dispatchChild(env, ctx, l, `cron:${event.cron ?? "?"}`);
     await child.stub.getEntrypoint("Forge")["scheduled"]!({ cron: event.cron, scheduledTime: event.scheduledTime });
     record(child, `cron:${event.cron ?? "?"}`, child.cold());
   },

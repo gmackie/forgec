@@ -21,6 +21,13 @@ imports the linker provides), hashes the module, derives unit hashes bottom-up t
 dependencies, and resolves every entry point's closure. A js-module unit with no body, a body
 for an unknown unit, or a dependency cycle fails here, before anything is deployed.
 
+Each sealed unit carries `sources` (FORG-33): the `.forge` declaration span forgec planned (an
+operation's is its resource's; an external's lives in the package that exports it, named by
+`package`) and the `impl/` body span this package finds, each with the file's `git hash-object`
+blob hash. Loom can check a manifest against a source snapshot with them. They are provenance: only
+`manifestHash` covers them, so moving text around never re-identifies a unit. Sealing refuses a
+plan whose `.forge` files changed after forgec planned it (`stale plan`).
+
 Findings are a text scan of each unit's own sources for authority that bypasses capability
 handles (raw `env`, `fetch`, platform modules, randomness, clocks). They are evidence for
 review, not a sandbox.
@@ -41,4 +48,5 @@ it otherwise. It stores the component and the unit's WIT lowering as blobs and m
 plus glue, and `src/wit-lowering.ts` adapts the glue to wire values, so callers cannot tell which
 kind they are calling.
 
-Results: `research/composable-units/t2-units/` (acme) and `research/composable-units/t5-wasm-unit/`.
+Results: `research/composable-units/t2-units/` (acme), `research/composable-units/t5-wasm-unit/` and
+`research/composable-units/r2-coverage/` (coverage and source spans).
