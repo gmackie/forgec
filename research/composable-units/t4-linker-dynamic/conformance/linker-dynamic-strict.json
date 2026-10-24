@@ -1,0 +1,126 @@
+{
+  "exitCode": 1,
+  "scenarios": [
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m2.concurrency",
+      "passed": true,
+      "steps": 5
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m2.customer-crud",
+      "passed": true,
+      "steps": 18
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m2.idempotency",
+      "passed": true,
+      "steps": 4
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m2.pagination",
+      "passed": true,
+      "steps": 10
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m2.site-references",
+      "passed": true,
+      "steps": 11
+    },
+    {
+      "failureCodes": {
+        "NotFound": 2,
+        "UnknownEntryPoint": 13,
+        "value": 2
+      },
+      "failures": 17,
+      "id": "m3.changesets",
+      "passed": false,
+      "steps": 19
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m3.integrity",
+      "passed": true,
+      "steps": 13
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m4.blobs",
+      "passed": true,
+      "steps": 19
+    },
+    {
+      "failureCodes": {
+        "NotFound": 1,
+        "UnknownEntryPoint": 5
+      },
+      "failures": 6,
+      "id": "m4.csv-import",
+      "passed": false,
+      "steps": 7
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m5.messaging",
+      "passed": true,
+      "steps": 13
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m6.temporal-hierarchy",
+      "passed": true,
+      "steps": 24
+    },
+    {
+      "failureCodes": {
+        "UnknownEntryPoint": 12,
+        "value": 3
+      },
+      "failures": 15,
+      "id": "m6.views-projections-cache",
+      "passed": false,
+      "steps": 24
+    },
+    {
+      "failureCodes": {
+        "UnknownEntryPoint": 6
+      },
+      "failures": 6,
+      "id": "m7.schedules",
+      "passed": false,
+      "steps": 7
+    },
+    {
+      "failureCodes": {},
+      "failures": 0,
+      "id": "m7.workflows",
+      "passed": true,
+      "steps": 29
+    },
+    {
+      "failureCodes": {
+        "UnknownEntryPoint": 7,
+        "value": 2
+      },
+      "failures": 9,
+      "id": "m8.limits",
+      "passed": false,
+      "steps": 18
+    }
+  ],
+  "target": "linker-dynamic-strict"
+}

@@ -1,0 +1,41 @@
+{
+  "name": "@forgegraph/linker-dynamic",
+  "version": "0.5.0",
+  "private": true,
+  "description": "Research (FORG-30): Linker B. A host Worker that resolves each request's entry point from a Closure Manifest and runs that entry point's closure in a child isolate from the Dynamic Worker Loader, cached by closure hash, with narrowed capability handles and no default network.",
+  "license": "Apache-2.0",
+  "author": "ForgeGraph contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gmackie/forgec.git",
+    "directory": "packages/linker-dynamic"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "node scripts/build-libs.mjs",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forgegraph/runtime": "workspace:*",
+    "effect": "4.0.3"
+  },
+  "devDependencies": {
+    "@forgegraph/units": "workspace:*",
+    "@types/node": "^24.0.0",
+    "esbuild": "^0.27.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.0.0",
+    "wrangler": "^4.83.0"
+  },
+  "forgegraph": {
+    "stability": "internal"
+  }
+}

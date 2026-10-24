@@ -228,6 +228,15 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       const dueAt = ((st["sleeping"] as { dueAt?: string } | undefined)?.dueAt ?? (st["waiting"] as { dueAt?: string } | undefined)?.dueAt) as string | undefined;
       return { status: st["status"] as string, ...(dueAt ? { dueAt } : {}) };
     },
+    /**
+     * The post-commit nudge alone: one tenant's outbox dispatch, without schedules or workflow
+     * sweeps. `fetch` runs it itself when given a ctx; a host that links entry points into
+     * separate isolates (FORG-30) runs it where every subscription's transport is bound.
+     */
+    async sweepTenant(env: WorkerEnv, tenant: string): Promise<void> {
+      const { dispatcher } = build(env, "https://dispatch.invalid");
+      await Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }));
+    },
     /** Cron trigger: the durable outbox sweep (plan §14: waitUntil nudges are not a delivery guarantee). */
     async scheduled(event: { cron?: string; scheduledTime?: number } | unknown, env: WorkerEnv, ctx: { waitUntil(p: Promise<unknown>): void }): Promise<void> {
       const { storage, dispatcher, engine } = build(env, "https://scheduled.invalid");
