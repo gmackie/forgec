@@ -136,8 +136,10 @@ describe("packed linker over examples/acme", async () => {
     it("links only the runtime features a slice uses, and every feature where the whole app.json runs (FORG-37)", () => {
       const features = (id: string) => script(id).features;
       const ALL = ["blobs", "changesets", "dispatch", "governance", "imports", "portability", "readModels", "realtime", "schedules", "workflows"];
-      expect(features("GET /v1/customers/{id}")).toEqual({ mode: "slice", names: [] });
-      expect(features("GET /v1/order-documents/{id}/content")).toEqual({ mode: "slice", names: ["blobs", "governance"] });
+      expect(features("GET /v1/customers/{id}")).toEqual({ mode: "slice", names: [], objects: false });
+      expect(features("GET /v1/order-documents/{id}/content")).toEqual({ mode: "slice", names: ["blobs", "governance"], objects: true });
+      // The script serving blob bytes itself needs blob storage but no feature.
+      expect(features("GET /_forge/objects/{token}")).toEqual({ mode: "slice", names: [], objects: true });
       expect(features("@acme/commerce/_/NightlyReconciliation").names).toEqual(["schedules"]);
       expect(features("@acme/commerce/_/ProcessOrder").names).toContain("workflows");
       // Runtime-served routes bring the feature behind them.
@@ -147,12 +149,12 @@ describe("packed linker over examples/acme", async () => {
       expect(features("POST /v1/admin/inspect").names).toContain("governance");
       expect(features("GET /v1/views/pending-orders").names).toEqual(["readModels"]);
       // The residual answers 404 from an empty model; the sweep is the only script that delivers the outbox.
-      expect(features("forge:residual")).toEqual({ mode: "slice", names: [] });
+      expect(features("forge:residual")).toEqual({ mode: "slice", names: [], objects: false });
       expect(features("forge:sweep").names).toContain("dispatch");
       expect(per.scripts.filter((s) => s.features.names.includes("dispatch") && s.features.mode === "slice").map((s) => s.members[0])).toEqual(["forge:sweep"]);
       // Contract metadata publishes the whole contract, so it keeps every feature, as does `single`.
-      for (const id of ["GET /forge/discovery", "GET /forge/openapi.json", "GET /forge/workspace.json"]) expect(features(id)).toEqual({ mode: "all", names: ALL });
-      expect(one.scripts[0]!.features).toEqual({ mode: "all", names: ALL });
+      for (const id of ["GET /forge/discovery", "GET /forge/openapi.json", "GET /forge/workspace.json"]) expect(features(id)).toEqual({ mode: "all", names: ALL, objects: true });
+      expect(one.scripts[0]!.features).toEqual({ mode: "all", names: ALL, objects: true });
     });
 
     it("finds nothing the planner leaves undeclared", () => {

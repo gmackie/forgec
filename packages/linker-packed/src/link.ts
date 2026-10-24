@@ -94,7 +94,7 @@ export interface LinkedScript {
   /** Bindings declared for other scripts: the runtime here holds a stub that refuses them (403 CapabilityDenied). */
   withheld: Binding[];
   /** Runtime features linked into the script (FORG-37): its slice's, or every feature where the whole app.json runs. */
-  features: { mode: "all" | "slice"; names: string[] };
+  features: { mode: "all" | "slice"; names: string[]; /** Blob storage (`cloudflareObjects`) is linked. */ objects: boolean };
   /** Linker-owned bindings (not capabilities of any unit): the dispatch service binding. */
   linkerBindings: Array<Binding & { script: string }>;
   /** sha256 of worker.js: a script is re-uploaded exactly when this changes. */
@@ -264,7 +264,7 @@ export async function link(options: LinkOptions): Promise<Link> {
       slice: g.sliced.report,
       capabilities: g.capabilities,
       withheld: host.withheld,
-      features: { mode: features.mode, names: features.names },
+      features: { mode: features.mode, names: features.names, objects: features.objects },
       linkerBindings,
       scriptHash: null,
       bytes: null,
