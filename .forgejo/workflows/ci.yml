@@ -47,7 +47,7 @@ jobs:
             exit 1
           fi
 
-  # FORG-35: composable units (FORG-28..31) and the full runtime suite.
+  # FORG-35: composable units (FORG-28..31, linker C: FORG-43) and the full runtime suite.
   # - The unit and linker tests run the real debug `forgec` (target/debug/forgec) and local workerd
   #   (Miniflare for linker-packed, `wrangler dev --local` for linker-dynamic). workerd comes from
   #   the @cloudflare/workerd-linux-* optional dependency, so it needs no install step.
@@ -55,7 +55,8 @@ jobs:
   #   rustc 1.97.1 (wasm32) and wasm-tools 1.262.0 are present, skipping that check otherwise. The
   #   toolchain is installed and asserted below so the reproduction check cannot skip in CI.
   # - linker-packed's differential.test.ts (6 tests) stays opt-in (T3_DIFFERENTIAL=1, after
-  #   research/composable-units/t3-linker-packed/run.sh), as documented in that test.
+  #   research/composable-units/t3-linker-packed/run.sh), as documented in that test; so does
+  #   linker-tiered's (TIERED_DIFFERENTIAL=1, after research/composable-units/r3-linker-tiered/run.sh).
   units:
     name: composable units and runtime
     runs-on: ubuntu-latest
@@ -104,13 +105,16 @@ jobs:
         run: cargo build --locked -p forgegraph-cli
       - run: pnpm install --frozen-lockfile
       - name: Build the packages the unit packages import (runtime, capability-manifest)
-        run: pnpm --filter '@forgegraph/units^...' --filter '@forgegraph/linker-packed^...' --filter '@forgegraph/linker-dynamic^...' run build
+        run: pnpm --filter '@forgegraph/units^...' --filter '@forgegraph/linker-packed^...' --filter '@forgegraph/linker-dynamic^...' --filter '@forgegraph/linker-tiered^...' run build
       - name: Typecheck the unit packages
-        run: pnpm --filter @forgegraph/units --filter @forgegraph/linker-packed --filter @forgegraph/linker-dynamic run typecheck
+        run: pnpm --filter @forgegraph/units --filter @forgegraph/linker-packed --filter @forgegraph/linker-dynamic --filter @forgegraph/linker-tiered run typecheck
       # One package per step: the linker tests both build examples/acme/generated and start workerd.
       - run: pnpm --filter @forgegraph/units test
       - run: pnpm --filter @forgegraph/linker-packed test
       - run: pnpm --filter @forgegraph/linker-dynamic test
+      # Linker C (FORG-43): link-time tests, then A's packed scripts, C's router and B's host with a
+      # Worker Loader in one Miniflare instance (dynamic serving, swap, fallbacks, one dispatch owner).
+      - run: pnpm --filter @forgegraph/linker-tiered test
       # The whole runtime suite. Its config defaults testTimeout to 5 s, and six suites
       # (artifact-workspace-workers-incremental, foundation-subscription,
       # foundation-collections-dunning, foundation-asset-lifecycle, foundation-billing,

@@ -38,9 +38,16 @@ export interface HostConfig {
   /** Serve the internal dispatch endpoint (the dispatch owner, reached only through service bindings). */
   dispatchOwner: boolean;
   sweeps: { outbox: boolean; schedules: boolean; workflows: boolean };
+  /**
+   * Serve `POST ADVANCE_PATH` (one workflow driver step), reached only through service bindings. Set
+   * by `LinkOptions.advance` on scripts holding a workflow class: linker C's packed fallback when a
+   * dynamic workflow's closure cannot be loaded (FORG-43).
+   */
+  advance?: boolean;
 }
 
 export const DISPATCH_PATH = "/_forge/linker/dispatch";
+export const ADVANCE_PATH = "/_forge/linker/advance";
 const DISPATCH_BINDING = "FORGE_DISPATCH";
 const FORWARD = Symbol("forge.linker.dispatch");
 
@@ -105,6 +112,10 @@ export function packed(app: AppBundle, units: HostUnits, config: HostConfig) {
           const { tenant, sweep } = (await request.json()) as { tenant: string; sweep: boolean };
           await worker.dispatch(envFor(env), tenant, { sweep });
           return new Response(null, { status: 204 });
+        }
+        if (config.advance && url.pathname === ADVANCE_PATH && request.method === "POST") {
+          const { tenant, id } = (await request.json()) as { tenant: string; id: string };
+          return Response.json(await worker.advance(envFor(env), tenant, id));
         }
         const methodMiss = !serves(request.method, url.pathname) && onPath(url.pathname) && !elsewhere(request.method, url.pathname);
         if ((!serves(request.method, url.pathname) && !methodMiss) || denied(request.method, url.pathname)) return refused(config.script, request.method, url.pathname);
