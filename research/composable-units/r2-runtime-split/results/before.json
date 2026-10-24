@@ -1,0 +1,1826 @@
+{
+  "commit": "bfee5b2",
+  "issue": "FORG-37",
+  "label": "before",
+  "measured": {
+    "bodyEdit": {
+      "edit": "impl/rebuild-order-summary.ts `{ rebuilt: true }` -> `{ rebuilt: false }`",
+      "per-entry-point": {
+        "changed": [
+          "acme-commerce-nightlyreconciliation-04c042",
+          "acme-commerce-forge-sweep-47ede8",
+          "acme-commerce-post-v1-orders-order-process-745789",
+          "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+          "acme-commerce-processorder-c5fc00 (5 members)",
+          "acme-commerce-forge-residual-8b7058"
+        ],
+        "reuploaded": 6,
+        "reuploadedGzip": 645282,
+        "reuploadedRaw": 2506550,
+        "scripts": 61
+      },
+      "single": {
+        "changed": [
+          "acme-commerce-all (65 members)"
+        ],
+        "reuploaded": 1,
+        "reuploadedGzip": 115453,
+        "reuploadedRaw": 538786,
+        "scripts": 1
+      }
+    },
+    "bundling": "esbuild, minified, format esm, platform neutral, conditions source/workerd/worker/browser/import, cloudflare:* and node:* external; gzip -9",
+    "manifestHash": "sha256:bcb22196f83b35784ad66f63c6e6a8d328ba13f31bb9c60ed6fb494efee518ff",
+    "representative": {
+      "@acme/commerce/_/ProcessOrder": {
+        "effect": 92421,
+        "effectModules": 51,
+        "features": null,
+        "gzip": 104052,
+        "members": [
+          "@acme/commerce/_/ProcessOrder",
+          "@acme/commerce/_/ProcessOrder#approve",
+          "@acme/commerce/_/ProcessOrder#short",
+          "@acme/commerce/_/ProcessOrder#submit",
+          "@acme/commerce/_/ProcessOrder#summary"
+        ],
+        "modules": {
+          "app.slice.json": 53766,
+          "effect/dist/Array.js": 227,
+          "effect/dist/Cause.js": 1725,
+          "effect/dist/Context.js": 3421,
+          "effect/dist/Data.js": 449,
+          "effect/dist/Deferred.js": 471,
+          "effect/dist/Duration.js": 5670,
+          "effect/dist/Effect.js": 7293,
+          "effect/dist/Effectable.js": 43,
+          "effect/dist/Equal.js": 2063,
+          "effect/dist/ExecutionPlan.js": 480,
+          "effect/dist/Exit.js": 10,
+          "effect/dist/Filter.js": 58,
+          "effect/dist/Formatter.js": 2670,
+          "effect/dist/Function.js": 588,
+          "effect/dist/Hash.js": 1541,
+          "effect/dist/Inspectable.js": 497,
+          "effect/dist/Iterable.js": 209,
+          "effect/dist/Layer.js": 4905,
+          "effect/dist/Metric.js": 1098,
+          "effect/dist/Option.js": 89,
+          "effect/dist/Order.js": 262,
+          "effect/dist/Pipeable.js": 628,
+          "effect/dist/Predicate.js": 370,
+          "effect/dist/Pull.js": 429,
+          "effect/dist/Redactable.js": 283,
+          "effect/dist/References.js": 26,
+          "effect/dist/Request.js": 89,
+          "effect/dist/Result.js": 107,
+          "effect/dist/Schedule.js": 1109,
+          "effect/dist/Scheduler.js": 1487,
+          "effect/dist/Scope.js": 42,
+          "effect/dist/Tracer.js": 1145,
+          "effect/dist/Utils.js": 294,
+          "effect/dist/encoding/Hex.js": 1046,
+          "effect/dist/internal/array.js": 21,
+          "effect/dist/internal/core.js": 5120,
+          "effect/dist/internal/doNotation.js": 144,
+          "effect/dist/internal/effect.js": 38294,
+          "effect/dist/internal/equal.js": 473,
+          "effect/dist/internal/executionPlan.js": 1398,
+          "effect/dist/internal/hash.js": 23,
+          "effect/dist/internal/layer.js": 143,
+          "effect/dist/internal/metric.js": 43,
+          "effect/dist/internal/option.js": 794,
+          "effect/dist/internal/record.js": 232,
+          "effect/dist/internal/references.js": 738,
+          "effect/dist/internal/request.js": 1644,
+          "effect/dist/internal/result.js": 881,
+          "effect/dist/internal/schedule.js": 963,
+          "effect/dist/internal/stackTraceLimit.js": 255,
+          "effect/dist/internal/tracer.js": 431,
+          "entry.mjs": 463,
+          "linker-packed/src/host.ts": 2207,
+          "runtime/src/adapters/d1.ts": 20004,
+          "runtime/src/adapters/memory-objects.ts": 1532,
+          "runtime/src/adapters/memory.ts": 9324,
+          "runtime/src/adapters/r2.ts": 3165,
+          "runtime/src/adapters/sql-executor.ts": 282,
+          "runtime/src/adapters/sql-mapping.ts": 1380,
+          "runtime/src/api-publication.ts": 3923,
+          "runtime/src/atomic-guards.ts": 324,
+          "runtime/src/blobs.ts": 5240,
+          "runtime/src/changeset.ts": 6469,
+          "runtime/src/codecs.ts": 4887,
+          "runtime/src/csv.ts": 1592,
+          "runtime/src/cursor.ts": 958,
+          "runtime/src/decode.ts": 9008,
+          "runtime/src/dispatch.ts": 1761,
+          "runtime/src/engine.ts": 28622,
+          "runtime/src/errors.ts": 4481,
+          "runtime/src/functions.ts": 6547,
+          "runtime/src/gatekeeper.ts": 2821,
+          "runtime/src/governance.ts": 4361,
+          "runtime/src/hosts/cloudflare.ts": 6527,
+          "runtime/src/hosts/ids.ts": 361,
+          "runtime/src/http-endpoints.ts": 1529,
+          "runtime/src/http.ts": 13132,
+          "runtime/src/imports.ts": 4218,
+          "runtime/src/model.ts": 3361,
+          "runtime/src/oauth-operation.ts": 700,
+          "runtime/src/portability.ts": 5180,
+          "runtime/src/readmodels.ts": 10275,
+          "runtime/src/realtime.ts": 3536,
+          "runtime/src/schedules.ts": 7266,
+          "runtime/src/scope.ts": 2325,
+          "runtime/src/services.ts": 280,
+          "runtime/src/subscription-delivery.ts": 2066,
+          "runtime/src/suppression.ts": 1688,
+          "runtime/src/telemetry.ts": 3939,
+          "runtime/src/temporal.ts": 3574,
+          "runtime/src/testing.ts": 55,
+          "runtime/src/transaction.ts": 4551,
+          "runtime/src/transports.ts": 475,
+          "runtime/src/webhooks.ts": 1980,
+          "runtime/src/workflows.ts": 15682,
+          "unit:1fa39110": 606,
+          "unit:45f2e9a6": 78,
+          "unit:4c1107ed": 308
+        },
+        "raw": 359373,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "script": "acme-commerce-processorder-c5fc00",
+        "what": "workflow class with its steps"
+      },
+      "GET /v1/customers/{id}": {
+        "effect": 92421,
+        "effectModules": 51,
+        "features": null,
+        "gzip": 100048,
+        "members": [
+          "GET /v1/customers/{id}"
+        ],
+        "modules": {
+          "app.slice.json": 16090,
+          "effect/dist/Array.js": 227,
+          "effect/dist/Cause.js": 1725,
+          "effect/dist/Context.js": 3421,
+          "effect/dist/Data.js": 449,
+          "effect/dist/Deferred.js": 471,
+          "effect/dist/Duration.js": 5670,
+          "effect/dist/Effect.js": 7293,
+          "effect/dist/Effectable.js": 43,
+          "effect/dist/Equal.js": 2063,
+          "effect/dist/ExecutionPlan.js": 480,
+          "effect/dist/Exit.js": 10,
+          "effect/dist/Filter.js": 58,
+          "effect/dist/Formatter.js": 2670,
+          "effect/dist/Function.js": 588,
+          "effect/dist/Hash.js": 1541,
+          "effect/dist/Inspectable.js": 497,
+          "effect/dist/Iterable.js": 209,
+          "effect/dist/Layer.js": 4905,
+          "effect/dist/Metric.js": 1098,
+          "effect/dist/Option.js": 89,
+          "effect/dist/Order.js": 262,
+          "effect/dist/Pipeable.js": 628,
+          "effect/dist/Predicate.js": 370,
+          "effect/dist/Pull.js": 429,
+          "effect/dist/Redactable.js": 283,
+          "effect/dist/References.js": 26,
+          "effect/dist/Request.js": 89,
+          "effect/dist/Result.js": 107,
+          "effect/dist/Schedule.js": 1109,
+          "effect/dist/Scheduler.js": 1487,
+          "effect/dist/Scope.js": 42,
+          "effect/dist/Tracer.js": 1145,
+          "effect/dist/Utils.js": 294,
+          "effect/dist/encoding/Hex.js": 1046,
+          "effect/dist/internal/array.js": 21,
+          "effect/dist/internal/core.js": 5120,
+          "effect/dist/internal/doNotation.js": 144,
+          "effect/dist/internal/effect.js": 38294,
+          "effect/dist/internal/equal.js": 473,
+          "effect/dist/internal/executionPlan.js": 1398,
+          "effect/dist/internal/hash.js": 23,
+          "effect/dist/internal/layer.js": 143,
+          "effect/dist/internal/metric.js": 43,
+          "effect/dist/internal/option.js": 794,
+          "effect/dist/internal/record.js": 232,
+          "effect/dist/internal/references.js": 738,
+          "effect/dist/internal/request.js": 1644,
+          "effect/dist/internal/result.js": 881,
+          "effect/dist/internal/schedule.js": 963,
+          "effect/dist/internal/stackTraceLimit.js": 255,
+          "effect/dist/internal/tracer.js": 431,
+          "entry.mjs": 416,
+          "linker-packed/src/host.ts": 2207,
+          "runtime/src/adapters/d1.ts": 20004,
+          "runtime/src/adapters/memory-objects.ts": 1532,
+          "runtime/src/adapters/memory.ts": 9324,
+          "runtime/src/adapters/r2.ts": 3165,
+          "runtime/src/adapters/sql-executor.ts": 282,
+          "runtime/src/adapters/sql-mapping.ts": 1380,
+          "runtime/src/api-publication.ts": 3923,
+          "runtime/src/atomic-guards.ts": 324,
+          "runtime/src/blobs.ts": 5240,
+          "runtime/src/changeset.ts": 6469,
+          "runtime/src/codecs.ts": 4887,
+          "runtime/src/csv.ts": 1592,
+          "runtime/src/cursor.ts": 958,
+          "runtime/src/decode.ts": 9008,
+          "runtime/src/dispatch.ts": 1761,
+          "runtime/src/engine.ts": 28622,
+          "runtime/src/errors.ts": 4481,
+          "runtime/src/functions.ts": 6500,
+          "runtime/src/gatekeeper.ts": 2821,
+          "runtime/src/governance.ts": 4361,
+          "runtime/src/hosts/cloudflare.ts": 6527,
+          "runtime/src/hosts/ids.ts": 361,
+          "runtime/src/http-endpoints.ts": 1529,
+          "runtime/src/http.ts": 13132,
+          "runtime/src/imports.ts": 4218,
+          "runtime/src/model.ts": 3361,
+          "runtime/src/oauth-operation.ts": 700,
+          "runtime/src/portability.ts": 5180,
+          "runtime/src/readmodels.ts": 10275,
+          "runtime/src/realtime.ts": 3536,
+          "runtime/src/schedules.ts": 7266,
+          "runtime/src/scope.ts": 2325,
+          "runtime/src/services.ts": 280,
+          "runtime/src/subscription-delivery.ts": 2066,
+          "runtime/src/suppression.ts": 1688,
+          "runtime/src/telemetry.ts": 3939,
+          "runtime/src/temporal.ts": 3574,
+          "runtime/src/testing.ts": 55,
+          "runtime/src/transaction.ts": 4551,
+          "runtime/src/transports.ts": 475,
+          "runtime/src/webhooks.ts": 1980,
+          "runtime/src/workflows.ts": 15682
+        },
+        "raw": 320584,
+        "runtime": 209334,
+        "runtimeModules": 42,
+        "script": "acme-commerce-get-v1-customers-id-859df7",
+        "what": "simple CRUD read"
+      },
+      "POST /v1/orders/{order}/submit": {
+        "effect": 92421,
+        "effectModules": 51,
+        "features": null,
+        "gzip": 102722,
+        "members": [
+          "POST /v1/orders/{order}/submit"
+        ],
+        "modules": {
+          "app.slice.json": 46528,
+          "effect/dist/Array.js": 227,
+          "effect/dist/Cause.js": 1725,
+          "effect/dist/Context.js": 3421,
+          "effect/dist/Data.js": 449,
+          "effect/dist/Deferred.js": 471,
+          "effect/dist/Duration.js": 5670,
+          "effect/dist/Effect.js": 7293,
+          "effect/dist/Effectable.js": 43,
+          "effect/dist/Equal.js": 2063,
+          "effect/dist/ExecutionPlan.js": 480,
+          "effect/dist/Exit.js": 10,
+          "effect/dist/Filter.js": 58,
+          "effect/dist/Formatter.js": 2670,
+          "effect/dist/Function.js": 588,
+          "effect/dist/Hash.js": 1541,
+          "effect/dist/Inspectable.js": 497,
+          "effect/dist/Iterable.js": 209,
+          "effect/dist/Layer.js": 4905,
+          "effect/dist/Metric.js": 1098,
+          "effect/dist/Option.js": 89,
+          "effect/dist/Order.js": 262,
+          "effect/dist/Pipeable.js": 628,
+          "effect/dist/Predicate.js": 370,
+          "effect/dist/Pull.js": 429,
+          "effect/dist/Redactable.js": 283,
+          "effect/dist/References.js": 26,
+          "effect/dist/Request.js": 89,
+          "effect/dist/Result.js": 107,
+          "effect/dist/Schedule.js": 1109,
+          "effect/dist/Scheduler.js": 1487,
+          "effect/dist/Scope.js": 42,
+          "effect/dist/Tracer.js": 1145,
+          "effect/dist/Utils.js": 294,
+          "effect/dist/encoding/Hex.js": 1046,
+          "effect/dist/internal/array.js": 21,
+          "effect/dist/internal/core.js": 5120,
+          "effect/dist/internal/doNotation.js": 144,
+          "effect/dist/internal/effect.js": 38294,
+          "effect/dist/internal/equal.js": 473,
+          "effect/dist/internal/executionPlan.js": 1398,
+          "effect/dist/internal/hash.js": 23,
+          "effect/dist/internal/layer.js": 143,
+          "effect/dist/internal/metric.js": 43,
+          "effect/dist/internal/option.js": 794,
+          "effect/dist/internal/record.js": 232,
+          "effect/dist/internal/references.js": 738,
+          "effect/dist/internal/request.js": 1644,
+          "effect/dist/internal/result.js": 881,
+          "effect/dist/internal/schedule.js": 963,
+          "effect/dist/internal/stackTraceLimit.js": 255,
+          "effect/dist/internal/tracer.js": 431,
+          "entry.mjs": 454,
+          "linker-packed/src/host.ts": 2207,
+          "runtime/src/adapters/d1.ts": 20004,
+          "runtime/src/adapters/memory-objects.ts": 1532,
+          "runtime/src/adapters/memory.ts": 9324,
+          "runtime/src/adapters/r2.ts": 3165,
+          "runtime/src/adapters/sql-executor.ts": 282,
+          "runtime/src/adapters/sql-mapping.ts": 1380,
+          "runtime/src/api-publication.ts": 3923,
+          "runtime/src/atomic-guards.ts": 324,
+          "runtime/src/blobs.ts": 5240,
+          "runtime/src/changeset.ts": 6469,
+          "runtime/src/codecs.ts": 4887,
+          "runtime/src/csv.ts": 1592,
+          "runtime/src/cursor.ts": 958,
+          "runtime/src/decode.ts": 9008,
+          "runtime/src/dispatch.ts": 1761,
+          "runtime/src/engine.ts": 28622,
+          "runtime/src/errors.ts": 4481,
+          "runtime/src/functions.ts": 6547,
+          "runtime/src/gatekeeper.ts": 2821,
+          "runtime/src/governance.ts": 4361,
+          "runtime/src/hosts/cloudflare.ts": 6527,
+          "runtime/src/hosts/ids.ts": 361,
+          "runtime/src/http-endpoints.ts": 1529,
+          "runtime/src/http.ts": 13132,
+          "runtime/src/imports.ts": 4218,
+          "runtime/src/model.ts": 3361,
+          "runtime/src/oauth-operation.ts": 700,
+          "runtime/src/portability.ts": 5180,
+          "runtime/src/readmodels.ts": 10275,
+          "runtime/src/realtime.ts": 3536,
+          "runtime/src/schedules.ts": 7266,
+          "runtime/src/scope.ts": 2325,
+          "runtime/src/services.ts": 280,
+          "runtime/src/subscription-delivery.ts": 2066,
+          "runtime/src/suppression.ts": 1688,
+          "runtime/src/telemetry.ts": 3939,
+          "runtime/src/temporal.ts": 3574,
+          "runtime/src/testing.ts": 55,
+          "runtime/src/transaction.ts": 4551,
+          "runtime/src/transports.ts": 475,
+          "runtime/src/webhooks.ts": 1980,
+          "runtime/src/workflows.ts": 15682,
+          "unit:1fa39110": 606,
+          "unit:4c1107ed": 308
+        },
+        "raw": 352021,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "script": "acme-commerce-post-v1-orders-order-submit-19d055",
+        "what": "write with outbox (function unit, forwards dispatch)"
+      },
+      "forge:sweep": {
+        "effect": 92421,
+        "effectModules": 51,
+        "features": null,
+        "gzip": 115354,
+        "members": [
+          "forge:sweep"
+        ],
+        "modules": {
+          "app.slice.json": 233009,
+          "effect/dist/Array.js": 227,
+          "effect/dist/Cause.js": 1725,
+          "effect/dist/Context.js": 3421,
+          "effect/dist/Data.js": 449,
+          "effect/dist/Deferred.js": 471,
+          "effect/dist/Duration.js": 5670,
+          "effect/dist/Effect.js": 7293,
+          "effect/dist/Effectable.js": 43,
+          "effect/dist/Equal.js": 2063,
+          "effect/dist/ExecutionPlan.js": 480,
+          "effect/dist/Exit.js": 10,
+          "effect/dist/Filter.js": 58,
+          "effect/dist/Formatter.js": 2670,
+          "effect/dist/Function.js": 588,
+          "effect/dist/Hash.js": 1541,
+          "effect/dist/Inspectable.js": 497,
+          "effect/dist/Iterable.js": 209,
+          "effect/dist/Layer.js": 4905,
+          "effect/dist/Metric.js": 1098,
+          "effect/dist/Option.js": 89,
+          "effect/dist/Order.js": 262,
+          "effect/dist/Pipeable.js": 628,
+          "effect/dist/Predicate.js": 370,
+          "effect/dist/Pull.js": 429,
+          "effect/dist/Redactable.js": 283,
+          "effect/dist/References.js": 26,
+          "effect/dist/Request.js": 89,
+          "effect/dist/Result.js": 107,
+          "effect/dist/Schedule.js": 1109,
+          "effect/dist/Scheduler.js": 1487,
+          "effect/dist/Scope.js": 42,
+          "effect/dist/Tracer.js": 1145,
+          "effect/dist/Utils.js": 294,
+          "effect/dist/encoding/Hex.js": 1046,
+          "effect/dist/internal/array.js": 21,
+          "effect/dist/internal/core.js": 5120,
+          "effect/dist/internal/doNotation.js": 144,
+          "effect/dist/internal/effect.js": 38294,
+          "effect/dist/internal/equal.js": 473,
+          "effect/dist/internal/executionPlan.js": 1398,
+          "effect/dist/internal/hash.js": 23,
+          "effect/dist/internal/layer.js": 143,
+          "effect/dist/internal/metric.js": 43,
+          "effect/dist/internal/option.js": 794,
+          "effect/dist/internal/record.js": 232,
+          "effect/dist/internal/references.js": 738,
+          "effect/dist/internal/request.js": 1644,
+          "effect/dist/internal/result.js": 881,
+          "effect/dist/internal/schedule.js": 963,
+          "effect/dist/internal/stackTraceLimit.js": 255,
+          "effect/dist/internal/tracer.js": 431,
+          "entry.mjs": 355,
+          "linker-packed/src/host.ts": 2207,
+          "runtime/src/adapters/d1.ts": 20004,
+          "runtime/src/adapters/memory-objects.ts": 1532,
+          "runtime/src/adapters/memory.ts": 9324,
+          "runtime/src/adapters/r2.ts": 3165,
+          "runtime/src/adapters/sql-executor.ts": 282,
+          "runtime/src/adapters/sql-mapping.ts": 1380,
+          "runtime/src/api-publication.ts": 3923,
+          "runtime/src/atomic-guards.ts": 324,
+          "runtime/src/blobs.ts": 5240,
+          "runtime/src/changeset.ts": 6469,
+          "runtime/src/codecs.ts": 4887,
+          "runtime/src/csv.ts": 1592,
+          "runtime/src/cursor.ts": 958,
+          "runtime/src/decode.ts": 9008,
+          "runtime/src/dispatch.ts": 1761,
+          "runtime/src/engine.ts": 28622,
+          "runtime/src/errors.ts": 4481,
+          "runtime/src/functions.ts": 6547,
+          "runtime/src/gatekeeper.ts": 2821,
+          "runtime/src/governance.ts": 4361,
+          "runtime/src/hosts/cloudflare.ts": 6527,
+          "runtime/src/hosts/ids.ts": 361,
+          "runtime/src/http-endpoints.ts": 1529,
+          "runtime/src/http.ts": 13132,
+          "runtime/src/imports.ts": 4218,
+          "runtime/src/model.ts": 3361,
+          "runtime/src/oauth-operation.ts": 700,
+          "runtime/src/portability.ts": 5180,
+          "runtime/src/readmodels.ts": 10275,
+          "runtime/src/realtime.ts": 3536,
+          "runtime/src/schedules.ts": 7266,
+          "runtime/src/scope.ts": 2325,
+          "runtime/src/services.ts": 280,
+          "runtime/src/subscription-delivery.ts": 2066,
+          "runtime/src/suppression.ts": 1688,
+          "runtime/src/telemetry.ts": 3939,
+          "runtime/src/temporal.ts": 3574,
+          "runtime/src/testing.ts": 55,
+          "runtime/src/transaction.ts": 4551,
+          "runtime/src/transports.ts": 475,
+          "runtime/src/webhooks.ts": 1980,
+          "runtime/src/workflows.ts": 15682,
+          "unit:1fa39110": 606,
+          "unit:45f2e9a6": 78,
+          "unit:4c1107ed": 308,
+          "unit:d958862a": 124
+        },
+        "raw": 538605,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "script": "acme-commerce-forge-sweep-47ede8",
+        "what": "sweep (dispatch owner, whole app.json)"
+      },
+      "fulfill-order": {
+        "effect": 92421,
+        "effectModules": 51,
+        "features": null,
+        "gzip": 102257,
+        "members": [
+          "fulfill-order"
+        ],
+        "modules": {
+          "app.slice.json": 45609,
+          "effect/dist/Array.js": 227,
+          "effect/dist/Cause.js": 1725,
+          "effect/dist/Context.js": 3421,
+          "effect/dist/Data.js": 449,
+          "effect/dist/Deferred.js": 471,
+          "effect/dist/Duration.js": 5670,
+          "effect/dist/Effect.js": 7293,
+          "effect/dist/Effectable.js": 43,
+          "effect/dist/Equal.js": 2063,
+          "effect/dist/ExecutionPlan.js": 480,
+          "effect/dist/Exit.js": 10,
+          "effect/dist/Filter.js": 58,
+          "effect/dist/Formatter.js": 2670,
+          "effect/dist/Function.js": 588,
+          "effect/dist/Hash.js": 1541,
+          "effect/dist/Inspectable.js": 497,
+          "effect/dist/Iterable.js": 209,
+          "effect/dist/Layer.js": 4905,
+          "effect/dist/Metric.js": 1098,
+          "effect/dist/Option.js": 89,
+          "effect/dist/Order.js": 262,
+          "effect/dist/Pipeable.js": 628,
+          "effect/dist/Predicate.js": 370,
+          "effect/dist/Pull.js": 429,
+          "effect/dist/Redactable.js": 283,
+          "effect/dist/References.js": 26,
+          "effect/dist/Request.js": 89,
+          "effect/dist/Result.js": 107,
+          "effect/dist/Schedule.js": 1109,
+          "effect/dist/Scheduler.js": 1487,
+          "effect/dist/Scope.js": 42,
+          "effect/dist/Tracer.js": 1145,
+          "effect/dist/Utils.js": 294,
+          "effect/dist/encoding/Hex.js": 1046,
+          "effect/dist/internal/array.js": 21,
+          "effect/dist/internal/core.js": 5120,
+          "effect/dist/internal/doNotation.js": 144,
+          "effect/dist/internal/effect.js": 38294,
+          "effect/dist/internal/equal.js": 473,
+          "effect/dist/internal/executionPlan.js": 1398,
+          "effect/dist/internal/hash.js": 23,
+          "effect/dist/internal/layer.js": 143,
+          "effect/dist/internal/metric.js": 43,
+          "effect/dist/internal/option.js": 794,
+          "effect/dist/internal/record.js": 232,
+          "effect/dist/internal/references.js": 738,
+          "effect/dist/internal/request.js": 1644,
+          "effect/dist/internal/result.js": 881,
+          "effect/dist/internal/schedule.js": 963,
+          "effect/dist/internal/stackTraceLimit.js": 255,
+          "effect/dist/internal/tracer.js": 431,
+          "entry.mjs": 372,
+          "linker-packed/src/host.ts": 2207,
+          "runtime/src/adapters/d1.ts": 20004,
+          "runtime/src/adapters/memory-objects.ts": 1532,
+          "runtime/src/adapters/memory.ts": 9324,
+          "runtime/src/adapters/r2.ts": 3165,
+          "runtime/src/adapters/sql-executor.ts": 282,
+          "runtime/src/adapters/sql-mapping.ts": 1380,
+          "runtime/src/api-publication.ts": 3923,
+          "runtime/src/atomic-guards.ts": 324,
+          "runtime/src/blobs.ts": 5240,
+          "runtime/src/changeset.ts": 6469,
+          "runtime/src/codecs.ts": 4887,
+          "runtime/src/csv.ts": 1592,
+          "runtime/src/cursor.ts": 958,
+          "runtime/src/decode.ts": 9008,
+          "runtime/src/dispatch.ts": 1761,
+          "runtime/src/engine.ts": 28622,
+          "runtime/src/errors.ts": 4481,
+          "runtime/src/functions.ts": 6547,
+          "runtime/src/gatekeeper.ts": 2821,
+          "runtime/src/governance.ts": 4361,
+          "runtime/src/hosts/cloudflare.ts": 6527,
+          "runtime/src/hosts/ids.ts": 361,
+          "runtime/src/http-endpoints.ts": 1529,
+          "runtime/src/http.ts": 13132,
+          "runtime/src/imports.ts": 4218,
+          "runtime/src/model.ts": 3361,
+          "runtime/src/oauth-operation.ts": 700,
+          "runtime/src/portability.ts": 5180,
+          "runtime/src/readmodels.ts": 10275,
+          "runtime/src/realtime.ts": 3536,
+          "runtime/src/schedules.ts": 7266,
+          "runtime/src/scope.ts": 2325,
+          "runtime/src/services.ts": 280,
+          "runtime/src/subscription-delivery.ts": 2066,
+          "runtime/src/suppression.ts": 1688,
+          "runtime/src/telemetry.ts": 3939,
+          "runtime/src/temporal.ts": 3574,
+          "runtime/src/testing.ts": 55,
+          "runtime/src/transaction.ts": 4551,
+          "runtime/src/transports.ts": 475,
+          "runtime/src/webhooks.ts": 1980,
+          "runtime/src/workflows.ts": 15682,
+          "unit:d958862a": 124
+        },
+        "raw": 350230,
+        "runtime": 209381,
+        "runtimeModules": 42,
+        "script": "acme-commerce-fulfill-order-4ca05b",
+        "what": "queue consumer"
+      }
+    },
+    "strategies": {
+      "per-entry-point": {
+        "deployGzip": 6228331,
+        "deployRaw": 21306592,
+        "gzip": {
+          "count": 61,
+          "max": 115656,
+          "median": 101893,
+          "min": 100046,
+          "total": 6227040
+        },
+        "perScript": [
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 44103,
+              "effect": 92421,
+              "entry": 380,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 78
+            },
+            "features": null,
+            "gzip": 102208,
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation"
+            ],
+            "name": "acme-commerce-nightlyreconciliation-04c042",
+            "raw": 348686
+          },
+          {
+            "appJson": "fallback",
+            "composition": {
+              "app.json": 233009,
+              "effect": 92421,
+              "entry": 355,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 1116
+            },
+            "features": null,
+            "gzip": 115354,
+            "members": [
+              "forge:sweep"
+            ],
+            "name": "acme-commerce-forge-sweep-47ede8",
+            "raw": 538605
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 44734,
+              "effect": 92421,
+              "entry": 468,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102208,
+            "members": [
+              "ForgeRealtime"
+            ],
+            "name": "acme-commerce-forgerealtime-90f206",
+            "raw": 349300
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 53067,
+              "effect": 92421,
+              "entry": 422,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102340,
+            "members": [
+              "DELETE /v1/customers/{id}"
+            ],
+            "name": "acme-commerce-delete-v1-customers-id-865077",
+            "raw": 357567
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 426,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100602,
+            "members": [
+              "DELETE /v1/departments/{id}"
+            ],
+            "name": "acme-commerce-delete-v1-departments-id-f492ac",
+            "raw": 330878
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 434,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102678,
+            "members": [
+              "DELETE /v1/order-documents/{id}"
+            ],
+            "name": "acme-commerce-delete-v1-order-documents-id-4182d4",
+            "raw": 359184
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 416,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102679,
+            "members": [
+              "DELETE /v1/orders/{id}"
+            ],
+            "name": "acme-commerce-delete-v1-orders-id-8f6f3d",
+            "raw": 359166
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 430,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101352,
+            "members": [
+              "DELETE /v1/site-policies/{id}"
+            ],
+            "name": "acme-commerce-delete-v1-site-policies-id-6ff684",
+            "raw": 341101
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 53161,
+              "effect": 92421,
+              "entry": 414,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102452,
+            "members": [
+              "DELETE /v1/sites/{id}"
+            ],
+            "name": "acme-commerce-delete-v1-sites-id-8ab91c",
+            "raw": 357653
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 408,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100046,
+            "members": [
+              "GET /v1/customers"
+            ],
+            "name": "acme-commerce-get-v1-customers-5bc671",
+            "raw": 320576
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 440,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100053,
+            "members": [
+              "GET /v1/customers/queries/by-code"
+            ],
+            "name": "acme-commerce-get-v1-customers-queries-by-code-de4fe5",
+            "raw": 320608
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 440,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100053,
+            "members": [
+              "GET /v1/customers/queries/by-tier"
+            ],
+            "name": "acme-commerce-get-v1-customers-queries-by-tier-33dddc",
+            "raw": 320608
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 416,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100048,
+            "members": [
+              "GET /v1/customers/{id}"
+            ],
+            "name": "acme-commerce-get-v1-customers-id-859df7",
+            "raw": 320584
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 412,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100600,
+            "members": [
+              "GET /v1/departments"
+            ],
+            "name": "acme-commerce-get-v1-departments-5a7635",
+            "raw": 330864
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 452,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100608,
+            "members": [
+              "GET /v1/departments/queries/by-customer"
+            ],
+            "name": "acme-commerce-get-v1-departments-queries-by-customer-9931ae",
+            "raw": 330904
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 420,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100603,
+            "members": [
+              "GET /v1/departments/{id}"
+            ],
+            "name": "acme-commerce-get-v1-departments-id-94b682",
+            "raw": 330872
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 440,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100606,
+            "members": [
+              "GET /v1/departments/{id}/ancestors"
+            ],
+            "name": "acme-commerce-get-v1-departments-id-ancestors-e358ff",
+            "raw": 330892
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 438,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100607,
+            "members": [
+              "GET /v1/departments/{id}/children"
+            ],
+            "name": "acme-commerce-get-v1-departments-id-children-419b77",
+            "raw": 330890
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 420,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102676,
+            "members": [
+              "GET /v1/order-documents"
+            ],
+            "name": "acme-commerce-get-v1-order-documents-7008be",
+            "raw": 359170
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 454,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102684,
+            "members": [
+              "GET /v1/order-documents/queries/by-order"
+            ],
+            "name": "acme-commerce-get-v1-order-documents-queries-by-order-e2499a",
+            "raw": 359204
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 428,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102678,
+            "members": [
+              "GET /v1/order-documents/{id}"
+            ],
+            "name": "acme-commerce-get-v1-order-documents-id-e9b35d",
+            "raw": 359178
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 427,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102679,
+            "members": [
+              "GET /v1/order-documents/{id}/content"
+            ],
+            "name": "acme-commerce-get-v1-order-documents-id-content-d0b378",
+            "raw": 359177
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 402,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101891,
+            "members": [
+              "GET /v1/orders"
+            ],
+            "name": "acme-commerce-get-v1-orders-ba0b2c",
+            "raw": 347263
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 442,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101898,
+            "members": [
+              "GET /v1/orders/queries/by-customer"
+            ],
+            "name": "acme-commerce-get-v1-orders-queries-by-customer-ed5c4c",
+            "raw": 347303
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 448,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101900,
+            "members": [
+              "GET /v1/orders/queries/by-site-status"
+            ],
+            "name": "acme-commerce-get-v1-orders-queries-by-site-status-c57bcb",
+            "raw": 347309
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 410,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101894,
+            "members": [
+              "GET /v1/orders/{id}"
+            ],
+            "name": "acme-commerce-get-v1-orders-id-2d0e31",
+            "raw": 347271
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 416,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101348,
+            "members": [
+              "GET /v1/site-policies"
+            ],
+            "name": "acme-commerce-get-v1-site-policies-e6b603",
+            "raw": 341087
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 452,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101354,
+            "members": [
+              "GET /v1/site-policies/effective/by-site"
+            ],
+            "name": "acme-commerce-get-v1-site-policies-effective-by-site-4b1aed",
+            "raw": 341123
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 448,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101355,
+            "members": [
+              "GET /v1/site-policies/queries/by-site"
+            ],
+            "name": "acme-commerce-get-v1-site-policies-queries-by-site-c0df71",
+            "raw": 341119
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 424,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101351,
+            "members": [
+              "GET /v1/site-policies/{id}"
+            ],
+            "name": "acme-commerce-get-v1-site-policies-id-db0b1f",
+            "raw": 341095
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 400,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100588,
+            "members": [
+              "GET /v1/sites"
+            ],
+            "name": "acme-commerce-get-v1-sites-a9083b",
+            "raw": 330693
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 440,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100595,
+            "members": [
+              "GET /v1/sites/queries/by-customer"
+            ],
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-b2abb6",
+            "raw": 330733
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 450,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100596,
+            "members": [
+              "GET /v1/sites/queries/by-customer-code"
+            ],
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-code-a50f4f",
+            "raw": 330743
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 408,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100591,
+            "members": [
+              "GET /v1/sites/{id}"
+            ],
+            "name": "acme-commerce-get-v1-sites-id-18c7c2",
+            "raw": 330701
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 444,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 103556,
+            "members": [
+              "GET /v1/workflows/process-order/{id}"
+            ],
+            "name": "acme-commerce-get-v1-workflows-process-order-id-76eb96",
+            "raw": 358288
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 420,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100048,
+            "members": [
+              "PATCH /v1/customers/{id}"
+            ],
+            "name": "acme-commerce-patch-v1-customers-id-a19e97",
+            "raw": 320588
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 424,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100603,
+            "members": [
+              "PATCH /v1/departments/{id}"
+            ],
+            "name": "acme-commerce-patch-v1-departments-id-93fb26",
+            "raw": 330876
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 432,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102679,
+            "members": [
+              "PATCH /v1/order-documents/{id}"
+            ],
+            "name": "acme-commerce-patch-v1-order-documents-id-f2787a",
+            "raw": 359182
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 414,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101895,
+            "members": [
+              "PATCH /v1/orders/{id}"
+            ],
+            "name": "acme-commerce-patch-v1-orders-id-c8bd2f",
+            "raw": 347275
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 428,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101352,
+            "members": [
+              "PATCH /v1/site-policies/{id}"
+            ],
+            "name": "acme-commerce-patch-v1-site-policies-id-25dc21",
+            "raw": 341099
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 412,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100591,
+            "members": [
+              "PATCH /v1/sites/{id}"
+            ],
+            "name": "acme-commerce-patch-v1-sites-id-f8a7c7",
+            "raw": 330705
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 410,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100046,
+            "members": [
+              "POST /v1/customers"
+            ],
+            "name": "acme-commerce-post-v1-customers-b01b8e",
+            "raw": 320578
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 434,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100052,
+            "members": [
+              "POST /v1/customers/{id}/restore"
+            ],
+            "name": "acme-commerce-post-v1-customers-id-restore-c67045",
+            "raw": 320602
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 414,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100601,
+            "members": [
+              "POST /v1/departments"
+            ],
+            "name": "acme-commerce-post-v1-departments-965f9d",
+            "raw": 330866
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 432,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100607,
+            "members": [
+              "POST /v1/departments/{id}/move"
+            ],
+            "name": "acme-commerce-post-v1-departments-id-move-24a6b1",
+            "raw": 330884
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 422,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102678,
+            "members": [
+              "POST /v1/order-documents"
+            ],
+            "name": "acme-commerce-post-v1-order-documents-dcce15",
+            "raw": 359172
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 431,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102679,
+            "members": [
+              "POST /v1/order-documents/{id}/finalize"
+            ],
+            "name": "acme-commerce-post-v1-order-documents-id-finalize-99d42d",
+            "raw": 359181
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 427,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 102681,
+            "members": [
+              "POST /v1/order-documents/{id}/upload"
+            ],
+            "name": "acme-commerce-post-v1-order-documents-id-upload-6608dc",
+            "raw": 359177
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 404,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101893,
+            "members": [
+              "POST /v1/orders"
+            ],
+            "name": "acme-commerce-post-v1-orders-292d83",
+            "raw": 347265
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 444,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101902,
+            "members": [
+              "POST /v1/orders/{id}/actions/approve"
+            ],
+            "name": "acme-commerce-post-v1-orders-id-actions-approve-311eae",
+            "raw": 347305
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 442,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101903,
+            "members": [
+              "POST /v1/orders/{id}/actions/cancel"
+            ],
+            "name": "acme-commerce-post-v1-orders-id-actions-cancel-f293bb",
+            "raw": 347303
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 446,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101903,
+            "members": [
+              "POST /v1/orders/{id}/actions/complete"
+            ],
+            "name": "acme-commerce-post-v1-orders-id-actions-complete-2b8d43",
+            "raw": 347307
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 436,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 992
+            },
+            "features": null,
+            "gzip": 103997,
+            "members": [
+              "POST /v1/orders/{order}/process"
+            ],
+            "name": "acme-commerce-post-v1-orders-order-process-745789",
+            "raw": 359319
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 46528,
+              "effect": 92421,
+              "entry": 454,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 914
+            },
+            "features": null,
+            "gzip": 102722,
+            "members": [
+              "POST /v1/orders/{order}/submit"
+            ],
+            "name": "acme-commerce-post-v1-orders-order-submit-19d055",
+            "raw": 352021
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 418,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 101349,
+            "members": [
+              "POST /v1/site-policies"
+            ],
+            "name": "acme-commerce-post-v1-site-policies-e288dc",
+            "raw": 341089
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 402,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 100589,
+            "members": [
+              "POST /v1/sites"
+            ],
+            "name": "acme-commerce-post-v1-sites-985075",
+            "raw": 330695
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 469,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 992
+            },
+            "features": null,
+            "gzip": 104014,
+            "members": [
+              "POST /v1/workflows/process-order/signals/{message}"
+            ],
+            "name": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+            "raw": 359352
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 460,
+              "host": 2207,
+              "runtime": 209334
+            },
+            "features": null,
+            "gzip": 103560,
+            "members": [
+              "POST /v1/workflows/process-order/{id}/cancel"
+            ],
+            "name": "acme-commerce-post-v1-workflows-process-order-id-cancel-4ffe45",
+            "raw": 358304
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 45609,
+              "effect": 92421,
+              "entry": 372,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 124
+            },
+            "features": null,
+            "gzip": 102257,
+            "members": [
+              "fulfill-order"
+            ],
+            "name": "acme-commerce-fulfill-order-4ca05b",
+            "raw": 350230
+          },
+          {
+            "appJson": "slice",
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 463,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 992
+            },
+            "features": null,
+            "gzip": 104052,
+            "members": [
+              "@acme/commerce/_/ProcessOrder",
+              "@acme/commerce/_/ProcessOrder#approve",
+              "@acme/commerce/_/ProcessOrder#short",
+              "@acme/commerce/_/ProcessOrder#submit",
+              "@acme/commerce/_/ProcessOrder#summary"
+            ],
+            "name": "acme-commerce-processorder-c5fc00",
+            "raw": 359373
+          },
+          {
+            "appJson": "fallback",
+            "composition": {
+              "app.json": 233009,
+              "effect": 92421,
+              "entry": 2965,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 1116
+            },
+            "features": null,
+            "gzip": 115656,
+            "members": [
+              "forge:residual"
+            ],
+            "name": "acme-commerce-forge-residual-8b7058",
+            "raw": 541215
+          }
+        ],
+        "raw": {
+          "count": 61,
+          "max": 541215,
+          "median": 347265,
+          "min": 320576,
+          "total": 21301358
+        },
+        "router": {
+          "gzip": 1291,
+          "raw": 5234
+        },
+        "runtimePlusEffect": {
+          "count": 61,
+          "max": 301802,
+          "median": 301755,
+          "min": 301755,
+          "total": 18407431
+        },
+        "scripts": 61
+      },
+      "single": {
+        "deployGzip": 115452,
+        "deployRaw": 538786,
+        "gzip": {
+          "count": 1,
+          "max": 115452,
+          "median": 115452,
+          "min": 115452,
+          "total": 115452
+        },
+        "perScript": [
+          {
+            "appJson": "fallback",
+            "composition": {
+              "app.json": 233009,
+              "effect": 92421,
+              "entry": 489,
+              "host": 2207,
+              "runtime": 209381,
+              "units": 1116
+            },
+            "features": null,
+            "gzip": 115452,
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation",
+              "@acme/commerce/_/ProcessOrder",
+              "@acme/commerce/_/ProcessOrder#approve",
+              "@acme/commerce/_/ProcessOrder#short",
+              "@acme/commerce/_/ProcessOrder#submit",
+              "@acme/commerce/_/ProcessOrder#summary",
+              "DELETE /v1/customers/{id}",
+              "DELETE /v1/departments/{id}",
+              "DELETE /v1/order-documents/{id}",
+              "DELETE /v1/orders/{id}",
+              "DELETE /v1/site-policies/{id}",
+              "DELETE /v1/sites/{id}",
+              "ForgeRealtime",
+              "GET /v1/customers",
+              "GET /v1/customers/queries/by-code",
+              "GET /v1/customers/queries/by-tier",
+              "GET /v1/customers/{id}",
+              "GET /v1/departments",
+              "GET /v1/departments/queries/by-customer",
+              "GET /v1/departments/{id}",
+              "GET /v1/departments/{id}/ancestors",
+              "GET /v1/departments/{id}/children",
+              "GET /v1/order-documents",
+              "GET /v1/order-documents/queries/by-order",
+              "GET /v1/order-documents/{id}",
+              "GET /v1/order-documents/{id}/content",
+              "GET /v1/orders",
+              "GET /v1/orders/queries/by-customer",
+              "GET /v1/orders/queries/by-site-status",
+              "GET /v1/orders/{id}",
+              "GET /v1/site-policies",
+              "GET /v1/site-policies/effective/by-site",
+              "GET /v1/site-policies/queries/by-site",
+              "GET /v1/site-policies/{id}",
+              "GET /v1/sites",
+              "GET /v1/sites/queries/by-customer",
+              "GET /v1/sites/queries/by-customer-code",
+              "GET /v1/sites/{id}",
+              "GET /v1/workflows/process-order/{id}",
+              "PATCH /v1/customers/{id}",
+              "PATCH /v1/departments/{id}",
+              "PATCH /v1/order-documents/{id}",
+              "PATCH /v1/orders/{id}",
+              "PATCH /v1/site-policies/{id}",
+              "PATCH /v1/sites/{id}",
+              "POST /v1/customers",
+              "POST /v1/customers/{id}/restore",
+              "POST /v1/departments",
+              "POST /v1/departments/{id}/move",
+              "POST /v1/order-documents",
+              "POST /v1/order-documents/{id}/finalize",
+              "POST /v1/order-documents/{id}/upload",
+              "POST /v1/orders",
+              "POST /v1/orders/{id}/actions/approve",
+              "POST /v1/orders/{id}/actions/cancel",
+              "POST /v1/orders/{id}/actions/complete",
+              "POST /v1/orders/{order}/process",
+              "POST /v1/orders/{order}/submit",
+              "POST /v1/site-policies",
+              "POST /v1/sites",
+              "POST /v1/workflows/process-order/signals/{message}",
+              "POST /v1/workflows/process-order/{id}/cancel",
+              "forge:residual",
+              "forge:sweep",
+              "fulfill-order"
+            ],
+            "name": "acme-commerce-all",
+            "raw": 538786
+          }
+        ],
+        "raw": {
+          "count": 1,
+          "max": 538786,
+          "median": 538786,
+          "min": 538786,
+          "total": 538786
+        },
+        "router": null,
+        "runtimePlusEffect": {
+          "count": 1,
+          "max": 301802,
+          "median": 301802,
+          "min": 301802,
+          "total": 301802
+        },
+        "scripts": 1
+      }
+    },
+    "toolchain": {
+      "bundler": "esbuild@0.27.7",
+      "forgec": "0.5.0",
+      "linker": "@forgegraph/linker-packed@0.5.0",
+      "node": "v24.14.0",
+      "units": "@forgegraph/units@0.5.0"
+    },
+    "wholeAppWorker": {
+      "bytes": {
+        "gzip": 114426,
+        "raw": 536243
+      },
+      "composition": {
+        "app.json": 233009,
+        "effect": 92421,
+        "impl": 1178,
+        "runtime": 209277
+      },
+      "source": "examples/acme/deploy/cloudflare/worker.ts"
+    }
+  },
+  "version": "r2-runtime-split/1"
+}
