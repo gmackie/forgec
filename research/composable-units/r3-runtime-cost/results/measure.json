@@ -1,0 +1,3930 @@
+{
+  "version": "r3-runtime-cost/1",
+  "issue": "FORG-42",
+  "commit": "479be5c",
+  "measured": {
+    "toolchain": {
+      "forgec": "0.5.0",
+      "bundler": "esbuild@0.27.7",
+      "units": "@forgegraph/units@0.5.0",
+      "node": "v24.14.0",
+      "linker": "@forgegraph/linker-packed@0.5.0"
+    },
+    "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+    "bundling": "esbuild, minified, format esm, platform neutral, conditions source/workerd/worker/browser/import, cloudflare:* and node:* external; gzip -9",
+    "sizes": {
+      "single": {
+        "scripts": 1,
+        "uploads": 1,
+        "router": null,
+        "runtimeWorker": null,
+        "raw": {
+          "count": 1,
+          "min": 542264,
+          "median": 542264,
+          "max": 542264
+        },
+        "gzip": {
+          "count": 1,
+          "min": 116235,
+          "median": 116235,
+          "max": 116235
+        },
+        "runtimePlusEffect": {
+          "count": 1,
+          "min": 305069,
+          "median": 305069,
+          "max": 305069
+        },
+        "scriptsCarryingEngine": 1,
+        "scriptsCarryingEffect": 1,
+        "inProcess": [],
+        "deployRaw": 542264,
+        "deployGzip": 116235,
+        "perScript": [
+          {
+            "name": "acme-commerce-all",
+            "members": "92 members",
+            "raw": 542264,
+            "gzip": 116235,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 539,
+              "effect": 92446,
+              "runtime": 212623,
+              "host": 2368,
+              "app.json": 233009,
+              "units": 1116
+            }
+          }
+        ]
+      },
+      "per-entry-point": {
+        "scripts": 87,
+        "uploads": 88,
+        "router": {
+          "raw": 7577,
+          "gzip": 1933
+        },
+        "runtimeWorker": null,
+        "raw": {
+          "count": 87,
+          "min": 247110,
+          "median": 285719,
+          "max": 541032
+        },
+        "gzip": {
+          "count": 87,
+          "min": 78796,
+          "median": 82560,
+          "max": 115665
+        },
+        "runtimePlusEffect": {
+          "count": 87,
+          "min": 235385,
+          "median": 237383,
+          "max": 305022
+        },
+        "scriptsCarryingEngine": 87,
+        "scriptsCarryingEffect": 87,
+        "inProcess": [],
+        "deployRaw": 25941622,
+        "deployGzip": 7400600,
+        "perScript": [
+          {
+            "name": "acme-commerce-nightlyreconciliation-04c042",
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation"
+            ],
+            "raw": 289833,
+            "gzip": 84654,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 150369,
+              "host": 2368,
+              "app.json": 44103,
+              "units": 78,
+              "entry": 421
+            }
+          },
+          {
+            "name": "acme-commerce-forge-sweep-24ec0b",
+            "members": [
+              "forge:sweep",
+              "projection:CustomerOrderSummary"
+            ],
+            "raw": 332830,
+            "gzip": 95707,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92421,
+              "runtime": 180440,
+              "host": 2368,
+              "app.json": 56072,
+              "units": 992,
+              "entry": 421
+            }
+          },
+          {
+            "name": "acme-commerce-forgerealtime-90f206",
+            "members": [
+              "ForgeRealtime"
+            ],
+            "raw": 285083,
+            "gzip": 82608,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 509,
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-customers-id-865077",
+            "members": [
+              "DELETE /v1/customers/{id}"
+            ],
+            "raw": 291524,
+            "gzip": 82088,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 53067,
+              "entry": 588
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-departments-id-f492ac",
+            "members": [
+              "DELETE /v1/departments/{id}"
+            ],
+            "raw": 264841,
+            "gzip": 80358,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 598
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-order-documents-id-4182d4",
+            "members": [
+              "DELETE /v1/order-documents/{id}"
+            ],
+            "raw": 307704,
+            "gzip": 86767,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 634
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-orders-id-8f6f3d",
+            "members": [
+              "DELETE /v1/orders/{id}"
+            ],
+            "raw": 307659,
+            "gzip": 86765,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 589
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-site-policies-id-6ff684",
+            "members": [
+              "DELETE /v1/site-policies/{id}"
+            ],
+            "raw": 275070,
+            "gzip": 81069,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 608
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-sites-id-8ab91c",
+            "members": [
+              "DELETE /v1/sites/{id}"
+            ],
+            "raw": 291598,
+            "gzip": 82192,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 53161,
+              "entry": 568
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-objects-token-ee9303",
+            "members": [
+              "GET /_forge/objects/{token}"
+            ],
+            "raw": 248266,
+            "gzip": 79976,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 147848,
+              "host": 2368,
+              "app.json": 5007,
+              "entry": 549
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-discovery-102862",
+            "members": [
+              "GET /forge/discovery"
+            ],
+            "raw": 541017,
+            "gzip": 115659,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92446,
+              "runtime": 212576,
+              "host": 2368,
+              "app.json": 233009,
+              "entry": 502
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-openapi-json-dd823b",
+            "members": [
+              "GET /forge/openapi.json"
+            ],
+            "raw": 541026,
+            "gzip": 115664,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92446,
+              "runtime": 212576,
+              "host": 2368,
+              "app.json": 233009,
+              "entry": 511
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-workspace-json-cd5a71",
+            "members": [
+              "GET /forge/workspace.json"
+            ],
+            "raw": 541032,
+            "gzip": 115665,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92446,
+              "runtime": 212576,
+              "host": 2368,
+              "app.json": 233009,
+              "entry": 517
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea",
+            "members": [
+              "GET /v1/caches/current-site-policy"
+            ],
+            "raw": 285719,
+            "gzip": 84589,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 37388,
+              "entry": 535
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-changesets-id-03c07e",
+            "members": [
+              "GET /v1/changesets/{id}"
+            ],
+            "raw": 334753,
+            "gzip": 89594,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 164057,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 500
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-changesets-id-preview-3d7025",
+            "members": [
+              "GET /v1/changesets/{id}/preview"
+            ],
+            "raw": 334777,
+            "gzip": 89604,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 164057,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 524
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customer-order-summaries-status-312396",
+            "members": [
+              "GET /v1/customer-order-summaries/status"
+            ],
+            "raw": 292154,
+            "gzip": 85162,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 43808,
+              "entry": 550
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customer-order-summaries-id-06679c",
+            "members": [
+              "GET /v1/customer-order-summaries/{id}"
+            ],
+            "raw": 292146,
+            "gzip": 85160,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 43808,
+              "entry": 542
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-5bc671",
+            "members": [
+              "GET /v1/customers"
+            ],
+            "raw": 254478,
+            "gzip": 79781,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 16090,
+              "entry": 519
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-queries-by-code-de4fe5",
+            "members": [
+              "GET /v1/customers/queries/by-code"
+            ],
+            "raw": 254489,
+            "gzip": 79783,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 16090,
+              "entry": 530
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-queries-by-tier-33dddc",
+            "members": [
+              "GET /v1/customers/queries/by-tier"
+            ],
+            "raw": 254489,
+            "gzip": 79784,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 16090,
+              "entry": 530
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-id-859df7",
+            "members": [
+              "GET /v1/customers/{id}"
+            ],
+            "raw": 254541,
+            "gzip": 79791,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 16090,
+              "entry": 582
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-5a7635",
+            "members": [
+              "GET /v1/departments"
+            ],
+            "raw": 264770,
+            "gzip": 80353,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 527
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-queries-by-customer-9931ae",
+            "members": [
+              "GET /v1/departments/queries/by-customer"
+            ],
+            "raw": 264791,
+            "gzip": 80355,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 548
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-id-94b682",
+            "members": [
+              "GET /v1/departments/{id}"
+            ],
+            "raw": 264835,
+            "gzip": 80362,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 592
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-id-ancestors-e358ff",
+            "members": [
+              "GET /v1/departments/{id}/ancestors"
+            ],
+            "raw": 264774,
+            "gzip": 80353,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 531
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-id-children-419b77",
+            "members": [
+              "GET /v1/departments/{id}/children"
+            ],
+            "raw": 264771,
+            "gzip": 80354,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 528
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-live-orders-c072a7",
+            "members": [
+              "GET /v1/live/orders"
+            ],
+            "raw": 285055,
+            "gzip": 82560,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734,
+              "entry": 501
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-7008be",
+            "members": [
+              "GET /v1/order-documents"
+            ],
+            "raw": 307629,
+            "gzip": 86761,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 559
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-queries-by-order-e2499a",
+            "members": [
+              "GET /v1/order-documents/queries/by-order"
+            ],
+            "raw": 307637,
+            "gzip": 86764,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 567
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-id-e9b35d",
+            "members": [
+              "GET /v1/order-documents/{id}"
+            ],
+            "raw": 307698,
+            "gzip": 86769,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 628
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-id-content-d0b378",
+            "members": [
+              "GET /v1/order-documents/{id}/content"
+            ],
+            "raw": 307606,
+            "gzip": 86759,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 536
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-ba0b2c",
+            "members": [
+              "GET /v1/orders"
+            ],
+            "raw": 281159,
+            "gzip": 81623,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 507
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-queries-by-customer-ed5c4c",
+            "members": [
+              "GET /v1/orders/queries/by-customer"
+            ],
+            "raw": 281185,
+            "gzip": 81626,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 533
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-queries-by-site-status-c57bcb",
+            "members": [
+              "GET /v1/orders/queries/by-site-status"
+            ],
+            "raw": 281194,
+            "gzip": 81627,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 542
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-id-2d0e31",
+            "members": [
+              "GET /v1/orders/{id}"
+            ],
+            "raw": 281219,
+            "gzip": 81634,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 567
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-95bbdb",
+            "members": [
+              "GET /v1/schedules/nightly-reconciliation"
+            ],
+            "raw": 289840,
+            "gzip": 84604,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 150322,
+              "host": 2368,
+              "app.json": 44103,
+              "entry": 553
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-e6b603",
+            "members": [
+              "GET /v1/site-policies"
+            ],
+            "raw": 274997,
+            "gzip": 81062,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 535
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-effective-by-site-4b1aed",
+            "members": [
+              "GET /v1/site-policies/effective/by-site"
+            ],
+            "raw": 275010,
+            "gzip": 81062,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 548
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-queries-by-site-c0df71",
+            "members": [
+              "GET /v1/site-policies/queries/by-site"
+            ],
+            "raw": 275004,
+            "gzip": 81064,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 542
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-id-db0b1f",
+            "members": [
+              "GET /v1/site-policies/{id}"
+            ],
+            "raw": 275064,
+            "gzip": 81070,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 602
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-a9083b",
+            "members": [
+              "GET /v1/sites"
+            ],
+            "raw": 264587,
+            "gzip": 80337,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26215,
+              "entry": 503
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-b2abb6",
+            "members": [
+              "GET /v1/sites/queries/by-customer"
+            ],
+            "raw": 264614,
+            "gzip": 80339,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26215,
+              "entry": 530
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-code-a50f4f",
+            "members": [
+              "GET /v1/sites/queries/by-customer-code"
+            ],
+            "raw": 264629,
+            "gzip": 80349,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26215,
+              "entry": 545
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-id-18c7c2",
+            "members": [
+              "GET /v1/sites/{id}"
+            ],
+            "raw": 264646,
+            "gzip": 80355,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26215,
+              "entry": 562
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-views-pending-orders-7c7782",
+            "members": [
+              "GET /v1/views/pending-orders"
+            ],
+            "raw": 292201,
+            "gzip": 85074,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 43888,
+              "entry": 517
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-workflows-process-order-id-76eb96",
+            "members": [
+              "GET /v1/workflows/process-order/{id}"
+            ],
+            "raw": 310012,
+            "gzip": 88590,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 160842,
+              "host": 2368,
+              "app.json": 53766,
+              "entry": 542
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-customers-id-a19e97",
+            "members": [
+              "PATCH /v1/customers/{id}"
+            ],
+            "raw": 254545,
+            "gzip": 79788,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 16090,
+              "entry": 586
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-departments-id-93fb26",
+            "members": [
+              "PATCH /v1/departments/{id}"
+            ],
+            "raw": 264839,
+            "gzip": 80360,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 596
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-order-documents-id-f2787a",
+            "members": [
+              "PATCH /v1/order-documents/{id}"
+            ],
+            "raw": 307702,
+            "gzip": 86769,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 632
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-orders-id-c8bd2f",
+            "members": [
+              "PATCH /v1/orders/{id}"
+            ],
+            "raw": 281223,
+            "gzip": 81634,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 571
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-site-policies-id-25dc21",
+            "members": [
+              "PATCH /v1/site-policies/{id}"
+            ],
+            "raw": 275068,
+            "gzip": 81070,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 606
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-sites-id-f8a7c7",
+            "members": [
+              "PATCH /v1/sites/{id}"
+            ],
+            "raw": 264650,
+            "gzip": 80352,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26215,
+              "entry": 566
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-export-e88510",
+            "members": [
+              "POST /v1/admin/export"
+            ],
+            "raw": 333390,
+            "gzip": 89425,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 162698,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 496
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-fence-cfcde5",
+            "members": [
+              "POST /v1/admin/fence"
+            ],
+            "raw": 333387,
+            "gzip": 89426,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 162698,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 493
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-import-6d6745",
+            "members": [
+              "POST /v1/admin/import"
+            ],
+            "raw": 333390,
+            "gzip": 89427,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 162698,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 496
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-inspect-7d553f",
+            "members": [
+              "POST /v1/admin/inspect"
+            ],
+            "raw": 328228,
+            "gzip": 87908,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 496
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-subjects-locate-99dbef",
+            "members": [
+              "POST /v1/admin/subjects/locate"
+            ],
+            "raw": 328252,
+            "gzip": 87913,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 520
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-verify-760020",
+            "members": [
+              "POST /v1/admin/verify"
+            ],
+            "raw": 333390,
+            "gzip": 89429,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 162698,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 496
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-changesets-d4dc90",
+            "members": [
+              "POST /v1/changesets"
+            ],
+            "raw": 334743,
+            "gzip": 89591,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 164057,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 490
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-changesets-id-approve-c1a763",
+            "members": [
+              "POST /v1/changesets/{id}/approve"
+            ],
+            "raw": 334780,
+            "gzip": 89605,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 164057,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 527
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-changesets-id-commit-ec9a99",
+            "members": [
+              "POST /v1/changesets/{id}/commit"
+            ],
+            "raw": 334777,
+            "gzip": 89604,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 164057,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 524
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-customer-order-summaries-rebuild-0a84e8",
+            "members": [
+              "POST /v1/customer-order-summaries/rebuild"
+            ],
+            "raw": 292160,
+            "gzip": 85166,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 43808,
+              "entry": 556
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-customers-b01b8e",
+            "members": [
+              "POST /v1/customers"
+            ],
+            "raw": 254480,
+            "gzip": 79782,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 16090,
+              "entry": 521
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-customers-id-restore-c67045",
+            "members": [
+              "POST /v1/customers/{id}/restore"
+            ],
+            "raw": 254481,
+            "gzip": 79784,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 16090,
+              "entry": 522
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-departments-965f9d",
+            "members": [
+              "POST /v1/departments"
+            ],
+            "raw": 264772,
+            "gzip": 80354,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 529
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-departments-id-move-24a6b1",
+            "members": [
+              "POST /v1/departments/{id}/move"
+            ],
+            "raw": 264762,
+            "gzip": 80355,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 519
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-imports-inspect-ff77f4",
+            "members": [
+              "POST /v1/imports/inspect"
+            ],
+            "raw": 340752,
+            "gzip": 91801,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92398,
+              "runtime": 170028,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 508
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-imports-stage-865a08",
+            "members": [
+              "POST /v1/imports/stage"
+            ],
+            "raw": 340746,
+            "gzip": 91798,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92398,
+              "runtime": 170028,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 502
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-order-documents-dcce15",
+            "members": [
+              "POST /v1/order-documents"
+            ],
+            "raw": 307631,
+            "gzip": 86762,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 561
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-order-documents-id-finalize-99d42d",
+            "members": [
+              "POST /v1/order-documents/{id}/finalize"
+            ],
+            "raw": 307612,
+            "gzip": 86759,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 542
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-order-documents-id-upload-6608dc",
+            "members": [
+              "POST /v1/order-documents/{id}/upload"
+            ],
+            "raw": 307606,
+            "gzip": 86760,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 536
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-292d83",
+            "members": [
+              "POST /v1/orders"
+            ],
+            "raw": 281161,
+            "gzip": 81626,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 509
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-id-actions-approve-311eae",
+            "members": [
+              "POST /v1/orders/{id}/actions/approve"
+            ],
+            "raw": 281189,
+            "gzip": 81630,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 537
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-id-actions-cancel-f293bb",
+            "members": [
+              "POST /v1/orders/{id}/actions/cancel"
+            ],
+            "raw": 281186,
+            "gzip": 81631,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 534
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-id-actions-complete-2b8d43",
+            "members": [
+              "POST /v1/orders/{id}/actions/complete"
+            ],
+            "raw": 281192,
+            "gzip": 81631,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 42783,
+              "entry": 540
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-order-process-745789",
+            "members": [
+              "POST /v1/orders/{order}/process"
+            ],
+            "raw": 311038,
+            "gzip": 89013,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 160889,
+              "host": 2368,
+              "app.json": 53766,
+              "units": 992,
+              "entry": 529
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-order-submit-19d055",
+            "members": [
+              "POST /v1/orders/{order}/submit"
+            ],
+            "raw": 287852,
+            "gzip": 83110,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 145005,
+              "host": 2368,
+              "app.json": 46528,
+              "units": 914,
+              "entry": 543
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1",
+            "members": [
+              "POST /v1/schedules/nightly-reconciliation/tick"
+            ],
+            "raw": 289982,
+            "gzip": 84679,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 150369,
+              "host": 2368,
+              "app.json": 44103,
+              "units": 78,
+              "entry": 570
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-site-policies-e288dc",
+            "members": [
+              "POST /v1/site-policies"
+            ],
+            "raw": 274999,
+            "gzip": 81063,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 537
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-sites-985075",
+            "members": [
+              "POST /v1/sites"
+            ],
+            "raw": 264589,
+            "gzip": 80338,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26215,
+              "entry": 505
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+            "members": [
+              "POST /v1/workflows/process-order/signals/{message}"
+            ],
+            "raw": 311090,
+            "gzip": 89032,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 160889,
+              "host": 2368,
+              "app.json": 53766,
+              "units": 992,
+              "entry": 581
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-workflows-process-order-id-cancel-4ffe45",
+            "members": [
+              "POST /v1/workflows/process-order/{id}/cancel"
+            ],
+            "raw": 310013,
+            "gzip": 88591,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 160842,
+              "host": 2368,
+              "app.json": 53766,
+              "entry": 543
+            }
+          },
+          {
+            "name": "acme-commerce-put-forge-objects-token-e15b5c",
+            "members": [
+              "PUT /_forge/objects/{token}"
+            ],
+            "raw": 248266,
+            "gzip": 79978,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 147848,
+              "host": 2368,
+              "app.json": 5007,
+              "entry": 549
+            }
+          },
+          {
+            "name": "acme-commerce-fulfill-order-4ca05b",
+            "members": [
+              "fulfill-order"
+            ],
+            "raw": 286013,
+            "gzip": 82640,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 145005,
+              "host": 2368,
+              "app.json": 45609,
+              "units": 124,
+              "entry": 413
+            }
+          },
+          {
+            "name": "acme-commerce-processorder-c5fc00",
+            "members": "5 members",
+            "raw": 311043,
+            "gzip": 89061,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 507,
+              "effect": 92378,
+              "runtime": 160889,
+              "host": 2368,
+              "app.json": 53766,
+              "units": 992
+            }
+          },
+          {
+            "name": "acme-commerce-forge-residual-8b7058",
+            "members": [
+              "forge:residual"
+            ],
+            "raw": 247110,
+            "gzip": 78796,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 5007,
+              "entry": 4234
+            }
+          }
+        ]
+      },
+      "per-entry-point-shared": {
+        "scripts": 87,
+        "uploads": 89,
+        "router": {
+          "raw": 7577,
+          "gzip": 1933
+        },
+        "runtimeWorker": {
+          "raw": 305624,
+          "gzip": 97505,
+          "composition": {
+            "entry": 104,
+            "effect": 92446,
+            "runtime": 209457,
+            "host": 3501
+          }
+        },
+        "raw": {
+          "count": 87,
+          "min": 10025,
+          "median": 48863,
+          "max": 332830
+        },
+        "gzip": {
+          "count": 87,
+          "min": 3752,
+          "median": 7358,
+          "max": 95707
+        },
+        "runtimePlusEffect": {
+          "count": 87,
+          "min": 0,
+          "median": 0,
+          "max": 272861
+        },
+        "scriptsCarryingEngine": 4,
+        "scriptsCarryingEffect": 10,
+        "inProcess": [
+          {
+            "name": "acme-commerce-forge-sweep-24ec0b",
+            "reason": "dispatch owner",
+            "raw": 332830
+          },
+          {
+            "name": "acme-commerce-forgerealtime-90f206",
+            "reason": "realtime object",
+            "raw": 285083
+          },
+          {
+            "name": "acme-commerce-get-v1-live-orders-c072a7",
+            "reason": "websocket upgrade",
+            "raw": 285055
+          },
+          {
+            "name": "acme-commerce-processorder-c5fc00",
+            "reason": "workflow class",
+            "raw": 311043
+          }
+        ],
+        "deployRaw": 6643972,
+        "deployGzip": 1269403,
+        "perScript": [
+          {
+            "name": "acme-commerce-nightlyreconciliation-04c042",
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation"
+            ],
+            "raw": 139943,
+            "gzip": 39004,
+            "runtime": "shared",
+            "composition": {
+              "entry": 907,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 44103,
+              "units": 79
+            }
+          },
+          {
+            "name": "acme-commerce-forge-sweep-24ec0b",
+            "members": [
+              "forge:sweep",
+              "projection:CustomerOrderSummary"
+            ],
+            "raw": 332830,
+            "gzip": 95707,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92421,
+              "runtime": 180440,
+              "host": 2368,
+              "app.json": 56072,
+              "units": 992,
+              "entry": 421
+            }
+          },
+          {
+            "name": "acme-commerce-forgerealtime-90f206",
+            "members": [
+              "ForgeRealtime"
+            ],
+            "raw": 285083,
+            "gzip": 82608,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 509,
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-customers-id-865077",
+            "members": [
+              "DELETE /v1/customers/{id}"
+            ],
+            "raw": 58134,
+            "gzip": 7578,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1054,
+              "host": 3992,
+              "app.json": 53066
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-departments-id-f492ac",
+            "members": [
+              "DELETE /v1/departments/{id}"
+            ],
+            "raw": 31453,
+            "gzip": 5866,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1066,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-order-documents-id-4182d4",
+            "members": [
+              "DELETE /v1/order-documents/{id}"
+            ],
+            "raw": 59795,
+            "gzip": 7960,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1110,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-orders-id-8f6f3d",
+            "members": [
+              "DELETE /v1/orders/{id}"
+            ],
+            "raw": 59741,
+            "gzip": 7955,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1056,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-site-policies-id-6ff684",
+            "members": [
+              "DELETE /v1/site-policies/{id}"
+            ],
+            "raw": 41684,
+            "gzip": 6573,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1078,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-sites-id-8ab91c",
+            "members": [
+              "DELETE /v1/sites/{id}"
+            ],
+            "raw": 58204,
+            "gzip": 7697,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1030,
+              "host": 3992,
+              "app.json": 53160
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-objects-token-ee9303",
+            "members": [
+              "GET /_forge/objects/{token}"
+            ],
+            "raw": 10025,
+            "gzip": 3752,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1005,
+              "host": 3992,
+              "app.json": 5006
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-discovery-102862",
+            "members": [
+              "GET /forge/discovery"
+            ],
+            "raw": 238092,
+            "gzip": 20177,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1070,
+              "host": 3992,
+              "app.json": 233008
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-openapi-json-dd823b",
+            "members": [
+              "GET /forge/openapi.json"
+            ],
+            "raw": 238104,
+            "gzip": 20183,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1082,
+              "host": 3992,
+              "app.json": 233008
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-workspace-json-cd5a71",
+            "members": [
+              "GET /forge/workspace.json"
+            ],
+            "raw": 238112,
+            "gzip": 20183,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1090,
+              "host": 3992,
+              "app.json": 233008
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea",
+            "members": [
+              "GET /v1/caches/current-site-policy"
+            ],
+            "raw": 42423,
+            "gzip": 6790,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1022,
+              "host": 3992,
+              "app.json": 37387
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-changesets-id-03c07e",
+            "members": [
+              "GET /v1/changesets/{id}"
+            ],
+            "raw": 80325,
+            "gzip": 9099,
+            "runtime": "shared",
+            "composition": {
+              "entry": 978,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-changesets-id-preview-3d7025",
+            "members": [
+              "GET /v1/changesets/{id}/preview"
+            ],
+            "raw": 80357,
+            "gzip": 9109,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1010,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customer-order-summaries-status-312396",
+            "members": [
+              "GET /v1/customer-order-summaries/status"
+            ],
+            "raw": 48863,
+            "gzip": 7360,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1042,
+              "host": 3992,
+              "app.json": 43807
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customer-order-summaries-id-06679c",
+            "members": [
+              "GET /v1/customer-order-summaries/{id}"
+            ],
+            "raw": 48851,
+            "gzip": 7358,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1030,
+              "host": 3992,
+              "app.json": 43807
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-5bc671",
+            "members": [
+              "GET /v1/customers"
+            ],
+            "raw": 21082,
+            "gzip": 5278,
+            "runtime": "shared",
+            "composition": {
+              "entry": 979,
+              "host": 3992,
+              "app.json": 16089
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-queries-by-code-de4fe5",
+            "members": [
+              "GET /v1/customers/queries/by-code"
+            ],
+            "raw": 21109,
+            "gzip": 5279,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1006,
+              "host": 3992,
+              "app.json": 16089
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-queries-by-tier-33dddc",
+            "members": [
+              "GET /v1/customers/queries/by-tier"
+            ],
+            "raw": 21109,
+            "gzip": 5282,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1006,
+              "host": 3992,
+              "app.json": 16089
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customers-id-859df7",
+            "members": [
+              "GET /v1/customers/{id}"
+            ],
+            "raw": 21148,
+            "gzip": 5286,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1045,
+              "host": 3992,
+              "app.json": 16089
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-5a7635",
+            "members": [
+              "GET /v1/departments"
+            ],
+            "raw": 31376,
+            "gzip": 5860,
+            "runtime": "shared",
+            "composition": {
+              "entry": 989,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-queries-by-customer-9931ae",
+            "members": [
+              "GET /v1/departments/queries/by-customer"
+            ],
+            "raw": 31417,
+            "gzip": 5863,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1030,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-id-94b682",
+            "members": [
+              "GET /v1/departments/{id}"
+            ],
+            "raw": 31444,
+            "gzip": 5868,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1057,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-id-ancestors-e358ff",
+            "members": [
+              "GET /v1/departments/{id}/ancestors"
+            ],
+            "raw": 31393,
+            "gzip": 5860,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1006,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-departments-id-children-419b77",
+            "members": [
+              "GET /v1/departments/{id}/children"
+            ],
+            "raw": 31389,
+            "gzip": 5862,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1002,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-live-orders-c072a7",
+            "members": [
+              "GET /v1/live/orders"
+            ],
+            "raw": 285055,
+            "gzip": 82560,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734,
+              "entry": 501
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-7008be",
+            "members": [
+              "GET /v1/order-documents"
+            ],
+            "raw": 59714,
+            "gzip": 7950,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1029,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-queries-by-order-e2499a",
+            "members": [
+              "GET /v1/order-documents/queries/by-order"
+            ],
+            "raw": 59739,
+            "gzip": 7954,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1054,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-id-e9b35d",
+            "members": [
+              "GET /v1/order-documents/{id}"
+            ],
+            "raw": 59786,
+            "gzip": 7960,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1101,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-order-documents-id-content-d0b378",
+            "members": [
+              "GET /v1/order-documents/{id}/content"
+            ],
+            "raw": 59702,
+            "gzip": 7956,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1017,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-ba0b2c",
+            "members": [
+              "GET /v1/orders"
+            ],
+            "raw": 47760,
+            "gzip": 7111,
+            "runtime": "shared",
+            "composition": {
+              "entry": 964,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-queries-by-customer-ed5c4c",
+            "members": [
+              "GET /v1/orders/queries/by-customer"
+            ],
+            "raw": 47806,
+            "gzip": 7113,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1010,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-queries-by-site-status-c57bcb",
+            "members": [
+              "GET /v1/orders/queries/by-site-status"
+            ],
+            "raw": 47818,
+            "gzip": 7115,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1022,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-orders-id-2d0e31",
+            "members": [
+              "GET /v1/orders/{id}"
+            ],
+            "raw": 47823,
+            "gzip": 7120,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1027,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-95bbdb",
+            "members": [
+              "GET /v1/schedules/nightly-reconciliation"
+            ],
+            "raw": 49161,
+            "gzip": 7384,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1045,
+              "host": 3992,
+              "app.json": 44102
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-e6b603",
+            "members": [
+              "GET /v1/site-policies"
+            ],
+            "raw": 41605,
+            "gzip": 6566,
+            "runtime": "shared",
+            "composition": {
+              "entry": 999,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-effective-by-site-4b1aed",
+            "members": [
+              "GET /v1/site-policies/effective/by-site"
+            ],
+            "raw": 41636,
+            "gzip": 6567,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1030,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-queries-by-site-c0df71",
+            "members": [
+              "GET /v1/site-policies/queries/by-site"
+            ],
+            "raw": 41628,
+            "gzip": 6568,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1022,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-site-policies-id-db0b1f",
+            "members": [
+              "GET /v1/site-policies/{id}"
+            ],
+            "raw": 41675,
+            "gzip": 6575,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1069,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-a9083b",
+            "members": [
+              "GET /v1/sites"
+            ],
+            "raw": 31187,
+            "gzip": 5843,
+            "runtime": "shared",
+            "composition": {
+              "entry": 959,
+              "host": 3992,
+              "app.json": 26214
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-b2abb6",
+            "members": [
+              "GET /v1/sites/queries/by-customer"
+            ],
+            "raw": 31234,
+            "gzip": 5844,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1006,
+              "host": 3992,
+              "app.json": 26214
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-code-a50f4f",
+            "members": [
+              "GET /v1/sites/queries/by-customer-code"
+            ],
+            "raw": 31254,
+            "gzip": 5846,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1026,
+              "host": 3992,
+              "app.json": 26214
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-sites-id-18c7c2",
+            "members": [
+              "GET /v1/sites/{id}"
+            ],
+            "raw": 31249,
+            "gzip": 5852,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1021,
+              "host": 3992,
+              "app.json": 26214
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-views-pending-orders-7c7782",
+            "members": [
+              "GET /v1/views/pending-orders"
+            ],
+            "raw": 48899,
+            "gzip": 7268,
+            "runtime": "shared",
+            "composition": {
+              "entry": 998,
+              "host": 3992,
+              "app.json": 43887
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-workflows-process-order-id-76eb96",
+            "members": [
+              "GET /v1/workflows/process-order/{id}"
+            ],
+            "raw": 58815,
+            "gzip": 8827,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1036,
+              "host": 3992,
+              "app.json": 53765
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-customers-id-a19e97",
+            "members": [
+              "PATCH /v1/customers/{id}"
+            ],
+            "raw": 21154,
+            "gzip": 5285,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1051,
+              "host": 3992,
+              "app.json": 16089
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-departments-id-93fb26",
+            "members": [
+              "PATCH /v1/departments/{id}"
+            ],
+            "raw": 31450,
+            "gzip": 5867,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1063,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-order-documents-id-f2787a",
+            "members": [
+              "PATCH /v1/order-documents/{id}"
+            ],
+            "raw": 59792,
+            "gzip": 7958,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1107,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-orders-id-c8bd2f",
+            "members": [
+              "PATCH /v1/orders/{id}"
+            ],
+            "raw": 47829,
+            "gzip": 7120,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1033,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-site-policies-id-25dc21",
+            "members": [
+              "PATCH /v1/site-policies/{id}"
+            ],
+            "raw": 41681,
+            "gzip": 6574,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1075,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-patch-v1-sites-id-f8a7c7",
+            "members": [
+              "PATCH /v1/sites/{id}"
+            ],
+            "raw": 31255,
+            "gzip": 5851,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1027,
+              "host": 3992,
+              "app.json": 26214
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-export-e88510",
+            "members": [
+              "POST /v1/admin/export"
+            ],
+            "raw": 80322,
+            "gzip": 9103,
+            "runtime": "shared",
+            "composition": {
+              "entry": 975,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-fence-cfcde5",
+            "members": [
+              "POST /v1/admin/fence"
+            ],
+            "raw": 80318,
+            "gzip": 9104,
+            "runtime": "shared",
+            "composition": {
+              "entry": 971,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-import-6d6745",
+            "members": [
+              "POST /v1/admin/import"
+            ],
+            "raw": 80322,
+            "gzip": 9105,
+            "runtime": "shared",
+            "composition": {
+              "entry": 975,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-inspect-7d553f",
+            "members": [
+              "POST /v1/admin/inspect"
+            ],
+            "raw": 80312,
+            "gzip": 9100,
+            "runtime": "shared",
+            "composition": {
+              "entry": 965,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-subjects-locate-99dbef",
+            "members": [
+              "POST /v1/admin/subjects/locate"
+            ],
+            "raw": 80344,
+            "gzip": 9107,
+            "runtime": "shared",
+            "composition": {
+              "entry": 997,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-verify-760020",
+            "members": [
+              "POST /v1/admin/verify"
+            ],
+            "raw": 80322,
+            "gzip": 9106,
+            "runtime": "shared",
+            "composition": {
+              "entry": 975,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-changesets-d4dc90",
+            "members": [
+              "POST /v1/changesets"
+            ],
+            "raw": 80313,
+            "gzip": 9096,
+            "runtime": "shared",
+            "composition": {
+              "entry": 966,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-changesets-id-approve-c1a763",
+            "members": [
+              "POST /v1/changesets/{id}/approve"
+            ],
+            "raw": 80361,
+            "gzip": 9111,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1014,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-changesets-id-commit-ec9a99",
+            "members": [
+              "POST /v1/changesets/{id}/commit"
+            ],
+            "raw": 80357,
+            "gzip": 9109,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1010,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-customer-order-summaries-rebuild-0a84e8",
+            "members": [
+              "POST /v1/customer-order-summaries/rebuild"
+            ],
+            "raw": 48871,
+            "gzip": 7364,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1050,
+              "host": 3992,
+              "app.json": 43807
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-customers-b01b8e",
+            "members": [
+              "POST /v1/customers"
+            ],
+            "raw": 21085,
+            "gzip": 5279,
+            "runtime": "shared",
+            "composition": {
+              "entry": 982,
+              "host": 3992,
+              "app.json": 16089
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-customers-id-restore-c67045",
+            "members": [
+              "POST /v1/customers/{id}/restore"
+            ],
+            "raw": 21097,
+            "gzip": 5279,
+            "runtime": "shared",
+            "composition": {
+              "entry": 994,
+              "host": 3992,
+              "app.json": 16089
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-departments-965f9d",
+            "members": [
+              "POST /v1/departments"
+            ],
+            "raw": 31379,
+            "gzip": 5861,
+            "runtime": "shared",
+            "composition": {
+              "entry": 992,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-departments-id-move-24a6b1",
+            "members": [
+              "POST /v1/departments/{id}/move"
+            ],
+            "raw": 31377,
+            "gzip": 5863,
+            "runtime": "shared",
+            "composition": {
+              "entry": 990,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-imports-inspect-ff77f4",
+            "members": [
+              "POST /v1/imports/inspect"
+            ],
+            "raw": 80343,
+            "gzip": 9111,
+            "runtime": "shared",
+            "composition": {
+              "entry": 996,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-imports-stage-865a08",
+            "members": [
+              "POST /v1/imports/stage"
+            ],
+            "raw": 80335,
+            "gzip": 9110,
+            "runtime": "shared",
+            "composition": {
+              "entry": 988,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-order-documents-dcce15",
+            "members": [
+              "POST /v1/order-documents"
+            ],
+            "raw": 59717,
+            "gzip": 7953,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1032,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-order-documents-id-finalize-99d42d",
+            "members": [
+              "POST /v1/order-documents/{id}/finalize"
+            ],
+            "raw": 59710,
+            "gzip": 7957,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1025,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-order-documents-id-upload-6608dc",
+            "members": [
+              "POST /v1/order-documents/{id}/upload"
+            ],
+            "raw": 59702,
+            "gzip": 7958,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1017,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-292d83",
+            "members": [
+              "POST /v1/orders"
+            ],
+            "raw": 47763,
+            "gzip": 7113,
+            "runtime": "shared",
+            "composition": {
+              "entry": 967,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-id-actions-approve-311eae",
+            "members": [
+              "POST /v1/orders/{id}/actions/approve"
+            ],
+            "raw": 47810,
+            "gzip": 7118,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1014,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-id-actions-cancel-f293bb",
+            "members": [
+              "POST /v1/orders/{id}/actions/cancel"
+            ],
+            "raw": 47806,
+            "gzip": 7119,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1010,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-id-actions-complete-2b8d43",
+            "members": [
+              "POST /v1/orders/{id}/actions/complete"
+            ],
+            "raw": 47814,
+            "gzip": 7119,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1018,
+              "host": 3992,
+              "app.json": 42782
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-order-process-745789",
+            "members": [
+              "POST /v1/orders/{order}/process"
+            ],
+            "raw": 150684,
+            "gzip": 40860,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1070,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 53766,
+              "units": 994
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-orders-order-submit-19d055",
+            "members": [
+              "POST /v1/orders/{order}/submit"
+            ],
+            "raw": 143371,
+            "gzip": 39574,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1074,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 46528,
+              "units": 915
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1",
+            "members": [
+              "POST /v1/schedules/nightly-reconciliation/tick"
+            ],
+            "raw": 140113,
+            "gzip": 39031,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1077,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 44103,
+              "units": 79
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-site-policies-e288dc",
+            "members": [
+              "POST /v1/site-policies"
+            ],
+            "raw": 41608,
+            "gzip": 6567,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1002,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-sites-985075",
+            "members": [
+              "POST /v1/sites"
+            ],
+            "raw": 31190,
+            "gzip": 5845,
+            "runtime": "shared",
+            "composition": {
+              "entry": 962,
+              "host": 3992,
+              "app.json": 26214
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+            "members": [
+              "POST /v1/workflows/process-order/signals/{message}"
+            ],
+            "raw": 150750,
+            "gzip": 40879,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1136,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 53766,
+              "units": 994
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-workflows-process-order-id-cancel-4ffe45",
+            "members": [
+              "POST /v1/workflows/process-order/{id}/cancel"
+            ],
+            "raw": 58824,
+            "gzip": 8837,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1045,
+              "host": 3992,
+              "app.json": 53765
+            }
+          },
+          {
+            "name": "acme-commerce-put-forge-objects-token-e15b5c",
+            "members": [
+              "PUT /_forge/objects/{token}"
+            ],
+            "raw": 10025,
+            "gzip": 3752,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1005,
+              "host": 3992,
+              "app.json": 5006
+            }
+          },
+          {
+            "name": "acme-commerce-fulfill-order-4ca05b",
+            "members": [
+              "fulfill-order"
+            ],
+            "raw": 141478,
+            "gzip": 39067,
+            "runtime": "shared",
+            "composition": {
+              "entry": 890,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 45609,
+              "units": 125
+            }
+          },
+          {
+            "name": "acme-commerce-processorder-c5fc00",
+            "members": "5 members",
+            "raw": 311043,
+            "gzip": 89061,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 507,
+              "effect": 92378,
+              "runtime": 160889,
+              "host": 2368,
+              "app.json": 53766,
+              "units": 992
+            }
+          },
+          {
+            "name": "acme-commerce-forge-residual-8b7058",
+            "members": [
+              "forge:residual"
+            ],
+            "raw": 13712,
+            "gzip": 4316,
+            "runtime": "shared",
+            "composition": {
+              "entry": 4692,
+              "host": 3992,
+              "app.json": 5006
+            }
+          }
+        ]
+      },
+      "per-resource": {
+        "scripts": 25,
+        "uploads": 26,
+        "router": {
+          "raw": 7390,
+          "gzip": 1367
+        },
+        "runtimeWorker": null,
+        "raw": {
+          "count": 25,
+          "min": 247110,
+          "median": 292201,
+          "max": 541032
+        },
+        "gzip": {
+          "count": 25,
+          "min": 78796,
+          "median": 85074,
+          "max": 115665
+        },
+        "runtimePlusEffect": {
+          "count": 25,
+          "min": 235385,
+          "median": 245312,
+          "max": 305022
+        },
+        "scriptsCarryingEngine": 25,
+        "scriptsCarryingEffect": 25,
+        "inProcess": [],
+        "deployRaw": 8169270,
+        "deployGzip": 2230549,
+        "perScript": [
+          {
+            "name": "acme-commerce-nightlyreconciliation-04c042",
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation"
+            ],
+            "raw": 289833,
+            "gzip": 84654,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 150369,
+              "host": 2368,
+              "app.json": 44103,
+              "units": 78,
+              "entry": 421
+            }
+          },
+          {
+            "name": "acme-commerce-forge-sweep-24ec0b",
+            "members": [
+              "forge:sweep",
+              "projection:CustomerOrderSummary"
+            ],
+            "raw": 332830,
+            "gzip": 95707,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92421,
+              "runtime": 180440,
+              "host": 2368,
+              "app.json": 56072,
+              "units": 992,
+              "entry": 421
+            }
+          },
+          {
+            "name": "acme-commerce-forgerealtime-90f206",
+            "members": [
+              "ForgeRealtime"
+            ],
+            "raw": 285083,
+            "gzip": 82608,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 509,
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-customers-id-2e6e60",
+            "members": "8 members",
+            "raw": 292062,
+            "gzip": 82123,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 53067,
+              "entry": 1126
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-departments-id-cba285",
+            "members": "9 members",
+            "raw": 265507,
+            "gzip": 80385,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 26374,
+              "entry": 1264
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-order-documents-id-e38c3d",
+            "members": "9 members",
+            "raw": 308405,
+            "gzip": 86790,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 157536,
+              "host": 2368,
+              "app.json": 54672,
+              "entry": 1335
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-orders-id-6a4cf1",
+            "members": "12 members",
+            "raw": 338485,
+            "gzip": 94133,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 175421,
+              "host": 2368,
+              "app.json": 65655,
+              "units": 992,
+              "entry": 1555
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-site-policies-id-627b88",
+            "members": "7 members",
+            "raw": 275552,
+            "gzip": 81087,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 36593,
+              "entry": 1090
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-sites-id-558bb6",
+            "members": "7 members",
+            "raw": 292022,
+            "gzip": 82211,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 53161,
+              "entry": 992
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-objects-token-e50914",
+            "members": [
+              "GET /_forge/objects/{token}",
+              "PUT /_forge/objects/{token}"
+            ],
+            "raw": 248312,
+            "gzip": 79978,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 147848,
+              "host": 2368,
+              "app.json": 5007,
+              "entry": 595
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-discovery-102862",
+            "members": [
+              "GET /forge/discovery"
+            ],
+            "raw": 541017,
+            "gzip": 115659,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92446,
+              "runtime": 212576,
+              "host": 2368,
+              "app.json": 233009,
+              "entry": 502
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-openapi-json-dd823b",
+            "members": [
+              "GET /forge/openapi.json"
+            ],
+            "raw": 541026,
+            "gzip": 115664,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92446,
+              "runtime": 212576,
+              "host": 2368,
+              "app.json": 233009,
+              "entry": 511
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-workspace-json-cd5a71",
+            "members": [
+              "GET /forge/workspace.json"
+            ],
+            "raw": 541032,
+            "gzip": 115665,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92446,
+              "runtime": 212576,
+              "host": 2368,
+              "app.json": 233009,
+              "entry": 517
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea",
+            "members": [
+              "GET /v1/caches/current-site-policy"
+            ],
+            "raw": 285719,
+            "gzip": 84589,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 37388,
+              "entry": 535
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-changesets-id-110c00",
+            "members": "5 members",
+            "raw": 335131,
+            "gzip": 89625,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 164057,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 878
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customer-order-summaries-status-45c160",
+            "members": [
+              "GET /v1/customer-order-summaries/status",
+              "GET /v1/customer-order-summaries/{id}",
+              "POST /v1/customer-order-summaries/rebuild"
+            ],
+            "raw": 292386,
+            "gzip": 85180,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 43808,
+              "entry": 782
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-live-orders-c072a7",
+            "members": [
+              "GET /v1/live/orders"
+            ],
+            "raw": 285055,
+            "gzip": 82560,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734,
+              "entry": 501
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-ed2eed",
+            "members": [
+              "GET /v1/schedules/nightly-reconciliation",
+              "POST /v1/schedules/nightly-reconciliation/tick"
+            ],
+            "raw": 290097,
+            "gzip": 84681,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 150369,
+              "host": 2368,
+              "app.json": 44103,
+              "units": 78,
+              "entry": 685
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-views-pending-orders-7c7782",
+            "members": [
+              "GET /v1/views/pending-orders"
+            ],
+            "raw": 292201,
+            "gzip": 85074,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 152934,
+              "host": 2368,
+              "app.json": 43888,
+              "entry": 517
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-workflows-process-order-id-ac1b80",
+            "members": [
+              "GET /v1/workflows/process-order/{id}",
+              "POST /v1/workflows/process-order/signals/{message}",
+              "POST /v1/workflows/process-order/{id}/cancel"
+            ],
+            "raw": 311317,
+            "gzip": 89042,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 160889,
+              "host": 2368,
+              "app.json": 53766,
+              "units": 992,
+              "entry": 808
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-export-ec9588",
+            "members": "6 members",
+            "raw": 333808,
+            "gzip": 89463,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 162698,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 914
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-imports-inspect-14ca49",
+            "members": [
+              "POST /v1/imports/inspect",
+              "POST /v1/imports/stage"
+            ],
+            "raw": 340834,
+            "gzip": 91807,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92398,
+              "runtime": 170028,
+              "host": 2368,
+              "app.json": 75334,
+              "entry": 590
+            }
+          },
+          {
+            "name": "acme-commerce-fulfill-order-4ca05b",
+            "members": [
+              "fulfill-order"
+            ],
+            "raw": 286013,
+            "gzip": 82640,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 145005,
+              "host": 2368,
+              "app.json": 45609,
+              "units": 124,
+              "entry": 413
+            }
+          },
+          {
+            "name": "acme-commerce-processorder-c5fc00",
+            "members": "5 members",
+            "raw": 311043,
+            "gzip": 89061,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 507,
+              "effect": 92378,
+              "runtime": 160889,
+              "host": 2368,
+              "app.json": 53766,
+              "units": 992
+            }
+          },
+          {
+            "name": "acme-commerce-forge-residual-8b7058",
+            "members": [
+              "forge:residual"
+            ],
+            "raw": 247110,
+            "gzip": 78796,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 143007,
+              "host": 2368,
+              "app.json": 5007,
+              "entry": 4234
+            }
+          }
+        ]
+      },
+      "per-resource-shared": {
+        "scripts": 25,
+        "uploads": 27,
+        "router": {
+          "raw": 7390,
+          "gzip": 1367
+        },
+        "runtimeWorker": {
+          "raw": 305624,
+          "gzip": 97505,
+          "composition": {
+            "entry": 104,
+            "effect": 92446,
+            "runtime": 209457,
+            "host": 3501
+          }
+        },
+        "raw": {
+          "count": 25,
+          "min": 10071,
+          "median": 80740,
+          "max": 332830
+        },
+        "gzip": {
+          "count": 25,
+          "min": 3753,
+          "median": 9139,
+          "max": 95707
+        },
+        "runtimePlusEffect": {
+          "count": 25,
+          "min": 0,
+          "median": 0,
+          "max": 272861
+        },
+        "scriptsCarryingEngine": 4,
+        "scriptsCarryingEffect": 9,
+        "inProcess": [
+          {
+            "name": "acme-commerce-forge-sweep-24ec0b",
+            "reason": "dispatch owner",
+            "raw": 332830
+          },
+          {
+            "name": "acme-commerce-forgerealtime-90f206",
+            "reason": "realtime object",
+            "raw": 285083
+          },
+          {
+            "name": "acme-commerce-get-v1-live-orders-c072a7",
+            "reason": "websocket upgrade",
+            "raw": 285055
+          },
+          {
+            "name": "acme-commerce-processorder-c5fc00",
+            "reason": "workflow class",
+            "raw": 311043
+          }
+        ],
+        "deployRaw": 3635690,
+        "deployGzip": 801818,
+        "perScript": [
+          {
+            "name": "acme-commerce-nightlyreconciliation-04c042",
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation"
+            ],
+            "raw": 139943,
+            "gzip": 39004,
+            "runtime": "shared",
+            "composition": {
+              "entry": 907,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 44103,
+              "units": 79
+            }
+          },
+          {
+            "name": "acme-commerce-forge-sweep-24ec0b",
+            "members": [
+              "forge:sweep",
+              "projection:CustomerOrderSummary"
+            ],
+            "raw": 332830,
+            "gzip": 95707,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92421,
+              "runtime": 180440,
+              "host": 2368,
+              "app.json": 56072,
+              "units": 992,
+              "entry": 421
+            }
+          },
+          {
+            "name": "acme-commerce-forgerealtime-90f206",
+            "members": [
+              "ForgeRealtime"
+            ],
+            "raw": 285083,
+            "gzip": 82608,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 509,
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-customers-id-2e6e60",
+            "members": "8 members",
+            "raw": 58672,
+            "gzip": 7615,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1592,
+              "host": 3992,
+              "app.json": 53066
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-departments-id-cba285",
+            "members": "9 members",
+            "raw": 32119,
+            "gzip": 5893,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1732,
+              "host": 3992,
+              "app.json": 26373
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-order-documents-id-e38c3d",
+            "members": "9 members",
+            "raw": 60496,
+            "gzip": 7991,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1811,
+              "host": 3992,
+              "app.json": 54671
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-orders-id-6a4cf1",
+            "members": "12 members",
+            "raw": 163594,
+            "gzip": 41776,
+            "runtime": "shared",
+            "composition": {
+              "entry": 2091,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 65655,
+              "units": 994
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-site-policies-id-627b88",
+            "members": "7 members",
+            "raw": 42166,
+            "gzip": 6592,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1560,
+              "host": 3992,
+              "app.json": 36592
+            }
+          },
+          {
+            "name": "acme-commerce-delete-v1-sites-id-558bb6",
+            "members": "7 members",
+            "raw": 58628,
+            "gzip": 7718,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1454,
+              "host": 3992,
+              "app.json": 53160
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-objects-token-e50914",
+            "members": [
+              "GET /_forge/objects/{token}",
+              "PUT /_forge/objects/{token}"
+            ],
+            "raw": 10071,
+            "gzip": 3753,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1051,
+              "host": 3992,
+              "app.json": 5006
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-discovery-102862",
+            "members": [
+              "GET /forge/discovery"
+            ],
+            "raw": 238092,
+            "gzip": 20177,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1070,
+              "host": 3992,
+              "app.json": 233008
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-openapi-json-dd823b",
+            "members": [
+              "GET /forge/openapi.json"
+            ],
+            "raw": 238104,
+            "gzip": 20183,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1082,
+              "host": 3992,
+              "app.json": 233008
+            }
+          },
+          {
+            "name": "acme-commerce-get-forge-workspace-json-cd5a71",
+            "members": [
+              "GET /forge/workspace.json"
+            ],
+            "raw": 238112,
+            "gzip": 20183,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1090,
+              "host": 3992,
+              "app.json": 233008
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea",
+            "members": [
+              "GET /v1/caches/current-site-policy"
+            ],
+            "raw": 42423,
+            "gzip": 6790,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1022,
+              "host": 3992,
+              "app.json": 37387
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-changesets-id-110c00",
+            "members": "5 members",
+            "raw": 80703,
+            "gzip": 9129,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1356,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-customer-order-summaries-status-45c160",
+            "members": [
+              "GET /v1/customer-order-summaries/status",
+              "GET /v1/customer-order-summaries/{id}",
+              "POST /v1/customer-order-summaries/rebuild"
+            ],
+            "raw": 49095,
+            "gzip": 7377,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1274,
+              "host": 3992,
+              "app.json": 43807
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-live-orders-c072a7",
+            "members": [
+              "GET /v1/live/orders"
+            ],
+            "raw": 285055,
+            "gzip": 82560,
+            "runtime": "in-process",
+            "composition": {
+              "effect": 92378,
+              "runtime": 144958,
+              "host": 2368,
+              "app.json": 44734,
+              "entry": 501
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-ed2eed",
+            "members": [
+              "GET /v1/schedules/nightly-reconciliation",
+              "POST /v1/schedules/nightly-reconciliation/tick"
+            ],
+            "raw": 140225,
+            "gzip": 39034,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1189,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 44103,
+              "units": 79
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-views-pending-orders-7c7782",
+            "members": [
+              "GET /v1/views/pending-orders"
+            ],
+            "raw": 48899,
+            "gzip": 7268,
+            "runtime": "shared",
+            "composition": {
+              "entry": 998,
+              "host": 3992,
+              "app.json": 43887
+            }
+          },
+          {
+            "name": "acme-commerce-get-v1-workflows-process-order-id-ac1b80",
+            "members": [
+              "GET /v1/workflows/process-order/{id}",
+              "POST /v1/workflows/process-order/signals/{message}",
+              "POST /v1/workflows/process-order/{id}/cancel"
+            ],
+            "raw": 150968,
+            "gzip": 40887,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1354,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 53766,
+              "units": 994
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-admin-export-ec9588",
+            "members": "6 members",
+            "raw": 80740,
+            "gzip": 9139,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1393,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-post-v1-imports-inspect-14ca49",
+            "members": [
+              "POST /v1/imports/inspect",
+              "POST /v1/imports/stage"
+            ],
+            "raw": 80425,
+            "gzip": 9118,
+            "runtime": "shared",
+            "composition": {
+              "entry": 1078,
+              "host": 3992,
+              "app.json": 75333
+            }
+          },
+          {
+            "name": "acme-commerce-fulfill-order-4ca05b",
+            "members": [
+              "fulfill-order"
+            ],
+            "raw": 141478,
+            "gzip": 39067,
+            "runtime": "shared",
+            "composition": {
+              "entry": 890,
+              "host": 5509,
+              "effect": 85768,
+              "runtime": 3461,
+              "app.json": 45609,
+              "units": 125
+            }
+          },
+          {
+            "name": "acme-commerce-processorder-c5fc00",
+            "members": "5 members",
+            "raw": 311043,
+            "gzip": 89061,
+            "runtime": "in-process",
+            "composition": {
+              "entry": 507,
+              "effect": 92378,
+              "runtime": 160889,
+              "host": 2368,
+              "app.json": 53766,
+              "units": 992
+            }
+          },
+          {
+            "name": "acme-commerce-forge-residual-8b7058",
+            "members": [
+              "forge:residual"
+            ],
+            "raw": 13712,
+            "gzip": 4316,
+            "runtime": "shared",
+            "composition": {
+              "entry": 4692,
+              "host": 3992,
+              "app.json": 5006
+            }
+          }
+        ]
+      }
+    },
+    "bodyEdit": {
+      "edit": "impl/rebuild-order-summary.ts `{ rebuilt: true }` -> `{ rebuilt: false }`",
+      "single": {
+        "uploads": 1,
+        "reuploaded": 1,
+        "reuploadedRaw": 542264,
+        "reuploadedGzip": 116236,
+        "changed": [
+          "acme-commerce-all (542264)"
+        ]
+      },
+      "per-entry-point": {
+        "uploads": 88,
+        "reuploaded": 6,
+        "reuploadedRaw": 1845816,
+        "reuploadedGzip": 532147,
+        "changed": [
+          "acme-commerce-nightlyreconciliation-04c042 (289833)",
+          "acme-commerce-forge-sweep-24ec0b (332830)",
+          "acme-commerce-post-v1-orders-order-process-745789 (311038)",
+          "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1 (289982)",
+          "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2 (311090)",
+          "acme-commerce-processorder-c5fc00 (311043)"
+        ]
+      },
+      "per-entry-point-shared": {
+        "uploads": 89,
+        "reuploaded": 6,
+        "reuploadedRaw": 1225363,
+        "reuploadedGzip": 344543,
+        "changed": [
+          "acme-commerce-nightlyreconciliation-04c042 (139943)",
+          "acme-commerce-forge-sweep-24ec0b (332830)",
+          "acme-commerce-post-v1-orders-order-process-745789 (150684)",
+          "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1 (140113)",
+          "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2 (150750)",
+          "acme-commerce-processorder-c5fc00 (311043)"
+        ]
+      },
+      "per-resource": {
+        "uploads": 26,
+        "reuploaded": 6,
+        "reuploadedRaw": 1873605,
+        "reuploadedGzip": 537277,
+        "changed": [
+          "acme-commerce-nightlyreconciliation-04c042 (289833)",
+          "acme-commerce-forge-sweep-24ec0b (332830)",
+          "acme-commerce-delete-v1-orders-id-6a4cf1 (338485)",
+          "acme-commerce-get-v1-schedules-nightly-reconciliation-ed2eed (290097)",
+          "acme-commerce-get-v1-workflows-process-order-id-ac1b80 (311317)",
+          "acme-commerce-processorder-c5fc00 (311043)"
+        ]
+      },
+      "per-resource-shared": {
+        "uploads": 27,
+        "reuploaded": 6,
+        "reuploadedRaw": 1238603,
+        "reuploadedGzip": 345469,
+        "changed": [
+          "acme-commerce-nightlyreconciliation-04c042 (139943)",
+          "acme-commerce-forge-sweep-24ec0b (332830)",
+          "acme-commerce-delete-v1-orders-id-6a4cf1 (163594)",
+          "acme-commerce-get-v1-schedules-nightly-reconciliation-ed2eed (140225)",
+          "acme-commerce-get-v1-workflows-process-order-id-ac1b80 (150968)",
+          "acme-commerce-processorder-c5fc00 (311043)"
+        ]
+      }
+    },
+    "effect": {
+      "script": "acme-commerce-get-v1-customers-id-859df7",
+      "effectBytes": 92378,
+      "modules": 51,
+      "top": {
+        "effect/dist/internal/effect.js": 38266,
+        "effect/dist/Effect.js": 7293,
+        "effect/dist/Duration.js": 5670,
+        "effect/dist/internal/core.js": 5112,
+        "effect/dist/Layer.js": 4905,
+        "effect/dist/Context.js": 3421,
+        "effect/dist/Formatter.js": 2670,
+        "effect/dist/Equal.js": 2063,
+        "effect/dist/Cause.js": 1725,
+        "effect/dist/internal/request.js": 1644,
+        "effect/dist/Hash.js": 1541,
+        "effect/dist/Scheduler.js": 1487,
+        "effect/dist/internal/executionPlan.js": 1397,
+        "effect/dist/Tracer.js": 1145,
+        "effect/dist/Schedule.js": 1109
+      },
+      "floor": {
+        "Effect.runPromise(Effect.succeed(1))": 85356,
+        "a service through a Layer (what the engine needs)": 91944,
+        "a js unit's own imports (Effect.gen, defineFunction)": 85435
+      },
+      "aboveFloor": 434
+    },
+    "crossings": {
+      "note": "RPC calls per request, script <-> runtime Worker, counted in Node with the same modules (first request per script, so including the one-off slice fetch)",
+      "write": {
+        "status": 201,
+        "calls": {
+          "serve": 1,
+          "slice": 1,
+          "d1": 1,
+          "d1Batch": 1
+        },
+        "total": 4
+      },
+      "read": {
+        "status": 200,
+        "calls": {
+          "serve": 1,
+          "d1": 1
+        },
+        "total": 2
+      },
+      "writeWithUnits": {
+        "status": 200,
+        "calls": {
+          "serve": 1,
+          "slice": 1,
+          "invoke": 1,
+          "d1": 3,
+          "external": 1,
+          "d1Batch": 1
+        },
+        "total": 8
+      }
+    },
+    "latency": {
+      "harness": "local workerd via Miniflare (packages/linker-packed/src/local.ts), loopback client wall time; cold = first request on a fresh instance (7 instances each for read and write); warm = 100 requests per target with all targets served at once and requests interleaved across them, after 5 warm-up pairs; pairedVsPerEntryPoint = median of request-by-request differences; read GET /v1/customers/{id}, write POST /v1/customers, plus POST /v1/orders/{order}/submit (2 js units, 1 transition)",
+      "single": {
+        "scripts": 1,
+        "startupMs": {
+          "n": 7,
+          "median": 1266.08,
+          "p95": 2417.21,
+          "min": 1001.84
+        },
+        "coldRead": {
+          "n": 7,
+          "median": 53.78,
+          "p95": 168.16,
+          "min": 40.08
+        },
+        "coldWrite": {
+          "n": 7,
+          "median": 84.61,
+          "p95": 108.16,
+          "min": 64.12
+        },
+        "warmRead": {
+          "n": 100,
+          "median": 9.39,
+          "p95": 20.38,
+          "min": 2.41
+        },
+        "warmWrite": {
+          "n": 100,
+          "median": 13.1,
+          "p95": 30.44,
+          "min": 5.72
+        },
+        "warmSubmit": {
+          "n": 50,
+          "median": 17.94,
+          "p95": 29.77,
+          "min": 8.13
+        },
+        "pairedVsPerEntryPoint": {
+          "read": -0.86,
+          "write": -0.76,
+          "submit": -1.3
+        }
+      },
+      "per-entry-point": {
+        "scripts": 88,
+        "startupMs": {
+          "n": 7,
+          "median": 6540.75,
+          "p95": 7809.27,
+          "min": 5991.39
+        },
+        "coldRead": {
+          "n": 7,
+          "median": 68.42,
+          "p95": 87.32,
+          "min": 36.13
+        },
+        "coldWrite": {
+          "n": 7,
+          "median": 80.22,
+          "p95": 108.91,
+          "min": 36.19
+        },
+        "warmRead": {
+          "n": 100,
+          "median": 10.38,
+          "p95": 25.33,
+          "min": 3.24
+        },
+        "warmWrite": {
+          "n": 100,
+          "median": 14.11,
+          "p95": 43.21,
+          "min": 2.91
+        },
+        "warmSubmit": {
+          "n": 50,
+          "median": 21.44,
+          "p95": 33.1,
+          "min": 6.88
+        },
+        "pairedVsPerEntryPoint": {
+          "read": 0,
+          "write": 0,
+          "submit": 0
+        }
+      },
+      "per-entry-point-shared": {
+        "scripts": 89,
+        "startupMs": {
+          "n": 7,
+          "median": 4637.55,
+          "p95": 4843.55,
+          "min": 3947.79
+        },
+        "coldRead": {
+          "n": 7,
+          "median": 72.31,
+          "p95": 91.14,
+          "min": 53.22
+        },
+        "coldWrite": {
+          "n": 7,
+          "median": 77.1,
+          "p95": 138.69,
+          "min": 48.07
+        },
+        "warmRead": {
+          "n": 100,
+          "median": 9.98,
+          "p95": 22.83,
+          "min": 2.99
+        },
+        "warmWrite": {
+          "n": 100,
+          "median": 14.68,
+          "p95": 35.43,
+          "min": 6.35
+        },
+        "warmSubmit": {
+          "n": 50,
+          "median": 19.84,
+          "p95": 32.34,
+          "min": 7.29
+        },
+        "pairedVsPerEntryPoint": {
+          "read": 0.3,
+          "write": 0.48,
+          "submit": -0.22
+        }
+      }
+    }
+  }
+}
