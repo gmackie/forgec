@@ -5,8 +5,9 @@ import { createHash } from "node:crypto";
 import type { Manifest, ManifestEntryPoint } from "./manifest.ts";
 
 /**
- * Runtime surfaces outside the manifest (`uncovered`, changesets, imports, admin, objects, metadata,
- * socket upgrades). Grouped like any entry point; it serves every request no other group claims.
+ * Requests no entry point claims. Since FORG-33 every runtime surface is an entry point, so the
+ * residual holds an empty slice: it authenticates and answers 404 (and serves `uncovered` surfaces,
+ * through a reported whole-app fallback, only when a manifest still lists some).
  */
 export const RESIDUAL = { kind: "residual" as const, id: "forge:residual" };
 export type Member = ManifestEntryPoint | typeof RESIDUAL;
@@ -34,7 +35,9 @@ export const STRATEGIES: Record<string, GroupingStrategy> = { [perEntryPoint.nam
 
 /**
  * Cloudflare placement rules. A workflow step runs inside its workflow's `WorkflowEntrypoint.run`,
- * so it cannot be a script of its own: steps join the group of their workflow class.
+ * so it cannot be a script of its own: steps join the group of their workflow class. An in-process
+ * subscription (a projection fed by `<Resource>.changes`) runs inside the dispatcher, so it joins the
+ * group of the sweep, the dispatch owner.
  */
 export function applyPlatformRules(groups: string[][], members: Member[]): string[][] {
   const byId = new Map(members.map((m) => [m.id, m]));
@@ -42,8 +45,9 @@ export function applyPlatformRules(groups: string[][], members: Member[]): strin
   groups.forEach((g, i) => g.forEach((id) => home.set(id, i)));
   const moved = groups.map((g) => [...g]);
   for (const m of members) {
-    if (m.kind !== "workflow-step") continue;
-    const wf = (m.trigger as { workflow: string }).workflow;
+    const into = m.kind === "workflow-step" ? (m.trigger as { workflow: string }).workflow : m.kind === "subscription" && (m.trigger as { delivery?: string }).delivery === "in-process" ? "forge:sweep" : null;
+    if (!into) continue;
+    const wf = into;
     const target = home.get(wf);
     if (target === undefined || !byId.has(wf)) continue;
     const from = home.get(m.id)!;

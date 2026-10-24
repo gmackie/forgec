@@ -89,8 +89,16 @@ describe("Linker B host on local workerd", () => {
     const r = await call("GET", "/v1/not-a-route");
     expect(r.status).toBe(404);
     expect(r.json.code).toBe("UnknownEntryPoint");
-    const changesets = await call("POST", "/v1/changesets", { changes: [] });
-    expect(changesets.json.code).toBe("UnknownEntryPoint");
+    // FORG-33: changesets were refused here before; they are an entry point with their own closure now.
+    const changesets = await call("POST", "/v1/changesets", { mode: "atomic", operations: [] });
+    expect(changesets.entry).toBe("POST /v1/changesets");
+    expect(changesets.json.code).not.toBe("UnknownEntryPoint");
+    // A method no entry point serves on a known path runs in that path's child: the runtime answers 405.
+    const wrong = await call("DELETE", "/v1/customers");
+    expect([wrong.status, wrong.json.code]).toEqual([405, "MethodNotAllowed"]);
+    const preflight = await fetch(`${host.base}/v1/customers`, { method: "OPTIONS", headers: { origin: "http://localhost:5173" } });
+    expect([preflight.status, preflight.headers.get("access-control-allow-origin")]).toEqual([204, "http://localhost:5173"]);
+    // The upgrade route is an entry point now, but the realtime Durable Object is still not linked.
     const ws = await new Promise<{ status: number; body: string }>((resolve, reject) => {
       const req = request(`${host.base}/v1/live/orders`, { headers: { ...H, connection: "Upgrade", upgrade: "websocket", "sec-websocket-version": "13", "sec-websocket-key": "dGhlIHNhbXBsZSBub25jZQ==" } }, (res) => {
         let body = "";
@@ -132,7 +140,7 @@ describe("Linker B host on local workerd", () => {
     expect(r.json.code).toBe("@acme/commerce/_/SubmitOrder.PaymentUnavailable");
     const probe = JSON.parse(r.json.detail) as Record<string, unknown>;
     // Capability stubs and the manifest's host vars, nothing else: no LOADER, UNITS, BLOBS, workflow binding, admin token.
-    expect(probe["envKeys"]).toEqual(["CURSOR_SECRET", "DB", "FORGE_AUTH", "Q_FULFILL_ORDER"]);
+    expect(probe["envKeys"]).toEqual(["CURSOR_SECRET", "DB", "FORGE_AUTH", "FORGE_CORS", "Q_FULFILL_ORDER"]);
     expect(probe["hostGlobals"]).toEqual([]);
     expect(probe["blobs"]).toBe("undefined");
     expect(String(probe["fetch"])).toMatch(/^threw:.*not permitted to access the internet/);

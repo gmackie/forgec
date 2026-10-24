@@ -56,9 +56,10 @@ describe("packed linker over examples/acme", async () => {
     const one = await linkTo("single");
     const script = (id: string) => per.scripts.find((s) => s.members.includes(id))!;
 
-    it("gives every entry point its own script, except workflow steps, which run in their workflow class", () => {
+    it("gives every entry point its own script, except workflow steps and in-process subscriptions", () => {
       const m = manifestOf(acme.units);
-      expect(per.scripts).toHaveLength(m.entryPoints.length - 4 + 1); // 4 steps fold in, +1 residual
+      expect(per.scripts).toHaveLength(m.entryPoints.length - 4 - 1 + 1); // 4 steps fold into the workflow, the projection's subscription into the sweep, +1 residual
+      expect(script("forge:sweep").members).toContain("projection:CustomerOrderSummary");
       const wf = script("@acme/commerce/_/ProcessOrder");
       expect(wf.members.filter((x) => x.includes("#"))).toHaveLength(4);
       expect(wf.classes.workflows).toEqual([{ className: "ProcessOrderWorkflow", workflow: "@acme/commerce/_/ProcessOrder" }]);
@@ -85,17 +86,32 @@ describe("packed linker over examples/acme", async () => {
       // Restrict-delete reads every resource that points at the deleted one.
       expect(resources("DELETE /v1/customers/{id}")).toEqual(["Customer", "Department", "Order", "Site"]);
       expect(script("POST /v1/customers").slice.bytesSlice).toBeLessThan(script("POST /v1/customers").slice.bytesFull / 10);
-      // Surfaces the manifest does not describe, and the sweep, run the whole app, labelled as such.
-      for (const id of ["forge:residual", "forge:sweep"]) {
-        expect(script(id).slice.mode).toBe("fallback");
-        expect(script(id).slice.fallbackReason).toBeTruthy();
-      }
+      // FORG-33: every runtime surface has an entry point, so nothing falls back to the whole app.
+      expect(per.scripts.filter((s) => s.slice.mode === "fallback")).toEqual([]);
+      // Changesets may name any operation: every resource, but no function, workflow or read model.
+      expect(script("POST /v1/changesets").slice.functions).toEqual([]);
+      expect(resources("POST /v1/changesets")).toEqual(["Customer", "Department", "Order", "OrderDocument", "Site", "SitePolicy"]);
+      expect(resources("GET /v1/views/pending-orders")).toEqual(["Customer", "Order", "Site"]);
+      expect(resources("GET /v1/caches/current-site-policy")).toEqual(["Customer", "Site", "SitePolicy"]);
+      // The residual only authenticates and answers 404: an empty model.
+      expect(script("forge:residual").slice.mode).toBe("slice");
+      expect(script("forge:residual").slice.resources).toEqual([]);
+      expect(script("forge:residual").units).toEqual([]);
+      // The sweep's closure is the dispatch unit's: every subscriber, not every declaration.
+      expect(script("forge:sweep").slice.mode).toBe("slice");
+      expect(script("forge:sweep").slice.workflows).toEqual(["@acme/commerce/_/ProcessOrder"]);
+      expect(script("forge:sweep").slice.bytesSlice).toBeLessThan(script("forge:sweep").slice.bytesFull);
+      // Only contract metadata takes the whole app.json, by design: it publishes the whole contract.
+      expect(per.scripts.filter((s) => s.slice.mode === "whole").flatMap((s) => s.members).sort()).toEqual(["GET /forge/discovery", "GET /forge/openapi.json", "GET /forge/workspace.json"]);
     });
 
     it("hands each script only its declared bindings, and forwards dispatch from sliced scripts to the sweep", () => {
       const names = (id: string) => script(id).capabilities.injected.map((b) => b.name).sort();
-      expect(names("POST /v1/customers")).toEqual(["CURSOR_SECRET", "DB", "FORGE_AUTH"]);
-      expect(names("GET /v1/order-documents/{id}/content")).toEqual(["BLOBS", "CURSOR_SECRET", "DB", "FORGE_AUTH"]);
+      expect(names("POST /v1/customers")).toEqual(["CURSOR_SECRET", "DB", "FORGE_AUTH", "FORGE_CORS"]);
+      expect(names("GET /v1/order-documents/{id}/content")).toEqual(["BLOBS", "CURSOR_SECRET", "DB", "FORGE_AUTH", "FORGE_CORS"]);
+      expect(names("GET /_forge/objects/{token}")).toEqual(["BLOBS", "CURSOR_SECRET", "DB", "FORGE_AUTH", "FORGE_CORS"]);
+      expect(names("forge:sweep")).toEqual(["*/5 * * * *", "CURSOR_SECRET", "DB", "FORGE_AUTH", "FORGE_CORS", "Q_FULFILL_ORDER", "REALTIME", "WF_PROCESS_ORDER"]);
+      expect(script("forge:sweep").dispatch).toBe("local");
       expect(script("POST /v1/customers").dispatch).toBe("forward");
       expect(script("POST /v1/customers").linkerBindings).toEqual([{ type: "service", name: "FORGE_DISPATCH", script: script("forge:sweep").name }]);
       expect(script("forge:sweep").dispatchOwner).toBe(true);
@@ -108,23 +124,51 @@ describe("packed linker over examples/acme", async () => {
         { type: "workflow", name: "WF_PROCESS_ORDER" },
       ]);
       expect(script("POST /v1/orders/{order}/process").withheld).toEqual([{ type: "r2", name: "BLOBS" }]);
-      expect(script("forge:sweep").withheld).toEqual([]);
+      // FORG-33: the sweep is sliced to the dispatch unit's closure, which moves no blob bytes, so it
+      // holds BLOBS as a refusing stub too; its queue and workflow bindings are its own.
+      expect(script("forge:sweep").withheld).toEqual([{ type: "r2", name: "BLOBS" }]);
+      // The cancel route declares its workflow binding (FORG-33), so it holds the real handle, not a stub.
+      expect(script("POST /v1/workflows/process-order/{id}/cancel").withheld.map((b) => b.name)).not.toContain("WF_PROCESS_ORDER");
+      // No group that runs whole-app is left except contract metadata, which reads nothing it withholds.
+      expect(per.scripts.filter((s) => s.slice.mode === "fallback")).toEqual([]);
     });
 
-    it("links only the runtime features a slice uses, and every feature into the fallback groups (FORG-37)", () => {
+    it("links only the runtime features a slice uses, and every feature where the whole app.json runs (FORG-37)", () => {
       const features = (id: string) => script(id).features;
+      const ALL = ["blobs", "changesets", "dispatch", "governance", "imports", "portability", "readModels", "realtime", "schedules", "workflows"];
       expect(features("GET /v1/customers/{id}")).toEqual({ mode: "slice", names: [] });
       expect(features("GET /v1/order-documents/{id}/content")).toEqual({ mode: "slice", names: ["blobs", "governance"] });
       expect(features("@acme/commerce/_/NightlyReconciliation").names).toEqual(["schedules"]);
       expect(features("@acme/commerce/_/ProcessOrder").names).toContain("workflows");
-      // Sliced scripts forward dispatch, so none links local outbox delivery.
-      expect(per.scripts.filter((s) => s.slice.mode === "slice" && s.features.names.includes("dispatch"))).toEqual([]);
-      for (const id of ["forge:sweep", "forge:residual"]) expect(features(id)).toEqual({ mode: "all", names: ["blobs", "changesets", "dispatch", "governance", "imports", "portability", "readModels", "realtime", "schedules", "workflows"] });
-      expect(one.scripts[0]!.features.mode).toBe("all");
+      // Runtime-served routes bring the feature behind them.
+      expect(features("POST /v1/changesets").names).toContain("changesets");
+      expect(features("POST /v1/imports/stage").names).toEqual(expect.arrayContaining(["changesets", "imports"]));
+      expect(features("POST /v1/admin/fence").names).toContain("portability");
+      expect(features("POST /v1/admin/inspect").names).toContain("governance");
+      expect(features("GET /v1/views/pending-orders").names).toEqual(["readModels"]);
+      // The residual answers 404 from an empty model; the sweep is the only script that delivers the outbox.
+      expect(features("forge:residual")).toEqual({ mode: "slice", names: [] });
+      expect(features("forge:sweep").names).toContain("dispatch");
+      expect(per.scripts.filter((s) => s.features.names.includes("dispatch") && s.features.mode === "slice").map((s) => s.members[0])).toEqual(["forge:sweep"]);
+      // Contract metadata publishes the whole contract, so it keeps every feature, as does `single`.
+      for (const id of ["GET /forge/discovery", "GET /forge/openapi.json", "GET /forge/workspace.json"]) expect(features(id)).toEqual({ mode: "all", names: ALL });
+      expect(one.scripts[0]!.features).toEqual({ mode: "all", names: ALL });
     });
 
-    it("reports what the planner leaves undeclared instead of guessing", () => {
-      expect(script("POST /v1/workflows/process-order/{id}/cancel").capabilities.warnings).toEqual([expect.stringMatching(/declares no workflow WF_PROCESS_ORDER/)]);
+    it("finds nothing the planner leaves undeclared", () => {
+      // Before FORG-33 the cancel route declared no WF_PROCESS_ORDER although cancelling wakes the native instance.
+      expect(script("POST /v1/workflows/process-order/{id}/cancel").capabilities.injected.map((b) => b.name)).toContain("WF_PROCESS_ORDER");
+      expect(per.scripts.flatMap((s) => s.capabilities.warnings)).toEqual([]);
+    });
+
+    it("falls back to the whole app only for surfaces a manifest leaves uncovered, and says so", async () => {
+      const m = manifestOf(acme.units);
+      m.uncovered.push({ kind: "view", id: "@acme/commerce/_/Hypothetical", reason: "test" });
+      const l = await linkTo("per-entry-point", { manifest: reseal(m) });
+      const residual = l.scripts.find((s) => s.members.includes("forge:residual"))!;
+      expect(residual.slice.mode).toBe("fallback");
+      expect(residual.slice.fallbackReason).toMatch(/uncovered/);
+      expect(l.scripts.filter((s) => s.slice.mode === "fallback")).toHaveLength(1);
     });
   });
 
@@ -189,6 +233,14 @@ describe("packed linker over examples/acme", async () => {
       await refuses(reseal(m), "undeclared-binding", /ProcessOrder is driven by Cloudflare Workflows .* needs workflow WF_PROCESS_ORDER/);
     });
 
+    it("refuses a dispatch owner whose slice would drop a subscriber's deliveries", async () => {
+      const m = manifestOf(acme.units);
+      const [, dispatch] = unitOf(m, "dispatch");
+      dispatch.imports = dispatch.imports.filter((i) => i.capability !== "deliver:fulfill-order");
+      for (const e of m.entryPoints) e.imports = e.imports.filter((i) => i.capability !== "deliver:fulfill-order");
+      await refuses(reseal(m), "slice", /dispatch owner's slice lacks subscribers the full app has: subscription fulfill-order/);
+    });
+
     it("refuses a module that reaches authority outside its capability handles", async () => {
       const m = manifestOf(acme.units);
       const [, fulfill] = unitOf(m, "FulfillOrder");
@@ -218,12 +270,24 @@ describe("packed linker over examples/acme", async () => {
       const direct = await (await served.mf.getWorker(createScript.name)).fetch(`http://x/v1/customers/${id}`, { headers: h });
       expect(direct.status).toBe(404);
       expect(((await direct.json()) as { code: string }).code).toBe("NotRouted");
-      // The residual serves surfaces outside the manifest, and refuses manifest routes.
+      // The residual refuses manifest routes, and answers what no entry point claims as the runtime does.
       const residual = a.scripts.find((s) => s.members.includes("forge:residual"))!;
       expect((await (await served.mf.getWorker(residual.name)).fetch("http://x/v1/customers", { headers: h })).status).toBe(404);
+      const unknown = await fetch(`${served.url}/v1/nothing-here`, { headers: h });
+      expect([unknown.status, ((await unknown.json()) as { code: string }).code]).toEqual([404, "NotFound"]);
+      expect((await fetch(`${served.url}/v1/nothing-here`)).status).toBe(401);
+      // A method no entry point serves on a known path: the path's owner answers 405, as the whole app does.
+      const wrong = await fetch(`${served.url}/v1/customers`, { method: "DELETE", headers: h });
+      expect([wrong.status, ((await wrong.json()) as { code: string }).code]).toEqual([405, "MethodNotAllowed"]);
+      // Runtime surfaces T3 left to the residual are entry points with their own scripts now.
       expect((await fetch(`${served.url}/forge/discovery`, { headers: h })).status).toBe(200);
+      expect((await fetch(`${served.url}/v1/views/pending-orders?customer=${id}`, { headers: h })).status).toBe(200);
+      expect((await fetch(`${served.url}/v1/schedules/nightly-reconciliation`, { headers: h })).status).toBe(200);
+      // CORS reaches the runtime now that FORGE_CORS is a host binding.
+      const preflight = await fetch(`${served.url}/v1/customers`, { method: "OPTIONS", headers: { origin: "http://localhost:5173" } });
+      expect([preflight.status, preflight.headers.get("access-control-allow-origin")]).toEqual([204, "http://localhost:5173"]);
       // Each script's env holds exactly its declared bindings (plus the dispatch service binding).
-      expect(Object.keys(await served.mf.getBindings(createScript.name)).sort()).toEqual(["CURSOR_SECRET", "DB", "FORGE_AUTH", "FORGE_DISPATCH"]);
+      expect(Object.keys(await served.mf.getBindings(createScript.name)).sort()).toEqual(["CURSOR_SECRET", "DB", "FORGE_AUTH", "FORGE_CORS", "FORGE_DISPATCH"]);
     } finally {
       await served.close();
     }

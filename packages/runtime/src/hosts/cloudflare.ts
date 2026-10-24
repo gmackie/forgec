@@ -15,7 +15,7 @@ import { Clock, CursorSecret, IdGen, Objects, Storage, type ObjectStoreAdapter }
 import { productionIds } from "./ids.js";
 import { MemoryObjectStore } from "../adapters/memory-objects.js";
 import { allFeatures, checkFeatures, type Feature } from "../features.js";
-import { err } from "../errors.js";
+import { capabilityDenied } from "../errors.js";
 
 /** Cloudflare Workflows binding surface used by the driver. */
 export interface WorkflowBindingLike {
@@ -87,8 +87,13 @@ export interface FeatureWorkerOptions extends WorkerOptions {
   features: readonly Feature[];
 }
 
+/**
+ * The `Objects` service of a Worker linked without blob storage. Unreachable through the model (a model
+ * with blob resources needs the blobs feature, which needs `objects`), so a call is a linking defect and
+ * is refused like any capability the Worker is not linked with: 403 `CapabilityDenied` (FORG-34).
+ */
 const unlinkedObjects: ObjectStoreAdapter = (() => {
-  const refuse = () => Effect.fail(err("MethodNotAllowed", "blob storage is not linked into this Worker"));
+  const refuse = () => Effect.fail(capabilityDenied({ capability: "objects", detail: "blob storage is not linked into this Worker" }));
   return { name: "unlinked", presignUpload: refuse, head: refuse, digest: refuse, seal: refuse, presignDownload: refuse, delete: refuse };
 })();
 

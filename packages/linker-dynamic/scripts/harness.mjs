@@ -121,6 +121,8 @@ export async function sealVariant(edit) {
   const { seal, stableJson, writeSealed } = await import("../../units/src/index.ts");
   const app = mkdtempSync(join(tmpdir(), "forg30-variant-"));
   cpSync(join(acme, "impl"), join(app, "impl"), { recursive: true });
+  // The sealer checks the plan's .forge spans against the files it seals (FORG-33).
+  cpSync(join(acme, "src"), join(app, "src"), { recursive: true });
   cpSync(join(acme, "package.json"), join(app, "package.json"));
   symlinkSync(join(acme, "node_modules"), join(app, "node_modules"), "dir");
   edit(join(app, "impl"));

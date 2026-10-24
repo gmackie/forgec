@@ -11,6 +11,26 @@ export interface ImplSite {
   file: string;
   exportName: string;
   binding: "function" | "external";
+  /** Byte range `[start, end)` of the exported definition in `file` (UTF-8 bytes, not UTF-16 units). */
+  start: number;
+  end: number;
+}
+
+/** Byte offsets of a node's text (leading trivia excluded). TypeScript positions are UTF-16 units. */
+function byteRange(src: ts.SourceFile, node: ts.Node): { start: number; end: number } {
+  const bytes = (pos: number) => Buffer.byteLength(src.text.slice(0, pos), "utf8");
+  return { start: bytes(node.getStart(src)), end: bytes(node.end) };
+}
+
+/** The top-level statement that exports `name`, or the whole file when it is re-exported some other way. */
+function definitionOf(file: string, name: string): { start: number; end: number } {
+  const src = parse(file);
+  for (const stmt of src.statements) {
+    if (!exported(stmt)) continue;
+    if ((ts.isFunctionDeclaration(stmt) || ts.isClassDeclaration(stmt)) && stmt.name?.text === name) return byteRange(src, stmt);
+    if (ts.isVariableStatement(stmt) && stmt.declarationList.declarations.some((d) => ts.isIdentifier(d.name) && d.name.text === name)) return byteRange(src, stmt);
+  }
+  return { start: 0, end: Buffer.byteLength(src.text, "utf8") };
 }
 
 export interface LocateOptions {
@@ -55,7 +75,8 @@ export function locateImpl(appRoot: string, options: LocateOptions = {}): Map<st
   };
 
   for (const file of sourceFiles(implDir)) {
-    for (const stmt of parse(file).statements) {
+    const src = parse(file);
+    for (const stmt of src.statements) {
       if (!ts.isVariableStatement(stmt) || !exported(stmt)) continue;
       for (const decl of stmt.declarationList.declarations) {
         const init = decl.initializer;
@@ -63,7 +84,7 @@ export function locateImpl(appRoot: string, options: LocateOptions = {}): Map<st
         if (!ts.isIdentifier(init.expression) || init.expression.text !== "defineFunction") continue;
         const id = init.arguments[0];
         if (!id || !ts.isStringLiteralLike(id)) throw new Error(`${rel(file)}: defineFunction id must be a string literal`);
-        add({ symbol: id.text, file: rel(file), exportName: decl.name.text, binding: "function" });
+        add({ symbol: id.text, file: rel(file), exportName: decl.name.text, binding: "function", ...byteRange(src, stmt) });
       }
     }
   }
@@ -89,7 +110,7 @@ export function locateImpl(appRoot: string, options: LocateOptions = {}): Map<st
         if (!key || !value || !ts.isIdentifier(value)) throw new Error(`${rel(index)}: each external must be \`"<id>": <imported binding>\``);
         const target = imports.get(value.text);
         if (!target) throw new Error(`${rel(index)}: external ${key} is bound to ${value.text}, which is not imported from a local module`);
-        add({ symbol: key, file: rel(target.file), exportName: target.name, binding: "external" });
+        add({ symbol: key, file: rel(target.file), exportName: target.name, binding: "external", ...definitionOf(target.file, target.name) });
       }
     }
   }

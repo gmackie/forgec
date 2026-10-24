@@ -1,0 +1,749 @@
+{
+  "version": "r2-results/1",
+  "label": "local",
+  "measuredOn": {
+    "node": "v24.14.0",
+    "platform": "darwin 24.6.0 arm64",
+    "cpu": "Apple M2 Max",
+    "workerd": "miniflare@4.20260730.0 (bundled workerd)",
+    "transpiler": "@bytecodealliance/jco@1.39.0",
+    "component": {
+      "rustc": "1.97.1",
+      "wit-bindgen": "0.63.0",
+      "wasm-tools": "1.262.0"
+    },
+    "compatibilityDate": "2026-07-01"
+  },
+  "unit": {
+    "symbol": "@acme/pricing/_/PriceCart",
+    "capability": "resource:@acme/pricing/_/Product#read",
+    "interfaceHash": "sha256:ff9b226933f84cafed932802e486103af6faee4bd842d7bce39d7a19d0bc9adb",
+    "sameInterfaceHash": true,
+    "implementationHash": {
+      "wasm-component": "sha256:8a191d73309ff793290dd0189cfbf6ebda04b670ccbc22f4411c1f0eef38d797",
+      "js-module": "sha256:dd92cbcd09d1a325cfa9b88caffeb163b2a79e2780b33e7c3b6f57a3098d6fbb"
+    },
+    "world": "sha256:cf9866338028d346d0965794c0096419bfe5b20e68567252e79ae7abf8a66bf3"
+  },
+  "support": {
+    "jspiInWorkerd": [
+      {
+        "compatibilityDate": "2026-07-01",
+        "flags": [],
+        "Suspending": "function",
+        "promising": "function",
+        "result": 41,
+        "works": true
+      },
+      {
+        "compatibilityDate": "2026-07-01",
+        "flags": [
+          "nodejs_compat"
+        ],
+        "Suspending": "function",
+        "promising": "function",
+        "result": 41,
+        "works": true
+      },
+      {
+        "compatibilityDate": "2026-07-01",
+        "flags": [
+          "experimental"
+        ],
+        "Suspending": "function",
+        "promising": "function",
+        "result": 41,
+        "works": true
+      },
+      {
+        "compatibilityDate": "2024-01-01",
+        "flags": [],
+        "Suspending": "function",
+        "promising": "function",
+        "result": 41,
+        "works": true
+      }
+    ],
+    "jspiInNode": [
+      {
+        "flags": [],
+        "v8": "13.6.233.17-node.41",
+        "error": "TypeError: WebAssembly.Suspending is not a constructor"
+      },
+      {
+        "flags": [
+          "--experimental-wasm-jspi"
+        ],
+        "v8": "13.6.233.17-node.41",
+        "result": 41
+      }
+    ],
+    "note": "jspiInWorkerd runs a real suspension (an awaited timer inside the import) under each compatibility date and flag set."
+  },
+  "correctness": {
+    "wasm-component": {
+      "sameAsJsModule": true,
+      "outcomes": [
+        "ok",
+        "EmptyCart",
+        "NotFound"
+      ]
+    },
+    "wasm-prefetch": {
+      "sameAsJsModule": true,
+      "outcomes": [
+        "ok",
+        "EmptyCart",
+        "NotFound"
+      ]
+    },
+    "plain-js-async-function": {
+      "sameAsJsModule": true,
+      "outcomes": [
+        "ok",
+        "EmptyCart",
+        "NotFound"
+      ]
+    },
+    "wasm-p3-async": {
+      "sameAsJsModule": true,
+      "outcomes": [
+        "ok",
+        "EmptyCart",
+        "NotFound"
+      ]
+    }
+  },
+  "perCall": {
+    "clockReadingsAllWholeMs": true,
+    "minReadingMs": 5,
+    "note": "workerd, median of runs of n awaited invocations inside one request (7 runs, 5 for D1). Times are per invocation; an invocation of an N-item cart makes N capability calls (prefetch: N reads before the call). memory: the handle resolves from an in-isolate Map, no I/O. d1: the harness's D1 resource store (local workerd D1).",
+    "memory": {
+      "1 item(s)": {
+        "capabilityCallsPerInvocation": 1,
+        "iterations": 60000,
+        "p3Iterations": 600,
+        "wasm-component": {
+          "nsPerCallMedian": 54783,
+          "samplesNsPerCall": [
+            91183,
+            78033,
+            86100,
+            37417,
+            48067,
+            54783,
+            41367
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 5617,
+          "samplesNsPerCall": [
+            15100,
+            5933,
+            5617,
+            8483,
+            5367,
+            3967,
+            5250
+          ]
+        },
+        "wasm-prefetch": {
+          "nsPerCallMedian": 15133,
+          "samplesNsPerCall": [
+            16367,
+            15133,
+            21750,
+            8367,
+            9683,
+            15100,
+            34150
+          ]
+        },
+        "plain-js-async-function": {
+          "nsPerCallMedian": 2150,
+          "samplesNsPerCall": [
+            6850,
+            2150,
+            5233,
+            3433,
+            333,
+            1950,
+            950
+          ]
+        },
+        "wasm-p3-async": {
+          "nsPerCallMedian": 3223333,
+          "samplesNsPerCall": [
+            3636667,
+            2536667,
+            3708333,
+            3135000,
+            3223333,
+            2750000,
+            3681667
+          ]
+        },
+        "wasmJspiOverJsModule": 9.75
+      },
+      "10 item(s)": {
+        "capabilityCallsPerInvocation": 10,
+        "iterations": 6000,
+        "p3Iterations": 60,
+        "wasm-component": {
+          "nsPerCallMedian": 791333,
+          "samplesNsPerCall": [
+            891667,
+            849833,
+            880000,
+            745333,
+            736167,
+            791333,
+            529000
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 23000,
+          "samplesNsPerCall": [
+            46167,
+            6833,
+            31833,
+            27333,
+            23000,
+            18333,
+            6333
+          ]
+        },
+        "wasm-prefetch": {
+          "nsPerCallMedian": 165667,
+          "samplesNsPerCall": [
+            136833,
+            206167,
+            242667,
+            142333,
+            109500,
+            195500,
+            165667
+          ]
+        },
+        "plain-js-async-function": {
+          "nsPerCallMedian": 7500,
+          "samplesNsPerCall": [
+            7167,
+            10333,
+            3167,
+            3500,
+            7500,
+            25500,
+            18667
+          ]
+        },
+        "wasm-p3-async": {
+          "nsPerCallMedian": 26066667,
+          "samplesNsPerCall": [
+            27566667,
+            26066667,
+            32466667,
+            22216667,
+            31816667,
+            24733333,
+            18166667
+          ]
+        },
+        "wasmJspiOverJsModule": 34.41
+      },
+      "100 item(s)": {
+        "capabilityCallsPerInvocation": 100,
+        "iterations": 600,
+        "p3Iterations": 6,
+        "wasm-component": {
+          "nsPerCallMedian": 2915000,
+          "samplesNsPerCall": [
+            4470000,
+            4051667,
+            3536667,
+            2070000,
+            2915000,
+            1920000,
+            2506667
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 248333,
+          "samplesNsPerCall": [
+            660000,
+            406667,
+            263333,
+            248333,
+            131667,
+            146667,
+            181667
+          ]
+        },
+        "wasm-prefetch": {
+          "nsPerCallMedian": 3771667,
+          "samplesNsPerCall": [
+            4411667,
+            4543333,
+            3771667,
+            3465000,
+            2323333,
+            3446667,
+            5130000
+          ]
+        },
+        "plain-js-async-function": {
+          "nsPerCallMedian": 325000,
+          "samplesNsPerCall": [
+            600000,
+            268333,
+            900000,
+            491667,
+            270000,
+            266667,
+            325000
+          ]
+        },
+        "wasm-p3-async": {
+          "nsPerCallMedian": 163000000,
+          "samplesNsPerCall": [
+            230333333,
+            150500000,
+            183000000,
+            141500000,
+            163000000,
+            244166667,
+            136500000
+          ]
+        },
+        "wasmJspiOverJsModule": 11.74
+      },
+      "marginalNsPerItem": {
+        "wasm-component": 23596,
+        "js-module": 2504,
+        "wasm-prefetch": 40067,
+        "plain-js-async-function": 3528,
+        "wasm-p3-async": 1521481
+      }
+    },
+    "d1": {
+      "1 item(s)": {
+        "capabilityCallsPerInvocation": 1,
+        "iterations": 1500,
+        "p3Iterations": 750,
+        "wasm-component": {
+          "nsPerCallMedian": 2120000,
+          "samplesNsPerCall": [
+            2214000,
+            1870000,
+            2064667,
+            2120000,
+            2378000
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 2162000,
+          "samplesNsPerCall": [
+            1932667,
+            2162000,
+            2390667,
+            2844667,
+            2090667
+          ]
+        },
+        "wasm-prefetch": {
+          "nsPerCallMedian": 2064667,
+          "samplesNsPerCall": [
+            1915333,
+            1520667,
+            2330667,
+            2194000,
+            2064667
+          ]
+        },
+        "plain-js-async-function": {
+          "nsPerCallMedian": 2160667,
+          "samplesNsPerCall": [
+            1717333,
+            2428000,
+            2576000,
+            2160667,
+            1850000
+          ]
+        },
+        "wasm-p3-async": {
+          "nsPerCallMedian": 4089333,
+          "samplesNsPerCall": [
+            4185333,
+            3128000,
+            3424000,
+            4298667,
+            4089333
+          ]
+        },
+        "wasmJspiOverJsModule": 0.98
+      },
+      "10 item(s)": {
+        "capabilityCallsPerInvocation": 10,
+        "iterations": 150,
+        "p3Iterations": 75,
+        "wasm-component": {
+          "nsPerCallMedian": 14193333,
+          "samplesNsPerCall": [
+            17620000,
+            13193333,
+            14193333,
+            15140000,
+            14000000
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 19320000,
+          "samplesNsPerCall": [
+            19706667,
+            23226667,
+            15746667,
+            19320000,
+            12880000
+          ]
+        },
+        "wasm-prefetch": {
+          "nsPerCallMedian": 9093333,
+          "samplesNsPerCall": [
+            13466667,
+            11673333,
+            9093333,
+            8080000,
+            8140000
+          ]
+        },
+        "plain-js-async-function": {
+          "nsPerCallMedian": 12840000,
+          "samplesNsPerCall": [
+            14580000,
+            12153333,
+            10820000,
+            12840000,
+            17413333
+          ]
+        },
+        "wasm-p3-async": {
+          "nsPerCallMedian": 36586667,
+          "samplesNsPerCall": [
+            44600000,
+            36586667,
+            47746667,
+            30253333,
+            30026667
+          ]
+        },
+        "wasmJspiOverJsModule": 0.73
+      },
+      "100 item(s)": {
+        "capabilityCallsPerInvocation": 100,
+        "iterations": 15,
+        "p3Iterations": 8,
+        "wasm-component": {
+          "nsPerCallMedian": 160533333,
+          "samplesNsPerCall": [
+            104266667,
+            118400000,
+            160533333,
+            167666667,
+            161866667
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 123866667,
+          "samplesNsPerCall": [
+            153600000,
+            158866667,
+            116800000,
+            123866667,
+            117200000
+          ]
+        },
+        "wasm-prefetch": {
+          "nsPerCallMedian": 59466667,
+          "samplesNsPerCall": [
+            51666667,
+            53400000,
+            59466667,
+            69400000,
+            76600000
+          ]
+        },
+        "plain-js-async-function": {
+          "nsPerCallMedian": 115200000,
+          "samplesNsPerCall": [
+            112466667,
+            119133333,
+            104400000,
+            115200000,
+            118866667
+          ]
+        },
+        "wasm-p3-async": {
+          "nsPerCallMedian": 383375000,
+          "samplesNsPerCall": [
+            241500000,
+            390375000,
+            413125000,
+            360750000,
+            383375000
+          ]
+        },
+        "wasmJspiOverJsModule": 1.3
+      },
+      "marginalNsPerItem": {
+        "wasm-component": 1626000,
+        "js-module": 1161630,
+        "wasm-prefetch": 559704,
+        "plain-js-async-function": 1137333,
+        "wasm-p3-async": 3853204
+      }
+    },
+    "rawJspi": {
+      "note": "One WASM->JS import call per awaited run(). suspendingImport is the JSPI round trip: promising() entry, a secondary stack, suspend on the import's promise, resume. promisingNoSuspend enters through promising() with a synchronous import. syncImport awaits a plain synchronous call, the floor.",
+      "syncImport": {
+        "nsPerCallMedian": 30,
+        "samplesNsPerCall": [
+          90,
+          70,
+          55,
+          30,
+          25,
+          30,
+          25
+        ]
+      },
+      "promisingNoSuspend": {
+        "nsPerCallMedian": 315,
+        "samplesNsPerCall": [
+          435,
+          235,
+          315,
+          305,
+          320,
+          370,
+          305
+        ]
+      },
+      "suspendingImport": {
+        "nsPerCallMedian": 465,
+        "samplesNsPerCall": [
+          520,
+          465,
+          440,
+          410,
+          790,
+          510,
+          435
+        ]
+      },
+      "asyncJsFunction": {
+        "nsPerCallMedian": 90,
+        "samplesNsPerCall": [
+          130,
+          90,
+          55,
+          80,
+          90,
+          60,
+          135
+        ]
+      }
+    }
+  },
+  "concurrency": {
+    "note": "Two concurrent invocations on one isolate, 5 reads each, 5 ms per read (scheduler.wait).",
+    "wasm-component": {
+      "oneMs": 58,
+      "twoConcurrentMs": 130,
+      "readOrder": [
+        "a1",
+        "a2",
+        "a3",
+        "a4",
+        "a5",
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "b5"
+      ],
+      "bothOk": true
+    },
+    "js-module": {
+      "oneMs": 55,
+      "twoConcurrentMs": 46,
+      "readOrder": [
+        "a1",
+        "b1",
+        "a2",
+        "b2",
+        "a3",
+        "b3",
+        "a4",
+        "b4",
+        "a5",
+        "b5"
+      ],
+      "bothOk": true
+    }
+  },
+  "p3": {
+    "built": true,
+    "note": "jco 1.39 runs component-model async tasks from a tick loop scheduled with setTimeout (0 ms after a task resumes, 10 ms when idle), and its host-import path still uses WebAssembly.Suspending: P3 here needs JSPI too, and pays a timer per capability call."
+  },
+  "sizes": {
+    "component": {
+      "raw": 25446,
+      "gzip": 11421
+    },
+    "transpiled": {
+      "sync (no imports wired; prefetch)": {
+        "glue": {
+          "raw": 64277,
+          "gzip": 16942
+        },
+        "core": {
+          "raw": 23962,
+          "gzip": 11009
+        },
+        "coreModules": [
+          "unit.core.wasm",
+          "unit.core2.wasm",
+          "unit.core3.wasm"
+        ],
+        "total": {
+          "raw": 88239,
+          "gzip": 27951
+        }
+      },
+      "jspi (the harness setting)": {
+        "glue": {
+          "raw": 64752,
+          "gzip": 17032
+        },
+        "core": {
+          "raw": 23962,
+          "gzip": 11009
+        },
+        "coreModules": [
+          "unit.core.wasm",
+          "unit.core2.wasm",
+          "unit.core3.wasm"
+        ],
+        "total": {
+          "raw": 88714,
+          "gzip": 28041
+        }
+      },
+      "p3 component-model async": {
+        "component": {
+          "raw": 45624,
+          "gzip": 19715
+        },
+        "glue": {
+          "raw": 93927,
+          "gzip": 23453
+        },
+        "core": {
+          "raw": 43624,
+          "gzip": 19107
+        },
+        "coreModules": [
+          "unit.conditional-suspending-1-i32-to-i32.wasm",
+          "unit.core.wasm",
+          "unit.core2.wasm",
+          "unit.core3.wasm"
+        ]
+      }
+    },
+    "workerModules": {
+      "wasm-component": {
+        "modules": {
+          "caller.js": {
+            "raw": 1032,
+            "gzip": 474
+          },
+          "bound.js": {
+            "raw": 10973,
+            "gzip": 2642
+          },
+          "host.js": {
+            "raw": 7788,
+            "gzip": 1533
+          },
+          "unit.js": {
+            "raw": 64752,
+            "gzip": 17032
+          },
+          "unit.core.wasm": {
+            "raw": 23628,
+            "gzip": 10694
+          },
+          "unit.core2.wasm": {
+            "raw": 190,
+            "gzip": 173
+          },
+          "unit.core3.wasm": {
+            "raw": 144,
+            "gzip": 142
+          }
+        },
+        "total": {
+          "raw": 108507,
+          "gzip": 32690
+        }
+      },
+      "js-module": {
+        "modules": {
+          "caller.js": {
+            "raw": 1032,
+            "gzip": 474
+          },
+          "bound.js": {
+            "raw": 210275,
+            "gzip": 46898
+          },
+          "host.js": {
+            "raw": 7788,
+            "gzip": 1533
+          }
+        },
+        "total": {
+          "raw": 219095,
+          "gzip": 48905
+        }
+      }
+    },
+    "asyncify": {
+      "wasmOpt": "wasm-opt version 132 (version_132)",
+      "coreAsTranspiled": {
+        "raw": 23628,
+        "gzip": 10694
+      },
+      "coreO2": {
+        "raw": 21044,
+        "gzip": 10137
+      },
+      "coreAsyncifyO2": {
+        "raw": 34042,
+        "gzip": 13712
+      },
+      "growthOverO2": 0.618,
+      "note": "Size only. jco has no asyncify mode, so running it needs hand-written glue that unwinds and rewinds around jco's lowering of each import; not built."
+    },
+    "notes": [
+      "Glue sizes are minified, as the harness ships them. The JSPI glue adds two tiny core modules (jco's import trampolines) to the unit's own."
+    ]
+  },
+  "missing": [
+    "Deployed Cloudflare Workers: whether production isolates expose JSPI as local workerd does, cold start, CPU time per call and isolate memory. Not measured; everything here is local.",
+    "Stack memory per suspended call (JSPI allocates a secondary stack per promising() call): not measured."
+  ],
+  "caller": {
+    "bytes": 1032
+  }
+}

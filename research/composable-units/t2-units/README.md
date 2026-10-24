@@ -4,6 +4,13 @@ Research spike for FORG-28 (epic FORG-26). Design: [composable units on Workers 
 Nothing here changes `app.json` or any other existing build output. The new output appears only
 with `forgec build --units`.
 
+> **Addendum (FORG-33, 2026-10-24).** Boundary findings 5–8, the `uncovered` list and the
+> runtime-only entry points below are superseded: the planner now covers every surface the runtime
+> serves (`uncovered` is empty for acme), operations of `@audited` resources declare their
+> `<Resource>.changes` sends, and every unit records its `.forge` declaration and `impl/` body span
+> with git blob hashes. The numbers in this README are T2's record and were not re-measured here.
+> See [`../r2-coverage/`](../r2-coverage/README.md).
+
 ## Reproduce
 
 ```sh

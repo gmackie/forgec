@@ -3,6 +3,7 @@ source: crates/forgegraph-planner/tests/units.rs
 expression: summary
 ---
 [
+  "forge-native cache @acme/commerce/_/CurrentSitePolicy -> [\"@acme/commerce/_/SitePolicy.effective.bySite\"]",
   "forge-native operation @acme/commerce/_/Customer.create -> []",
   "forge-native operation @acme/commerce/_/Customer.delete -> []",
   "forge-native operation @acme/commerce/_/Customer.find.byCode -> []",
@@ -11,6 +12,7 @@ expression: summary
   "forge-native operation @acme/commerce/_/Customer.list.byTier -> []",
   "forge-native operation @acme/commerce/_/Customer.restore -> []",
   "forge-native operation @acme/commerce/_/Customer.update -> []",
+  "forge-native projection @acme/commerce/_/CustomerOrderSummary -> [\"@acme/commerce/_/Order.list.all\"]",
   "forge-native operation @acme/commerce/_/Department.ancestors -> []",
   "forge-native operation @acme/commerce/_/Department.children -> []",
   "forge-native operation @acme/commerce/_/Department.create -> []",
@@ -21,6 +23,7 @@ expression: summary
   "forge-native operation @acme/commerce/_/Department.move -> []",
   "forge-native operation @acme/commerce/_/Department.update -> []",
   "js-module function @acme/commerce/_/FulfillOrder -> []",
+  "forge-native schedule @acme/commerce/_/NightlyReconciliation -> [\"@acme/commerce/_/RebuildOrderSummary\"]",
   "forge-native operation @acme/commerce/_/Order.create -> []",
   "forge-native operation @acme/commerce/_/Order.delete -> []",
   "forge-native operation @acme/commerce/_/Order.get -> []",
@@ -41,6 +44,7 @@ expression: summary
   "forge-native operation @acme/commerce/_/OrderDocument.list.all -> []",
   "forge-native operation @acme/commerce/_/OrderDocument.list.byOrder -> []",
   "forge-native operation @acme/commerce/_/OrderDocument.update -> []",
+  "forge-native view @acme/commerce/_/PendingOrders -> [\"@acme/commerce/_/Order.list.byCustomer\"]",
   "forge-native workflow @acme/commerce/_/ProcessOrder -> [\"@acme/commerce/_/Order.status.approve\", \"@acme/commerce/_/Order.status.cancel\", \"@acme/commerce/_/RebuildOrderSummary\", \"@acme/commerce/_/SubmitOrder\"]",
   "js-module function @acme/commerce/_/RebuildOrderSummary -> []",
   "forge-native operation @acme/commerce/_/Site.create -> []",
@@ -58,5 +62,10 @@ expression: summary
   "forge-native operation @acme/commerce/_/SitePolicy.list.bySite -> []",
   "forge-native operation @acme/commerce/_/SitePolicy.update -> []",
   "js-module function @acme/commerce/_/SubmitOrder -> [\"@acme/commerce/_/Order.status.submit\", \"@acme/payments/_/AuthorizePayment\"]",
+  "forge-native service @acme/commerce/_/admin -> [\"@acme/commerce/_/Customer.list.all\", \"@acme/commerce/_/Customer.list.byTier\", \"@acme/commerce/_/Department.list.all\", \"@acme/commerce/_/Department.list.byCustomer\", \"@acme/commerce/_/Order.list.all\", \"@acme/commerce/_/Order.list.byCustomer\", \"@acme/commerce/_/Order.list.bySiteStatus\", \"@acme/commerce/_/OrderDocument.list.all\", \"@acme/commerce/_/OrderDocument.list.byOrder\", \"@acme/commerce/_/Site.list.all\", \"@acme/commerce/_/Site.list.byCustomer\", \"@acme/commerce/_/SitePolicy.list.all\", \"@acme/commerce/_/SitePolicy.list.bySite\"]",
+  "forge-native service @acme/commerce/_/changesets -> [\"@acme/commerce/_/Customer.create\", \"@acme/commerce/_/Customer.delete\", \"@acme/commerce/_/Customer.find.byCode\", \"@acme/commerce/_/Customer.get\", \"@acme/commerce/_/Customer.list.all\", \"@acme/commerce/_/Customer.list.byTier\", \"@acme/commerce/_/Customer.restore\", \"@acme/commerce/_/Customer.update\", \"@acme/commerce/_/Department.ancestors\", \"@acme/commerce/_/Department.children\", \"@acme/commerce/_/Department.create\", \"@acme/commerce/_/Department.delete\", \"@acme/commerce/_/Department.get\", \"@acme/commerce/_/Department.list.all\", \"@acme/commerce/_/Department.list.byCustomer\", \"@acme/commerce/_/Department.move\", \"@acme/commerce/_/Department.update\", \"@acme/commerce/_/Order.create\", \"@acme/commerce/_/Order.delete\", \"@acme/commerce/_/Order.get\", \"@acme/commerce/_/Order.list.all\", \"@acme/commerce/_/Order.list.byCustomer\", \"@acme/commerce/_/Order.list.bySiteStatus\", \"@acme/commerce/_/Order.status.approve\", \"@acme/commerce/_/Order.status.cancel\", \"@acme/commerce/_/Order.status.complete\", \"@acme/commerce/_/Order.status.submit\", \"@acme/commerce/_/Order.update\", \"@acme/commerce/_/OrderDocument.beginUpload\", \"@acme/commerce/_/OrderDocument.create\", \"@acme/commerce/_/OrderDocument.delete\", \"@acme/commerce/_/OrderDocument.download\", \"@acme/commerce/_/OrderDocument.finalizeUpload\", \"@acme/commerce/_/OrderDocument.get\", \"@acme/commerce/_/OrderDocument.list.all\", \"@acme/commerce/_/OrderDocument.list.byOrder\", \"@acme/commerce/_/OrderDocument.update\", \"@acme/commerce/_/Site.create\", \"@acme/commerce/_/Site.delete\", \"@acme/commerce/_/Site.find.byCustomerCode\", \"@acme/commerce/_/Site.get\", \"@acme/commerce/_/Site.list.all\", \"@acme/commerce/_/Site.list.byCustomer\", \"@acme/commerce/_/Site.update\", \"@acme/commerce/_/SitePolicy.create\", \"@acme/commerce/_/SitePolicy.delete\", \"@acme/commerce/_/SitePolicy.effective.bySite\", \"@acme/commerce/_/SitePolicy.get\", \"@acme/commerce/_/SitePolicy.list.all\", \"@acme/commerce/_/SitePolicy.list.bySite\", \"@acme/commerce/_/SitePolicy.update\"]",
+  "forge-native service @acme/commerce/_/dispatch -> [\"@acme/commerce/_/CustomerOrderSummary\", \"@acme/commerce/_/ProcessOrder\", \"@acme/commerce/_/schedules\"]",
+  "forge-native service @acme/commerce/_/imports -> [\"@acme/commerce/_/changesets\"]",
+  "forge-native service @acme/commerce/_/schedules -> [\"@acme/commerce/_/NightlyReconciliation\"]",
   "js-module external @acme/payments/_/AuthorizePayment -> []"
 ]

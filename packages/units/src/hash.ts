@@ -24,6 +24,11 @@ export function sha256(bytes: string | Uint8Array): string {
   return `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
 }
 
+/** `git hash-object` of a file's bytes: hex SHA-1 over `blob <len>\0` + bytes (no `sha1:` prefix, as git prints it). */
+export function gitBlob(bytes: Uint8Array): string {
+  return createHash("sha1").update(`blob ${bytes.byteLength}\0`).update(bytes).digest("hex");
+}
+
 export function digest(domain: string, value: unknown): string {
   return sha256(domain + JSON.stringify(canonical(value)));
 }

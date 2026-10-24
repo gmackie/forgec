@@ -234,3 +234,350 @@ fn interface_hash_is_structural_not_nominal() {
         unit(&other, "Reopen").interface_hash
     );
 }
+
+#[test]
+fn acme_covers_every_runtime_surface() {
+    let p = acme();
+    assert!(p.uncovered.is_empty(), "{:?}", p.uncovered);
+    let ids: std::collections::BTreeSet<&str> =
+        p.entry_points.iter().map(|e| e.id.as_str()).collect();
+    for id in [
+        "GET /v1/views/pending-orders",
+        "GET /v1/customer-order-summaries/status",
+        "POST /v1/customer-order-summaries/rebuild",
+        "GET /v1/customer-order-summaries/{id}",
+        "GET /v1/caches/current-site-policy",
+        "GET /v1/schedules/nightly-reconciliation",
+        "POST /v1/schedules/nightly-reconciliation/tick",
+        "POST /v1/changesets",
+        "GET /v1/changesets/{id}/preview",
+        "POST /v1/imports/inspect",
+        "POST /v1/admin/fence",
+        "GET /forge/workspace.json",
+        "PUT /_forge/objects/{token}",
+        "GET /v1/live/orders",
+        "projection:CustomerOrderSummary",
+        "forge:sweep",
+    ] {
+        assert!(ids.contains(id), "{id}");
+    }
+    let root = |id: &str| {
+        p.entry_points
+            .iter()
+            .find(|e| e.id == id)
+            .unwrap()
+            .root
+            .clone()
+    };
+    assert_eq!(
+        root("forge:sweep").as_deref(),
+        Some("@acme/commerce/_/dispatch")
+    );
+    assert_eq!(
+        root("POST /v1/schedules/nightly-reconciliation/tick").as_deref(),
+        Some("@acme/commerce/_/schedules")
+    );
+    assert_eq!(root("GET /v1/schedules/nightly-reconciliation"), None);
+    // Read models reach their source through generated operations.
+    assert_eq!(
+        unit(&p, "PendingOrders").dependencies,
+        ["@acme/commerce/_/Order.list.byCustomer"]
+    );
+    assert_eq!(
+        unit(&p, "CurrentSitePolicy").dependencies,
+        ["@acme/commerce/_/SitePolicy.effective.bySite"]
+    );
+    // The dispatcher reaches every subscriber: projections, workflows, schedules, queues, streams.
+    let dispatch: Vec<&str> = unit(&p, "dispatch")
+        .imports
+        .iter()
+        .map(|i| i.capability.as_str())
+        .collect();
+    assert_eq!(
+        dispatch,
+        [
+            "deliver:fulfill-order",
+            "deliver:realtime:@acme/commerce/_/OrderEvents",
+            "projection:@acme/commerce/_/CustomerOrderSummary",
+            "service:@acme/commerce/_/schedules",
+            "workflow:@acme/commerce/_/ProcessOrder",
+        ]
+    );
+    // A changeset may name any operation: every operation of every (non-credential) resource.
+    let ops = p.units.iter().filter(|u| u.role == "operation").count();
+    assert_eq!(unit(&p, "changesets").dependencies.len(), ops);
+    // Audited resources publish the implicit `<Resource>.changes` channel.
+    let create = unit(&p, "Order.create");
+    assert_eq!(
+        create.interface["effects"]["sends"],
+        serde_json::json!(["@acme/commerce/_/Order.changes#Created"])
+    );
+    assert!(
+        create
+            .imports
+            .iter()
+            .any(|i| i.capability == "send:@acme/commerce/_/Order.changes#Created")
+    );
+    let cancel = p
+        .entry_points
+        .iter()
+        .find(|e| e.id == "POST /v1/workflows/process-order/{id}/cancel")
+        .unwrap();
+    assert_eq!(cancel.bindings.len(), 1);
+    assert_eq!(cancel.bindings[0].name, "WF_PROCESS_ORDER");
+    assert!(p.host_bindings.iter().any(|b| b.name == "FORGE_CORS"));
+}
+
+#[test]
+fn git_blob_is_git_hash_object() {
+    // `printf '' | git hash-object --stdin`, `printf 'hello\n' | git hash-object --stdin`
+    assert_eq!(
+        units::git_blob(b""),
+        "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    );
+    assert_eq!(
+        units::git_blob(b"hello\n"),
+        "ce013625030ba8dba906f756967f9e9ca394464a"
+    );
+}
+
+fn sourced(src: &str) -> units::UnitPlan {
+    let pkg = Package::inline("@t/units", vec![("src/index.forge".into(), src.into())]);
+    let out = compile(&pkg, &[]);
+    let ir = out.ir.clone().unwrap();
+    let mut p = units::plan(&ir, &[], &plan(&ir).unwrap());
+    let own = units::PackageSources {
+        package: pkg.name.clone(),
+        files: pkg
+            .files
+            .iter()
+            .map(|f| (f.path.clone(), f.text.clone()))
+            .collect(),
+        index: out.source_index.clone(),
+    };
+    units::attach_sources(&mut p, &own, &[]);
+    p
+}
+
+#[test]
+fn source_spans_locate_declarations_and_never_enter_a_hash() {
+    let base = sourced(BASE);
+    let f = unit(&base, "Escalate");
+    assert_eq!(f.sources.len(), 1);
+    let s = &f.sources[0];
+    assert_eq!(
+        (s.part.as_str(), s.path.as_str()),
+        ("declaration", "src/index.forge")
+    );
+    assert!(
+        BASE[s.start..s.end].contains("function Escalate"),
+        "{}",
+        &BASE[s.start..s.end]
+    );
+    assert_eq!(s.git_blob, units::git_blob(BASE.as_bytes()));
+    // A generated operation is located at its resource.
+    let op = &unit(&base, "Ticket.create").sources[0];
+    assert!(BASE[op.start..op.end].starts_with("resource Ticket"));
+    // Moving every declaration down changes spans and blob hashes, and no hash of any unit.
+    let moved_src = format!("// moved\n{BASE}");
+    let moved = sourced(&moved_src);
+    for (a, b) in base.units.iter().zip(&moved.units) {
+        assert_eq!(a.symbol, b.symbol);
+        assert_eq!(a.interface_hash, b.interface_hash, "{}", a.symbol);
+        assert_eq!(a.implementation, b.implementation, "{}", a.symbol);
+        for (x, y) in a.sources.iter().zip(&b.sources) {
+            assert_eq!(y.start, x.start + "// moved\n".len());
+            assert_ne!(x.git_blob, y.git_blob);
+        }
+    }
+}
+/// A function whose input and output reach none of its capabilities' types: a resource read, a
+/// transition with input, a callee and a send. Only the capabilities reach `Site`, `Lookup`'s
+/// signature, `Ticket.reopen`'s input and the `Checked` message.
+const REACHED: &str = r#"
+resource Site @crud("/v1/sites") {
+  id : id
+  name : text length 1..200
+  enabled : boolean = true
+}
+
+resource Ticket @crud("/v1/tickets") {
+  id : id
+  title : text length 1..200
+  lifecycle status {
+    initial Open
+    terminal Archived
+    close: Open -> Closed
+    reopen: Closed -> Open
+      input { reason : text length 1..100 }
+    archive: Closed -> Archived
+  }
+}
+
+shape LookupInput {
+  code : text length 1..20
+}
+
+shape LookupOutput {
+  found : boolean
+}
+
+function Lookup {
+  input LookupInput
+  output LookupOutput
+  errors {
+    Missing
+  }
+}
+
+channel Checks {
+  distribution broadcast
+  delivery at-least-once
+
+  message Checked {
+    site : id
+    revision : integer >= 1
+  }
+}
+
+shape CheckInput {
+  site : id
+}
+
+shape CheckOutput {
+  ok : boolean
+}
+
+/// Checks a site.
+function CheckSite
+  @http(POST, "/v1/check")
+{
+  input CheckInput
+  output CheckOutput
+  uses {
+    Site read
+    Ticket.status.reopen
+    Lookup
+  }
+  sends {
+    Checked to Checks
+  }
+  errors {
+    Disabled
+  }
+}
+"#;
+
+fn world_digest(u: &units::PlannedUnit) -> Option<String> {
+    match u.wit.as_ref()? {
+        forgegraph_planner::wit::UnitWit::Ok { digest, .. } => Some(digest.clone()),
+        forgegraph_planner::wit::UnitWit::Unsupported { .. } => None,
+    }
+}
+
+#[test]
+fn interface_hash_covers_types_reached_through_capabilities() {
+    // FORG-36: the WIT world imports these types, so the interface must cover them too. Each
+    // edit changes only what a capability reaches, and moves the interface hash and the world.
+    let base = unit_plan(REACHED);
+    let b = unit(&base, "CheckSite");
+    assert!(world_digest(b).is_some(), "CheckSite should lower to WIT");
+    let cases = [
+        // a read resource gains a field
+        (
+            "resource field added",
+            REACHED.replace(
+                "  enabled : boolean = true\n",
+                "  enabled : boolean = true\n  region : text?\n",
+            ),
+        ),
+        // a read resource's field changes type
+        (
+            "resource field type",
+            REACHED.replace("  name : text length 1..200\n", "  name : integer\n"),
+        ),
+        // a transition's input changes
+        (
+            "transition input",
+            REACHED.replace(
+                "input { reason : text length 1..100 }",
+                "input { reason : text length 1..100\n urgent : boolean }",
+            ),
+        ),
+        // a callee's input shape, output shape and errors
+        (
+            "callee input",
+            REACHED.replace("  code : text length 1..20\n", "  code : integer\n"),
+        ),
+        (
+            "callee output",
+            REACHED.replace(
+                "  found : boolean\n",
+                "  found : boolean\n  score : integer\n",
+            ),
+        ),
+        (
+            "callee errors",
+            REACHED.replace("    Missing\n", "    Missing\n    Ambiguous\n"),
+        ),
+        // a sent message's payload
+        (
+            "message payload",
+            REACHED.replace(
+                "    revision : integer >= 1\n",
+                "    revision : integer >= 1\n    note : text?\n",
+            ),
+        ),
+    ];
+    for (what, src) in &cases {
+        let edited = unit_plan(src);
+        let e = unit(&edited, "CheckSite");
+        assert_ne!(b.interface_hash, e.interface_hash, "{what}: interface hash");
+        assert_ne!(world_digest(b), world_digest(e), "{what}: WIT world");
+    }
+    // Documentation and routes reached through a capability are still not the signature.
+    let doc = unit_plan(&REACHED.replace(
+        "resource Site @crud(\"/v1/sites\") {",
+        "/// A site.\nresource Site @crud(\"/v1/places\") {",
+    ));
+    assert_eq!(b.interface_hash, unit(&doc, "CheckSite").interface_hash);
+    // The interface records each capability's signature next to the types it reaches.
+    let sigs = b.interface["capabilitySignatures"].as_object().unwrap();
+    let keys: Vec<&str> = sigs.keys().map(String::as_str).collect();
+    assert_eq!(
+        keys,
+        [
+            "function:@t/units/_/Lookup",
+            "resource:@t/units/_/Site#read",
+            "send:@t/units/_/Checks#Checked",
+            "transition:@t/units/_/Ticket.status.reopen",
+        ]
+    );
+    let types = b.interface["types"].as_object().unwrap();
+    for t in [
+        "@t/units/_/Site.Record",
+        "@t/units/_/Ticket.Record",
+        "@t/units/_/LookupInput",
+        "@t/units/_/LookupOutput",
+        "@t/units/_/Checks#Checked",
+    ] {
+        assert!(types.contains_key(t), "types lacks {t}: {:?}", types.keys());
+    }
+}
+
+#[test]
+fn a_pure_unit_has_no_capability_signatures() {
+    // Without capabilities the interface is what it was before FORG-36, hash included.
+    let p = unit_plan(REACHED);
+    let lookup = unit(&p, "Lookup");
+    assert!(lookup.imports.is_empty());
+    assert!(lookup.interface.get("capabilitySignatures").is_none());
+    let edited = unit_plan(&REACHED.replace(
+        "  enabled : boolean = true\n",
+        "  enabled : boolean = true\n  region : text?\n",
+    ));
+    assert_eq!(
+        lookup.interface_hash,
+        unit(&edited, "Lookup").interface_hash
+    );
+}

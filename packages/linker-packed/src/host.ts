@@ -22,6 +22,12 @@ export interface HostConfig {
   script: string;
   /** Routes this script serves. `null`: every route except `deny` (the residual group). */
   routes: HostRoute[] | null;
+  /**
+   * Every manifest route on a path this script serves, whatever its method. A request for one of
+   * those paths with a method no manifest route has goes to the runtime (405, or a CORS preflight);
+   * a method another script serves is refused.
+   */
+  pathRoutes?: HostRoute[];
   deny: HostRoute[];
   /** Binding names handed to the runtime. Everything else in `env` is withheld. */
   bindings: string[];
@@ -74,6 +80,8 @@ export type HostUnits = Pick<FeatureWorkerOptions, "functions" | "externals" | "
 export function packed(app: AppBundle, units: HostUnits, config: HostConfig) {
   const serves = config.routes ? matcher(config.routes) : () => true;
   const denied = matcher(config.deny);
+  const onPath = (path: string) => (config.pathRoutes ?? []).some((r) => matcher([{ ...r, method: "*" }])("*", path));
+  const elsewhere = matcher(config.pathRoutes ?? []);
   const forwardTo = (env: WorkerEnv) => (env as unknown as Record<symbol, Fetcher | undefined>)[FORWARD];
   const forward = (env: WorkerEnv, tenant: string, sweep: boolean) => {
     const target = forwardTo(env);
@@ -98,7 +106,8 @@ export function packed(app: AppBundle, units: HostUnits, config: HostConfig) {
           await worker.dispatch(envFor(env), tenant, { sweep });
           return new Response(null, { status: 204 });
         }
-        if (!serves(request.method, url.pathname) || denied(request.method, url.pathname)) return refused(config.script, request.method, url.pathname);
+        const methodMiss = !serves(request.method, url.pathname) && onPath(url.pathname) && !elsewhere(request.method, url.pathname);
+        if ((!serves(request.method, url.pathname) && !methodMiss) || denied(request.method, url.pathname)) return refused(config.script, request.method, url.pathname);
         const scoped = envFor(env);
         // The whole-app Worker records every tenant it sees in the schedule index; a slice may hold no
         // schedule, so the dispatch owner records it instead (once per isolate, like the runtime).

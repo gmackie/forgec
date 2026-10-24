@@ -1,11 +1,13 @@
 // Which runtime features a packed script links (FORG-37). A sliced group links only what its slice
-// uses (`requiredFeatures` over the slice's model), so the bundle carries none of the other features'
-// code; a fallback group runs the whole app and links every feature, like the whole-app Worker.
+// uses (`requiredFeatures` over the slice's model, plus the features behind runtime-served routes it
+// answers), so the bundle carries none of the other features' code. A group that runs the whole app
+// (contract metadata, a fallback for uncovered surfaces, `single`) links every feature, like the
+// whole-app Worker.
 // The runtime builds a Worker from the slice with exactly these features at link time, so a slice the
 // runtime would refuse with them fails the link, not a request.
 import { Model, type AppBundle } from "@forgegraph/runtime";
 import { cloudflareObjects, createWorkerWith } from "@forgegraph/runtime/cloudflare";
-import { allFeatures, featuresNamed, requiredFeatures, type FeatureName } from "@forgegraph/runtime/features";
+import { allFeatures, featuresNamed, requiredFeatures, surfaceFeatures, type FeatureName } from "@forgegraph/runtime/features";
 import type { HostConfig } from "./host.ts";
 import { LinkError } from "./manifest.ts";
 
@@ -19,10 +21,14 @@ export interface ScriptFeatures {
 
 export function featuresFor(app: AppBundle, sliced: boolean, host: HostConfig): ScriptFeatures {
   if (!sliced) return { mode: "all", names: allFeatures.map((f) => f.name).sort(), objects: true };
-  const names = requiredFeatures(new Model(app));
-  if (host.dispatch === "local") names.push("dispatch");
-  names.sort();
-  const objects = names.includes("blobs");
+  // What the slice's model uses, what the runtime-served routes it answers need (changesets, imports,
+  // admin), and local outbox delivery for the dispatch owner.
+  const set = new Set<FeatureName>(requiredFeatures(new Model(app)));
+  for (const r of host.routes ?? []) for (const f of surfaceFeatures(r.path)) set.add(f);
+  if (host.dispatch === "local") set.add("dispatch");
+  const names = [...set].sort();
+  // Blob storage: with the blobs feature, and for the script that serves blob bytes itself.
+  const objects = names.includes("blobs") || (host.routes ?? []).some((r) => r.path.startsWith("/_forge/objects/"));
   try {
     createWorkerWith(app, {
       features: featuresNamed(names),

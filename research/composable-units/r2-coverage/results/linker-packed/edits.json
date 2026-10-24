@@ -1,0 +1,692 @@
+{
+  "issue": "FORG-29",
+  "measured": {
+    "doc only: src/customers/customer.forge `///` comment on Customer": {
+      "buildHashMoved": true,
+      "closureHashMoved": [],
+      "manifestHashMoved": true,
+      "perStrategy": {
+        "per-entry-point": {
+          "becauseAClosureMoved": [],
+          "otherwise": [
+            {
+              "appJson": "slice",
+              "members": [
+                "@acme/commerce/_/NightlyReconciliation"
+              ],
+              "name": "acme-commerce-nightlyreconciliation-04c042"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "forge:sweep",
+                "projection:CustomerOrderSummary"
+              ],
+              "name": "acme-commerce-forge-sweep-24ec0b"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "ForgeRealtime"
+              ],
+              "name": "acme-commerce-forgerealtime-90f206"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "DELETE /v1/customers/{id}"
+              ],
+              "name": "acme-commerce-delete-v1-customers-id-865077"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "DELETE /v1/departments/{id}"
+              ],
+              "name": "acme-commerce-delete-v1-departments-id-f492ac"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "DELETE /v1/order-documents/{id}"
+              ],
+              "name": "acme-commerce-delete-v1-order-documents-id-4182d4"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "DELETE /v1/orders/{id}"
+              ],
+              "name": "acme-commerce-delete-v1-orders-id-8f6f3d"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "DELETE /v1/site-policies/{id}"
+              ],
+              "name": "acme-commerce-delete-v1-site-policies-id-6ff684"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "DELETE /v1/sites/{id}"
+              ],
+              "name": "acme-commerce-delete-v1-sites-id-8ab91c"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /_forge/objects/{token}"
+              ],
+              "name": "acme-commerce-get-forge-objects-token-ee9303"
+            },
+            {
+              "appJson": "whole",
+              "members": [
+                "GET /forge/discovery"
+              ],
+              "name": "acme-commerce-get-forge-discovery-102862"
+            },
+            {
+              "appJson": "whole",
+              "members": [
+                "GET /forge/openapi.json"
+              ],
+              "name": "acme-commerce-get-forge-openapi-json-dd823b"
+            },
+            {
+              "appJson": "whole",
+              "members": [
+                "GET /forge/workspace.json"
+              ],
+              "name": "acme-commerce-get-forge-workspace-json-cd5a71"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/caches/current-site-policy"
+              ],
+              "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/changesets/{id}"
+              ],
+              "name": "acme-commerce-get-v1-changesets-id-03c07e"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/changesets/{id}/preview"
+              ],
+              "name": "acme-commerce-get-v1-changesets-id-preview-3d7025"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/customer-order-summaries/status"
+              ],
+              "name": "acme-commerce-get-v1-customer-order-summaries-status-312396"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/customer-order-summaries/{id}"
+              ],
+              "name": "acme-commerce-get-v1-customer-order-summaries-id-06679c"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/customers"
+              ],
+              "name": "acme-commerce-get-v1-customers-5bc671"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/customers/queries/by-code"
+              ],
+              "name": "acme-commerce-get-v1-customers-queries-by-code-de4fe5"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/customers/queries/by-tier"
+              ],
+              "name": "acme-commerce-get-v1-customers-queries-by-tier-33dddc"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/customers/{id}"
+              ],
+              "name": "acme-commerce-get-v1-customers-id-859df7"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/departments"
+              ],
+              "name": "acme-commerce-get-v1-departments-5a7635"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/departments/queries/by-customer"
+              ],
+              "name": "acme-commerce-get-v1-departments-queries-by-customer-9931ae"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/departments/{id}"
+              ],
+              "name": "acme-commerce-get-v1-departments-id-94b682"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/departments/{id}/ancestors"
+              ],
+              "name": "acme-commerce-get-v1-departments-id-ancestors-e358ff"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/departments/{id}/children"
+              ],
+              "name": "acme-commerce-get-v1-departments-id-children-419b77"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/live/orders"
+              ],
+              "name": "acme-commerce-get-v1-live-orders-c072a7"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/order-documents"
+              ],
+              "name": "acme-commerce-get-v1-order-documents-7008be"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/order-documents/queries/by-order"
+              ],
+              "name": "acme-commerce-get-v1-order-documents-queries-by-order-e2499a"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/order-documents/{id}"
+              ],
+              "name": "acme-commerce-get-v1-order-documents-id-e9b35d"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/order-documents/{id}/content"
+              ],
+              "name": "acme-commerce-get-v1-order-documents-id-content-d0b378"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/orders"
+              ],
+              "name": "acme-commerce-get-v1-orders-ba0b2c"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/orders/queries/by-customer"
+              ],
+              "name": "acme-commerce-get-v1-orders-queries-by-customer-ed5c4c"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/orders/queries/by-site-status"
+              ],
+              "name": "acme-commerce-get-v1-orders-queries-by-site-status-c57bcb"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/orders/{id}"
+              ],
+              "name": "acme-commerce-get-v1-orders-id-2d0e31"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/schedules/nightly-reconciliation"
+              ],
+              "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-95bbdb"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/site-policies"
+              ],
+              "name": "acme-commerce-get-v1-site-policies-e6b603"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/site-policies/effective/by-site"
+              ],
+              "name": "acme-commerce-get-v1-site-policies-effective-by-site-4b1aed"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/site-policies/queries/by-site"
+              ],
+              "name": "acme-commerce-get-v1-site-policies-queries-by-site-c0df71"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/site-policies/{id}"
+              ],
+              "name": "acme-commerce-get-v1-site-policies-id-db0b1f"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/sites"
+              ],
+              "name": "acme-commerce-get-v1-sites-a9083b"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/sites/queries/by-customer"
+              ],
+              "name": "acme-commerce-get-v1-sites-queries-by-customer-b2abb6"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/sites/queries/by-customer-code"
+              ],
+              "name": "acme-commerce-get-v1-sites-queries-by-customer-code-a50f4f"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/sites/{id}"
+              ],
+              "name": "acme-commerce-get-v1-sites-id-18c7c2"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/views/pending-orders"
+              ],
+              "name": "acme-commerce-get-v1-views-pending-orders-7c7782"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "GET /v1/workflows/process-order/{id}"
+              ],
+              "name": "acme-commerce-get-v1-workflows-process-order-id-76eb96"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "PATCH /v1/customers/{id}"
+              ],
+              "name": "acme-commerce-patch-v1-customers-id-a19e97"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "PATCH /v1/departments/{id}"
+              ],
+              "name": "acme-commerce-patch-v1-departments-id-93fb26"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "PATCH /v1/order-documents/{id}"
+              ],
+              "name": "acme-commerce-patch-v1-order-documents-id-f2787a"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "PATCH /v1/orders/{id}"
+              ],
+              "name": "acme-commerce-patch-v1-orders-id-c8bd2f"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "PATCH /v1/site-policies/{id}"
+              ],
+              "name": "acme-commerce-patch-v1-site-policies-id-25dc21"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "PATCH /v1/sites/{id}"
+              ],
+              "name": "acme-commerce-patch-v1-sites-id-f8a7c7"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/admin/export"
+              ],
+              "name": "acme-commerce-post-v1-admin-export-e88510"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/admin/fence"
+              ],
+              "name": "acme-commerce-post-v1-admin-fence-cfcde5"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/admin/import"
+              ],
+              "name": "acme-commerce-post-v1-admin-import-6d6745"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/admin/inspect"
+              ],
+              "name": "acme-commerce-post-v1-admin-inspect-7d553f"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/admin/subjects/locate"
+              ],
+              "name": "acme-commerce-post-v1-admin-subjects-locate-99dbef"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/admin/verify"
+              ],
+              "name": "acme-commerce-post-v1-admin-verify-760020"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/changesets"
+              ],
+              "name": "acme-commerce-post-v1-changesets-d4dc90"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/changesets/{id}/approve"
+              ],
+              "name": "acme-commerce-post-v1-changesets-id-approve-c1a763"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/changesets/{id}/commit"
+              ],
+              "name": "acme-commerce-post-v1-changesets-id-commit-ec9a99"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/customer-order-summaries/rebuild"
+              ],
+              "name": "acme-commerce-post-v1-customer-order-summaries-rebuild-0a84e8"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/customers"
+              ],
+              "name": "acme-commerce-post-v1-customers-b01b8e"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/customers/{id}/restore"
+              ],
+              "name": "acme-commerce-post-v1-customers-id-restore-c67045"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/departments"
+              ],
+              "name": "acme-commerce-post-v1-departments-965f9d"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/departments/{id}/move"
+              ],
+              "name": "acme-commerce-post-v1-departments-id-move-24a6b1"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/imports/inspect"
+              ],
+              "name": "acme-commerce-post-v1-imports-inspect-ff77f4"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/imports/stage"
+              ],
+              "name": "acme-commerce-post-v1-imports-stage-865a08"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/order-documents"
+              ],
+              "name": "acme-commerce-post-v1-order-documents-dcce15"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/order-documents/{id}/finalize"
+              ],
+              "name": "acme-commerce-post-v1-order-documents-id-finalize-99d42d"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/order-documents/{id}/upload"
+              ],
+              "name": "acme-commerce-post-v1-order-documents-id-upload-6608dc"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/orders"
+              ],
+              "name": "acme-commerce-post-v1-orders-292d83"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/orders/{id}/actions/approve"
+              ],
+              "name": "acme-commerce-post-v1-orders-id-actions-approve-311eae"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/orders/{id}/actions/cancel"
+              ],
+              "name": "acme-commerce-post-v1-orders-id-actions-cancel-f293bb"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/orders/{id}/actions/complete"
+              ],
+              "name": "acme-commerce-post-v1-orders-id-actions-complete-2b8d43"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/orders/{order}/process"
+              ],
+              "name": "acme-commerce-post-v1-orders-order-process-745789"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/orders/{order}/submit"
+              ],
+              "name": "acme-commerce-post-v1-orders-order-submit-19d055"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/schedules/nightly-reconciliation/tick"
+              ],
+              "name": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/site-policies"
+              ],
+              "name": "acme-commerce-post-v1-site-policies-e288dc"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/sites"
+              ],
+              "name": "acme-commerce-post-v1-sites-985075"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/workflows/process-order/signals/{message}"
+              ],
+              "name": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "POST /v1/workflows/process-order/{id}/cancel"
+              ],
+              "name": "acme-commerce-post-v1-workflows-process-order-id-cancel-4ffe45"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "PUT /_forge/objects/{token}"
+              ],
+              "name": "acme-commerce-put-forge-objects-token-e15b5c"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "fulfill-order"
+              ],
+              "name": "acme-commerce-fulfill-order-4ca05b"
+            },
+            {
+              "appJson": "slice",
+              "members": "5 members",
+              "name": "acme-commerce-processorder-c5fc00"
+            },
+            {
+              "appJson": "slice",
+              "members": [
+                "forge:residual"
+              ],
+              "name": "acme-commerce-forge-residual-8b7058"
+            }
+          ],
+          "reuploaded": 87,
+          "reuploadedGzip": 8916177,
+          "reuploadedRaw": 30869809,
+          "routerChanged": false,
+          "scripts": 87
+        },
+        "single": {
+          "becauseAClosureMoved": [],
+          "otherwise": [
+            {
+              "appJson": "whole",
+              "members": "92 members",
+              "name": "acme-commerce-all"
+            }
+          ],
+          "reuploaded": 1,
+          "reuploadedGzip": 115540,
+          "reuploadedRaw": 538976,
+          "routerChanged": false,
+          "scripts": 1
+        }
+      },
+      "unitsMoved": []
+    },
+    "impl body: impl/rebuild-order-summary.ts `{ rebuilt: true }` -> `{ rebuilt: false }`": {
+      "buildHashMoved": false,
+      "closureHashMoved": [
+        "@acme/commerce/_/NightlyReconciliation",
+        "@acme/commerce/_/ProcessOrder",
+        "@acme/commerce/_/ProcessOrder#summary",
+        "POST /v1/orders/{order}/process",
+        "POST /v1/schedules/nightly-reconciliation/tick",
+        "POST /v1/workflows/process-order/signals/{message}",
+        "forge:sweep"
+      ],
+      "manifestHashMoved": true,
+      "perStrategy": {
+        "per-entry-point": {
+          "becauseAClosureMoved": [
+            "acme-commerce-nightlyreconciliation-04c042",
+            "acme-commerce-forge-sweep-24ec0b",
+            "acme-commerce-post-v1-orders-order-process-745789",
+            "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1",
+            "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+            "acme-commerce-processorder-c5fc00"
+          ],
+          "otherwise": [],
+          "reuploaded": 6,
+          "reuploadedGzip": 621565,
+          "reuploadedRaw": 2138367,
+          "routerChanged": false,
+          "scripts": 87
+        },
+        "single": {
+          "becauseAClosureMoved": [
+            "acme-commerce-all"
+          ],
+          "otherwise": [],
+          "reuploaded": 1,
+          "reuploadedGzip": 115543,
+          "reuploadedRaw": 538974,
+          "routerChanged": false,
+          "scripts": 1
+        }
+      },
+      "unitsMoved": [
+        "@acme/commerce/_/RebuildOrderSummary"
+      ]
+    }
+  },
+  "version": "t3-linker-packed-edits/1"
+}

@@ -100,6 +100,20 @@ export function requiredFeatures(model: Model): FeatureName[] {
   return closure(out);
 }
 
+/**
+ * Features behind a runtime-served HTTP surface (the routes the HTTP handler answers itself), for a host
+ * that serves only some routes: `POST /v1/changesets` needs `changesets`, `/v1/admin/export` needs
+ * `portability`, and so on. Model-declared routes need nothing beyond `requiredFeatures`. Blob bytes
+ * (`/_forge/objects/{token}`) need blob storage, not a feature: see the host's `objects` option.
+ */
+export function surfaceFeatures(path: string): FeatureName[] {
+  if (/^\/v1\/changesets(\/|$)/.test(path)) return ["changesets"];
+  if (/^\/v1\/imports\//.test(path)) return closure(["imports"]);
+  if (/^\/v1\/admin\/(export|import|verify|fence)$/.test(path)) return ["portability"];
+  if (/^\/v1\/admin\/(subjects\/locate|inspect)$/.test(path)) return ["governance"];
+  return [];
+}
+
 function closure(names: Iterable<FeatureName>): FeatureName[] {
   const out = new Set<FeatureName>(names);
   for (const n of [...out]) for (const d of DEPENDS[n] ?? []) out.add(d);

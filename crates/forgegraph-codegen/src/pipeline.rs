@@ -4,6 +4,7 @@
 //! own printing, exit codes and writing files.
 
 use forgegraph_planner::Plans;
+use forgegraph_planner::units::PackageSources;
 use forgegraph_semantic::{Compilation, DomainIR, Package, SourceTree, compile, load_package_in};
 use serde_json::{Value, json};
 use std::collections::BTreeMap;
@@ -60,6 +61,8 @@ pub struct Loaded {
     /// Dependencies in topological order (name, ir).
     pub deps: Vec<(String, DomainIR)>,
     pub selected: Vec<DomainIR>,
+    /// `.forge` files and declaration spans of every dependency, transitively (unit provenance).
+    pub dep_sources: Vec<PackageSources>,
     raw_ir: Option<DomainIR>,
 }
 
@@ -69,6 +72,21 @@ struct CachedPackage {
     ir: DomainIR,
     selected: Vec<DomainIR>,
     deps: Vec<(String, DomainIR)>,
+    /// The package's own sources followed by its dependencies'.
+    sources: Vec<PackageSources>,
+}
+
+/// A loaded package's `.forge` files and the spans its compilation indexed.
+pub fn package_sources(package: &Package, compilation: &Compilation) -> PackageSources {
+    PackageSources {
+        package: package.name.clone(),
+        files: package
+            .files
+            .iter()
+            .map(|f| (f.path.clone(), f.text.clone()))
+            .collect(),
+        index: compilation.source_index.clone(),
+    }
 }
 
 /// Load and compile a package after its path dependencies, depth-first.
@@ -97,6 +115,7 @@ fn load_tree_inner(
     let mut deps = BTreeMap::<String, DomainIR>::new();
     let mut dep_irs = Vec::new();
     let mut selected = BTreeMap::<String, DomainIR>::new();
+    let mut dep_sources = Vec::new();
     for (alias, path) in &package.dependency_paths {
         let dep_canon = tree
             .canonicalize(path)
@@ -112,11 +131,14 @@ fn load_tree_inner(
                         ..Error::msg(format!("dependency `{}` has errors", loaded.package.name))
                     });
                 };
+                let mut sources = vec![package_sources(&loaded.package, &loaded.compilation)];
+                sources.extend(loaded.dep_sources);
                 let cached = CachedPackage {
                     has_extensions: !loaded.package.extensions.is_empty(),
                     ir,
                     selected: loaded.selected,
                     deps: loaded.deps,
+                    sources,
                 };
                 seen.insert(dep_canon, cached.clone());
                 cached
@@ -142,6 +164,14 @@ fn load_tree_inner(
             }
             for ir in std::iter::once(&cached.ir).chain(&cached.selected) {
                 selected.insert(ir.package.name.clone(), ir.clone());
+            }
+        }
+        for src in cached.sources {
+            if !dep_sources
+                .iter()
+                .any(|s: &PackageSources| s.package == src.package)
+            {
+                dep_sources.push(src);
             }
         }
         dep_irs.push(cached.ir);
@@ -170,6 +200,7 @@ fn load_tree_inner(
         compilation,
         deps: deps.into_iter().collect(),
         selected,
+        dep_sources,
         raw_ir,
     })
 }
@@ -411,8 +442,13 @@ pub fn artifacts(
 /// `forgec build --units`.
 pub fn units_plan(loaded: &Loaded, ir: &DomainIR, plans: &Plans) -> (String, String) {
     let deps: Vec<&DomainIR> = loaded.deps.iter().map(|(_, d)| d).collect();
-    let mut plan = serde_json::to_value(forgegraph_planner::units::plan(ir, &deps, plans))
-        .expect("unit plan serializes");
+    let mut unit_plan = forgegraph_planner::units::plan(ir, &deps, plans);
+    forgegraph_planner::units::attach_sources(
+        &mut unit_plan,
+        &package_sources(&loaded.package, &loaded.compilation),
+        &loaded.dep_sources,
+    );
+    let mut plan = serde_json::to_value(unit_plan).expect("unit plan serializes");
     // Ties the sealed manifest to the app bundle it was planned from.
     plan["compiler"] = COMPILER_VERSION.into();
     plan["buildHash"] = build_hash(ir, &loaded.deps, &loaded.selected).into();

@@ -8,6 +8,13 @@
 //! the bundles and seals the manifest (`schemas/closure-manifest.schema.json`). Units that
 //! the runtime executes from the declaration (`forge-native`) get their implementation
 //! digest here. Nothing in this module is part of `app.json`.
+//!
+//! FORG-33 covers every surface the runtime serves: views, projections, caches and schedules are
+//! units; changesets, imports, admin, the scheduler and the outbox/workflow dispatcher are
+//! runtime-service units whose closure the planner owns; contract metadata, object bytes, realtime
+//! upgrades and workflow/schedule status are runtime-served entry points. `uncovered` lists only
+//! declarations the runtime cannot execute as planned. [`attach_sources`] records where each unit
+//! is declared, for Loom; spans never enter a unit's digests.
 
 use crate::Plans;
 use forgegraph_semantic::ir::*;
@@ -67,6 +74,83 @@ pub struct PlannedUnit {
     /// it cannot be generated. A WASM component can implement the unit only when this is `ok`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wit: Option<crate::wit::UnitWit>,
+    /// Where the unit is declared (FORG-33): filled by [`attach_sources`]. The sealer adds the
+    /// `impl/` body. Provenance only: no digest of the unit covers it (see [`SourceRef`]).
+    pub sources: Vec<SourceRef>,
+    /// Stable id of the declaration the unit's source span is taken from: the unit's own symbol,
+    /// or the resource for a generated operation. None for runtime-service units.
+    #[serde(skip)]
+    pub anchor: Option<String>,
+}
+
+/// A source span a unit was planned from, so Loom can check a manifest against a snapshot.
+///
+/// Spans and blob hashes stay out of `interfaceHash`, `implementationHash`, `unitHash` and
+/// `closureHash`. A span moves when unrelated text above it in the same file changes, and the
+/// blob hash moves with any edit to the file, so both would re-identify units whose behaviour did
+/// not change. What runs is already pinned: the declaration digest (forge-native) or the bundled
+/// module bytes (js-module). The sealed manifest's `manifestHash` covers the spans, so they cannot
+/// be altered after sealing.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(rename_all = "camelCase")]
+pub struct SourceRef {
+    /// `declaration` (a `.forge` declaration) or `body` (an `impl/` definition, added by the sealer).
+    pub part: String,
+    /// The package whose root `path` is relative to, when that is not the manifest's package
+    /// (the declaration of an external function lives in the package that exports it).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub package: Option<String>,
+    /// Relative to the package root, `/`-separated.
+    pub path: String,
+    /// Byte range `[start, end)` within the file.
+    pub start: usize,
+    pub end: usize,
+    /// `git hash-object` of the whole file: hex SHA-1 of `blob <len>\0<bytes>`.
+    pub git_blob: String,
+}
+
+/// A package's `.forge` files and declaration spans (`Compilation::source_index`), by package name.
+#[derive(Debug, Clone, Default)]
+pub struct PackageSources {
+    pub package: String,
+    /// Path relative to the package root -> file text.
+    pub files: BTreeMap<String, String>,
+    /// Stable declaration id -> span.
+    pub index: BTreeMap<String, forgegraph_semantic::compiler::SourceSpan>,
+}
+
+/// `git hash-object` of a file's bytes: hex SHA-1 over `blob <len>\0` + bytes.
+pub fn git_blob(bytes: &[u8]) -> String {
+    use sha1::Digest;
+    let mut h = sha1::Sha1::new();
+    h.update(format!("blob {}\0", bytes.len()).as_bytes());
+    h.update(bytes);
+    h.finalize().iter().map(|b| format!("{b:02x}")).collect()
+}
+
+/// Records each unit's `.forge` declaration span and file blob hash. `own` is the deployment's
+/// package, `deps` its dependencies (external units are declared there). Units whose anchor has no
+/// span (runtime services) keep an empty list.
+pub fn attach_sources(plan: &mut UnitPlan, own: &PackageSources, deps: &[PackageSources]) {
+    for u in &mut plan.units {
+        let Some(anchor) = &u.anchor else { continue };
+        let pkg = std::iter::once(own).chain(deps.iter()).find(|p| {
+            anchor.starts_with(&format!("{}/", p.package)) && p.index.contains_key(anchor)
+        });
+        let Some(pkg) = pkg else { continue };
+        let span = &pkg.index[anchor];
+        let Some(text) = pkg.files.get(&span.file) else {
+            continue;
+        };
+        u.sources = vec![SourceRef {
+            part: "declaration".into(),
+            package: (pkg.package != own.package).then(|| pkg.package.clone()),
+            path: span.file.clone(),
+            start: span.start,
+            end: span.end,
+            git_blob: git_blob(text.as_bytes()),
+        }];
+    }
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -317,7 +401,7 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
     // Resource operations: CRUD, queries and lifecycle transitions, all generated.
     for r in ir.modules.iter().flat_map(|m| &m.resources) {
         for op in &r.operations {
-            let unit = operation_unit(&scope, r, op, &resource_bindings);
+            let unit = operation_unit(&scope, r, op, &sends_bindings, &resource_bindings);
             units.insert(unit.symbol.clone(), unit);
         }
     }
@@ -329,6 +413,170 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
         units.insert(unit.symbol.clone(), unit);
     }
 
+    let mut uncovered = Vec::new();
+    // Read models (plan §16–17) and schedules (§19): the runtime executes each from its declaration
+    // and reaches the source resource through generated operations (`engine.callInternal`), so those
+    // operations are dependencies. A declaration the runtime cannot execute stays uncovered.
+    for v in ir.modules.iter().flat_map(|m| &m.views) {
+        let contract = plans.contracts.views.iter().find(|c| c.id == v.id);
+        match view_unit(&scope, v, contract) {
+            Ok(u) => insert_unit(&mut units, &mut uncovered, u),
+            Err(reason) => uncovered.push(uncovered_entry("view", &v.id, reason)),
+        }
+    }
+    for p in ir.modules.iter().flat_map(|m| &m.projections) {
+        let contract = plans.contracts.projections.iter().find(|c| c.id == p.id);
+        match projection_unit(&scope, p, contract) {
+            Ok(u) => insert_unit(&mut units, &mut uncovered, u),
+            Err(reason) => uncovered.push(uncovered_entry("projection", &p.id, reason)),
+        }
+    }
+    for c in ir.modules.iter().flat_map(|m| &m.caches) {
+        match cache_unit(&scope, c) {
+            Ok(u) => insert_unit(&mut units, &mut uncovered, u),
+            Err(reason) => uncovered.push(uncovered_entry("cache", &c.id, reason)),
+        }
+    }
+    for s in ir.modules.iter().flat_map(|m| &m.sources) {
+        match schedule_unit(&scope, s) {
+            Ok(u) => insert_unit(&mut units, &mut uncovered, u),
+            Err(reason) => uncovered.push(uncovered_entry("schedule", &s.id, reason)),
+        }
+    }
+
+    // Runtime services with a planner-owned closure. Their behaviour is the runtime's (the executor
+    // pins it); what the planner owns is what each may reach. Symbols follow the runtime's own
+    // operation ids (`<package>/_/changesets.propose`).
+    let pkg = &ir.package.name;
+    let own_resources: Vec<&Resource> = ir.modules.iter().flat_map(|m| &m.resources).collect();
+    let stageable = |r: &&&Resource| !r.fields.iter().any(|f| f.secret);
+    let changesets = format!("{pkg}/_/changesets");
+    let imports_svc = format!("{pkg}/_/imports");
+    let admin = format!("{pkg}/_/admin");
+    let scheduler = format!("{pkg}/_/schedules");
+    let dispatch = format!("{pkg}/_/dispatch");
+    // A changeset may name any operation on a resource without credential fields (changeset.ts).
+    let changeset_ops: Vec<CapabilityImport> = own_resources
+        .iter()
+        .filter(stageable)
+        .flat_map(|r| &r.operations)
+        .map(|op| unit_import("operation", &op.id))
+        .collect();
+    insert_unit(
+        &mut units,
+        &mut uncovered,
+        service_unit(
+            &changesets,
+            "changesets",
+            changeset_ops,
+            vec![binding("d1", "DB")],
+        ),
+    );
+    // CSV import (imports.ts): reads unique keys of the target resource, then proposes a changeset.
+    let mut import_caps = vec![unit_import("service", &changesets)];
+    import_caps.extend(
+        own_resources
+            .iter()
+            .filter(stageable)
+            .map(|r| CapabilityImport {
+                capability: format!("resource:{}#read", r.id),
+                provider: runtime("resource-store"),
+            }),
+    );
+    insert_unit(
+        &mut units,
+        &mut uncovered,
+        service_unit(
+            &imports_svc,
+            "imports",
+            import_caps,
+            vec![binding("d1", "DB")],
+        ),
+    );
+    // Operator routes: portability export/import/verify/fence work on raw rows of every resource;
+    // governance (subject location, inspection) pages through list operations.
+    let mut admin_caps = Vec::new();
+    for r in &own_resources {
+        for mode in ["read", "create", "write", "delete"] {
+            admin_caps.push(CapabilityImport {
+                capability: format!("resource:{}#{mode}", r.id),
+                provider: runtime("resource-store"),
+            });
+        }
+        admin_caps.extend(
+            r.operations
+                .iter()
+                .filter(|op| op.kind == "list")
+                .map(|op| unit_import("operation", &op.id)),
+        );
+    }
+    let mut admin_bindings = vec![binding("d1", "DB")];
+    if own_resources.iter().any(|r| r.kind == "blob") {
+        admin_bindings.push(binding("r2", "BLOBS"));
+    }
+    insert_unit(
+        &mut units,
+        &mut uncovered,
+        service_unit(&admin, "admin", admin_caps, admin_bindings),
+    );
+    // The scheduler ticks every source at once (schedules.ts tickScoped), so a tick reaches them all.
+    let schedule_units: Vec<String> = ir
+        .modules
+        .iter()
+        .flat_map(|m| &m.sources)
+        .filter(|s| units.get(&s.id).is_some_and(|u| u.role == "schedule"))
+        .map(|s| s.id.clone())
+        .collect();
+    if !schedule_units.is_empty() {
+        let caps = schedule_units
+            .iter()
+            .map(|s| unit_import("schedule", s))
+            .collect();
+        insert_unit(
+            &mut units,
+            &mut uncovered,
+            service_unit(&scheduler, "schedules", caps, vec![binding("d1", "DB")]),
+        );
+    }
+    // The outbox/workflow sweep and post-commit dispatch: delivers every outbox row to every
+    // subscription (queues, projections, workflow waits, realtime streams), resumes workflows and
+    // runs due schedules. Its closure is everything those reach, not the whole app.
+    let mut dispatch_caps = Vec::new();
+    let mut dispatch_bindings = vec![binding("d1", "DB")];
+    for p in ir.modules.iter().flat_map(|m| &m.projections) {
+        if units.get(&p.id).is_some_and(|u| u.role == "projection") {
+            dispatch_caps.push(unit_import("projection", &p.id));
+        }
+    }
+    for w in ir.modules.iter().flat_map(|m| &m.workflows) {
+        dispatch_caps.push(unit_import("workflow", &w.id));
+    }
+    if !schedule_units.is_empty() {
+        dispatch_caps.push(unit_import("service", &scheduler));
+    }
+    for s in &plans.messaging.subscriptions {
+        dispatch_caps.push(CapabilityImport {
+            capability: format!("deliver:{}", s.name),
+            provider: runtime("outbox"),
+        });
+        dispatch_bindings.push(binding("queue-producer", &queue_producer(&s.name)));
+    }
+    for s in &plans.realtime.streams {
+        dispatch_caps.push(CapabilityImport {
+            capability: format!("deliver:realtime:{}", s.channel),
+            provider: runtime("outbox"),
+        });
+        dispatch_bindings.push(binding(
+            "durable-object",
+            &plans.realtime.cloudflare.binding,
+        ));
+    }
+    insert_unit(
+        &mut units,
+        &mut uncovered,
+        service_unit(&dispatch, "dispatch", dispatch_caps, dispatch_bindings),
+    );
+
     let mut entry_points = Vec::new();
     let route = |method: &str, path: &str, root: &str| EntryPoint {
         kind: "http-route".into(),
@@ -337,6 +585,21 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
         root: Some(root.into()),
         runtime_service: None,
         bindings: vec![],
+    };
+    // Served by the runtime without application code: the entry point names the runtime service.
+    let served = |method: &str, path: &str, service: &str, extra: Value, bindings: Vec<Binding>| {
+        let mut trigger = json!({ "method": method, "path": path });
+        if let (Some(t), Value::Object(extra)) = (trigger.as_object_mut(), extra) {
+            t.extend(extra);
+        }
+        EntryPoint {
+            kind: "http-route".into(),
+            id: format!("{method} {path}"),
+            trigger,
+            root: None,
+            runtime_service: Some(service.into()),
+            bindings,
+        }
     };
     for r in &plans.contracts.resources {
         for op in &r.operations {
@@ -350,6 +613,14 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
             entry_points.push(route(&h.method, &h.path, &f.id));
         }
     }
+    let workflow_binding = |id: &str| {
+        plans
+            .workflows
+            .workflows
+            .iter()
+            .find(|p| p.id == id)
+            .map(|p| binding("workflow", &p.cloudflare.binding))
+    };
     for w in &plans.contracts.workflows {
         // Start and signal delivery advance the workflow, so they need its closure (plan §15).
         entry_points.push(route(&w.start.method, &w.start.path, &w.id));
@@ -358,20 +629,125 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
             &format!("{}/signals/{{message}}", w.path),
             &w.id,
         ));
-        // Status and cancel only touch the instance record.
-        for (method, path) in [
-            ("GET", format!("{}/{{id}}", w.path)),
-            ("POST", format!("{}/{{id}}/cancel", w.path)),
-        ] {
-            entry_points.push(EntryPoint {
-                kind: "http-route".into(),
-                id: format!("{method} {path}"),
-                trigger: json!({ "method": method, "path": path, "workflow": w.id }),
-                root: None,
-                runtime_service: Some("workflow-instances".into()),
-                bindings: vec![],
-            });
+        // Status and cancel only touch the instance record. Cancelling also wakes the native
+        // instance (workflows.ts), so the cancel route needs the workflow binding.
+        let workflow = json!({ "workflow": w.id });
+        entry_points.push(served(
+            "GET",
+            &format!("{}/{{id}}", w.path),
+            "workflow-instances",
+            workflow.clone(),
+            vec![],
+        ));
+        entry_points.push(served(
+            "POST",
+            &format!("{}/{{id}}/cancel", w.path),
+            "workflow-instances",
+            workflow,
+            workflow_binding(&w.id).into_iter().collect(),
+        ));
+    }
+    // Read models: the runtime binds the same paths the contracts publish (http.ts readModelRoutes).
+    for v in &plans.contracts.views {
+        if units.get(&v.id).is_some_and(|u| u.role == "view") {
+            entry_points.push(route(&v.http.method, &v.http.path, &v.id));
         }
+    }
+    for p in &plans.contracts.projections {
+        let Some(u) = units.get(&p.id).filter(|u| u.role == "projection") else {
+            continue;
+        };
+        for (method, path) in [
+            ("GET", format!("{}/status", p.path)),
+            ("POST", format!("{}/rebuild", p.path)),
+            ("GET", format!("{}/{{id}}", p.path)),
+        ] {
+            entry_points.push(route(method, &path, &p.id));
+        }
+        // The implicit `<Resource>.changes` channel feeds the projection inside the dispatcher.
+        let subscription = format!("projection:{}", p.name);
+        entry_points.push(EntryPoint {
+            kind: "subscription".into(),
+            id: subscription.clone(),
+            trigger: json!({ "channel": format!("{}.changes", p.source), "messages": u.interface["consumes"].clone(), "subscription": subscription, "delivery": "in-process" }),
+            root: Some(p.id.clone()),
+            runtime_service: None,
+            bindings: vec![],
+        });
+    }
+    for c in &plans.contracts.caches {
+        if units.get(&c.id).is_some_and(|u| u.role == "cache") {
+            entry_points.push(route(&c.http.method, &c.http.path, &c.id));
+        }
+    }
+    for s in &plans.contracts.schedules {
+        // Status reads the source's ledger; a manual tick runs the scheduler (every due source).
+        entry_points.push(served(
+            "GET",
+            &s.path,
+            "schedule-status",
+            json!({ "schedule": s.id }),
+            vec![],
+        ));
+        if units.contains_key(&scheduler) {
+            entry_points.push(route("POST", &format!("{}/tick", s.path), &scheduler));
+        }
+    }
+    // Built-in routes (http.ts builtinRoutes).
+    for (method, path) in [
+        ("POST", "/v1/changesets"),
+        ("GET", "/v1/changesets/{id}"),
+        ("GET", "/v1/changesets/{id}/preview"),
+        ("POST", "/v1/changesets/{id}/approve"),
+        ("POST", "/v1/changesets/{id}/commit"),
+    ] {
+        entry_points.push(route(method, path, &changesets));
+    }
+    for path in ["/v1/imports/inspect", "/v1/imports/stage"] {
+        entry_points.push(route("POST", path, &imports_svc));
+    }
+    for path in [
+        "/v1/admin/export",
+        "/v1/admin/import",
+        "/v1/admin/verify",
+        "/v1/admin/fence",
+        "/v1/admin/subjects/locate",
+        "/v1/admin/inspect",
+    ] {
+        entry_points.push(route("POST", path, &admin));
+    }
+    // Contract metadata (FORGE-056 discovery, OpenAPI, record workspace) projects the whole bundle.
+    for path in [
+        "/forge/discovery",
+        "/forge/openapi.json",
+        "/forge/workspace.json",
+    ] {
+        entry_points.push(served("GET", path, "contract-metadata", json!({}), vec![]));
+    }
+    // Signed object URLs: the Worker-served equivalent of presigned URLs (adapters/r2.ts).
+    if own_resources.iter().any(|r| r.kind == "blob") {
+        for method in ["GET", "PUT"] {
+            entry_points.push(served(
+                method,
+                "/_forge/objects/{token}",
+                "object-bytes",
+                json!({}),
+                vec![binding("r2", "BLOBS")],
+            ));
+        }
+    }
+    // A WebSocket upgrade is authenticated by the Worker and handed to the stream's object.
+    for s in &plans.realtime.streams {
+        entry_points.push(served(
+            "GET",
+            &s.path,
+            "realtime-upgrade",
+            json!({ "upgrade": "websocket", "channel": s.channel }),
+            vec![binding(
+                "durable-object",
+                &plans.realtime.cloudflare.binding,
+            )],
+        ));
     }
     for s in &plans.messaging.subscriptions {
         entry_points.push(EntryPoint {
@@ -390,11 +766,16 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
             .cron
             .clone()
             .unwrap_or_else(|| SWEEP_CRON.into());
+        let root = if units.contains_key(&s.source) {
+            s.source.clone()
+        } else {
+            s.target.clone()
+        };
         entry_points.push(EntryPoint {
             kind: "cron".into(),
             id: s.source.clone(),
             trigger: json!({ "cron": cron, "timezone": s.recurrence.timezone, "tick": s.cloudflare.tick }),
-            root: Some(s.target.clone()),
+            root: Some(root),
             runtime_service: None,
             bindings: vec![binding("cron", &cron)],
         });
@@ -442,48 +823,19 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
             )],
         });
     }
-    // The host's outbox/workflow sweep runs on every deployment, whatever its schedules.
+    // The host's outbox/workflow sweep runs on every deployment, whatever its schedules. The
+    // dispatch unit is its closure; a linker also runs post-commit dispatch with it.
     entry_points.push(EntryPoint {
         kind: "cron".into(),
         id: "forge:sweep".into(),
         trigger: json!({ "cron": SWEEP_CRON, "timezone": "UTC" }),
-        root: None,
+        root: units.contains_key(&dispatch).then(|| dispatch.clone()),
         runtime_service: Some("outbox-and-workflow-sweep".into()),
         bindings: vec![binding("cron", SWEEP_CRON)],
     });
     entry_points.sort_by(|a, b| (&a.kind, &a.id).cmp(&(&b.kind, &b.id)));
-
-    let mut uncovered = Vec::new();
-    for v in &plans.contracts.views {
-        uncovered.push(Uncovered {
-            kind: "view".into(),
-            id: v.id.clone(),
-            reason: "read model served by the runtime query engine; not split into a unit in T2"
-                .into(),
-        });
-    }
-    for p in &plans.contracts.projections {
-        uncovered.push(Uncovered {
-            kind: "projection".into(),
-            id: p.id.clone(),
-            reason: "rebuildable projection maintained by the runtime; not split into a unit in T2"
-                .into(),
-        });
-    }
-    for c in &plans.contracts.caches {
-        uncovered.push(Uncovered {
-            kind: "cache".into(),
-            id: c.id.clone(),
-            reason: "loader runs inside the runtime; not split into a unit in T2".into(),
-        });
-    }
-    for s in &plans.contracts.schedules {
-        uncovered.push(Uncovered {
-            kind: "schedule-routes".into(),
-            id: s.id.clone(),
-            reason: "status and manual tick routes are served by the runtime scheduler".into(),
-        });
-    }
+    let mut ids = BTreeSet::new();
+    entry_points.retain(|e| ids.insert(e.id.clone()));
 
     UnitPlan {
         version: UNIT_PLAN_VERSION.into(),
@@ -498,8 +850,295 @@ pub fn plan(ir: &DomainIR, deps: &[&DomainIR], plans: &Plans) -> UnitPlan {
             binding("d1", "DB"),
             binding("secret", "CURSOR_SECRET"),
             binding("var", "FORGE_AUTH"),
+            // Allowed browser origins (hosts/cloudflare.ts); absent means no CORS headers.
+            binding("var", "FORGE_CORS"),
         ],
         uncovered,
+    }
+}
+
+fn uncovered_entry(kind: &str, id: &str, reason: String) -> Uncovered {
+    Uncovered {
+        kind: kind.into(),
+        id: id.into(),
+        reason,
+    }
+}
+
+/// Adds a unit unless its symbol is taken (a declaration named like a runtime service), in which
+/// case the surface is reported uncovered rather than silently merged.
+fn insert_unit(
+    units: &mut BTreeMap<String, PlannedUnit>,
+    uncovered: &mut Vec<Uncovered>,
+    unit: PlannedUnit,
+) {
+    if units.contains_key(&unit.symbol) {
+        uncovered.push(uncovered_entry(
+            &unit.role,
+            &unit.symbol,
+            format!(
+                "a {} unit cannot take the symbol of an existing unit",
+                unit.role
+            ),
+        ));
+        return;
+    }
+    units.insert(unit.symbol.clone(), unit);
+}
+
+/// An import provided by another unit: `<kind>:<symbol>`.
+fn unit_import(kind: &str, symbol: &str) -> CapabilityImport {
+    CapabilityImport {
+        capability: format!("{kind}:{symbol}"),
+        provider: Provider::Unit {
+            symbol: symbol.into(),
+        },
+    }
+}
+
+fn unit_dependencies(imports: &[CapabilityImport]) -> Vec<String> {
+    sorted(imports.iter().filter_map(|i| match &i.provider {
+        Provider::Unit { symbol } => Some(symbol.clone()),
+        Provider::Runtime { .. } => None,
+    }))
+}
+
+/// A declaration without its HTTP binding: routes are entry-point data, not behaviour.
+fn declaration_digest(decl: &impl Serialize, drop: &[&str]) -> String {
+    let mut v = serde_json::to_value(decl).expect("serialize");
+    if let Some(o) = v.as_object_mut() {
+        for k in drop {
+            o.remove(*k);
+        }
+    }
+    digest(IMPLEMENTATION_DOMAIN, &v)
+}
+
+fn read_model_unit(
+    symbol: &str,
+    role: &str,
+    interface: Value,
+    declaration: String,
+    imports: Vec<CapabilityImport>,
+) -> PlannedUnit {
+    let imports = sorted(imports);
+    PlannedUnit {
+        symbol: symbol.into(),
+        role: role.into(),
+        kind: "forge-native".into(),
+        interface_hash: digest(INTERFACE_DOMAIN, &interface),
+        interface,
+        implementation: json!({ "declaration": declaration }),
+        dependencies: unit_dependencies(&imports),
+        imports,
+        bindings: vec![binding("d1", "DB")],
+        wit: None,
+        sources: vec![],
+        anchor: Some(symbol.into()),
+    }
+}
+
+/// A view lowers onto the source's bounded list for its `by` fields (readmodels.ts view()).
+fn view_unit(
+    scope: &Scope,
+    v: &View,
+    contract: Option<&crate::contracts::ViewContract>,
+) -> Result<PlannedUnit, String> {
+    let r = scope
+        .resource(&v.source)
+        .ok_or_else(|| format!("source {} is not a resource in scope", v.source))?;
+    let list = r
+        .lists
+        .iter()
+        .find(|l| l.fields == v.by)
+        .ok_or_else(|| format!("{} has no list by ({})", r.name, v.by.join(", ")))?;
+    let op = r
+        .operations
+        .iter()
+        .find(|o| o.kind == "list" && o.query.as_deref() == Some(list.name.as_str()))
+        .ok_or_else(|| format!("{} has no operation for list {}", r.name, list.name))?;
+    let contract = contract.ok_or("no view contract")?;
+    let caps = vec![unit_import("operation", &op.id)];
+    let interface = json!({
+        "readModel": "view",
+        "params": contract.params,
+        "record": contract.record,
+        "order": contract.order,
+        "errors": [],
+        "effects": { "sends": [] },
+        "capabilities": caps.iter().map(|i| &i.capability).collect::<Vec<_>>(),
+    });
+    Ok(read_model_unit(
+        &v.id,
+        "view",
+        interface,
+        declaration_digest(v, &["http"]),
+        caps,
+    ))
+}
+
+/// A projection applies `<source>.changes` events, reading the changed record from storage, and
+/// rebuilds by paging the source's `list.all` (readmodels.ts applyEvent, rebuild).
+fn projection_unit(
+    scope: &Scope,
+    p: &Projection,
+    contract: Option<&crate::contracts::ProjectionContract>,
+) -> Result<PlannedUnit, String> {
+    let r = scope
+        .resource(&p.source)
+        .ok_or_else(|| format!("source {} is not a resource in scope", p.source))?;
+    if !r.decorators.audited {
+        return Err(format!(
+            "source {} is not @audited, so it publishes no change events",
+            r.name
+        ));
+    }
+    let all = r
+        .operations
+        .iter()
+        .find(|o| o.kind == "list" && o.query.as_deref() == Some("all"))
+        .ok_or_else(|| format!("{} has no list.all to rebuild from", r.name))?;
+    let contract = contract.ok_or("no projection contract")?;
+    let caps = vec![
+        unit_import("operation", &all.id),
+        CapabilityImport {
+            capability: format!("resource:{}#read", r.id),
+            provider: runtime("resource-store"),
+        },
+    ];
+    let interface = json!({
+        "readModel": "projection",
+        "by": contract.by,
+        "record": contract.record,
+        // What it consumes: the change messages of its source (engine.ts changeEvent).
+        "consumes": ["Created", "Deleted", "Restored", "Transitioned", "Updated"],
+        "errors": [],
+        "effects": { "sends": [] },
+        "capabilities": caps.iter().map(|i| &i.capability).collect::<BTreeSet<_>>(),
+    });
+    Ok(read_model_unit(
+        &p.id,
+        "projection",
+        interface,
+        declaration_digest(p, &["crud"]),
+        caps,
+    ))
+}
+
+/// A cache loads through `<Resource>.effective(...)` (readmodels.ts runLoader).
+fn cache_unit(scope: &Scope, c: &Cache) -> Result<PlannedUnit, String> {
+    let Expr::Call { callee, .. } = &c.loader else {
+        return Err("only <Resource>.effective(...) loaders are executed".into());
+    };
+    let [resource, method] = callee.as_slice() else {
+        return Err("only <Resource>.effective(...) loaders are executed".into());
+    };
+    if method != "effective" {
+        return Err("only <Resource>.effective(...) loaders are executed".into());
+    }
+    let r = scope
+        .irs
+        .iter()
+        .flat_map(|ir| ir.modules.iter().flat_map(|m| &m.resources))
+        .find(|r| &r.name == resource)
+        .ok_or_else(|| format!("loader resource {resource} is not in scope"))?;
+    let op = r
+        .operations
+        .iter()
+        .find(|o| o.kind == "effective")
+        .ok_or_else(|| format!("{} has no effective operation", r.name))?;
+    let caps = vec![unit_import("operation", &op.id)];
+    let value = TypeSpec {
+        base: TypeBase::Record {
+            resource: r.id.clone(),
+        },
+        optional: true,
+        normalizers: vec![],
+        constraints: vec![],
+        purpose: None,
+        data_class: None,
+    };
+    let mut roots: Vec<&TypeSpec> = c.keys.iter().map(|k| &k.ty).collect();
+    roots.push(&value);
+    let interface = json!({
+        "readModel": "cache",
+        "keys": c.keys,
+        "value": value,
+        "errors": [],
+        "effects": { "sends": [] },
+        "capabilities": caps.iter().map(|i| &i.capability).collect::<Vec<_>>(),
+        "types": scope.types(&roots),
+    });
+    Ok(read_model_unit(
+        &c.id,
+        "cache",
+        interface,
+        declaration_digest(c, &[]),
+        caps,
+    ))
+}
+
+/// A schedule runs its target at each occurrence its ledger has not recorded (schedules.ts).
+fn schedule_unit(scope: &Scope, s: &Source) -> Result<PlannedUnit, String> {
+    let kind = if scope.function(&s.target).is_some() {
+        "function"
+    } else if scope.irs.iter().any(|ir| {
+        ir.modules
+            .iter()
+            .flat_map(|m| &m.workflows)
+            .any(|w| w.id == s.target)
+    }) {
+        "workflow"
+    } else {
+        return Err(format!("target {} is not a function or workflow", s.target));
+    };
+    let caps = vec![unit_import(kind, &s.target)];
+    // Callers rely on nothing but the trigger; cron and timezone are behaviour.
+    let interface = json!({
+        "trigger": "schedule",
+        "errors": [],
+        "effects": { "sends": [] },
+        "capabilities": caps.iter().map(|i| &i.capability).collect::<Vec<_>>(),
+    });
+    let mut u = read_model_unit(
+        &s.id,
+        "schedule",
+        interface,
+        declaration_digest(s, &[]),
+        caps,
+    );
+    u.anchor = Some(s.id.clone());
+    Ok(u)
+}
+
+/// A runtime service unit: the runtime implements it (the executor version pins the code); the
+/// planner owns what it may reach. Its declaration digest is the service name alone.
+fn service_unit(
+    symbol: &str,
+    service: &str,
+    imports: Vec<CapabilityImport>,
+    bindings: Vec<Binding>,
+) -> PlannedUnit {
+    let imports = sorted(imports);
+    let interface = json!({
+        "service": service,
+        "errors": [],
+        "effects": { "sends": [] },
+        "capabilities": imports.iter().map(|i| &i.capability).collect::<Vec<_>>(),
+    });
+    PlannedUnit {
+        symbol: symbol.into(),
+        role: "service".into(),
+        kind: "forge-native".into(),
+        interface_hash: digest(INTERFACE_DOMAIN, &interface),
+        interface,
+        implementation: json!({ "declaration": digest(IMPLEMENTATION_DOMAIN, &json!({ "service": service })) }),
+        dependencies: unit_dependencies(&imports),
+        imports,
+        bindings: sorted(bindings),
+        wit: None,
+        sources: vec![],
+        anchor: None,
     }
 }
 
@@ -551,10 +1190,18 @@ fn function_unit(
         });
         bindings.extend(sends_bindings(&s.channel, &s.message));
     }
-    let roots: Vec<&TypeSpec> = f.input.iter().chain(f.output.iter()).collect();
+    // An implementation sees its capabilities' types as much as its own signature's (FORG-36):
+    // they enter the interface as the WIT world's imports carry them.
+    let (surface, reached) = crate::wit::capability_surface(scope, &imports);
+    let roots: Vec<&TypeSpec> = f
+        .input
+        .iter()
+        .chain(f.output.iter())
+        .chain(&reached)
+        .collect();
     // Structural: no symbol (the manifest keeps it as the binding name) and no role, so units of the
     // same shape share an interface hash whatever they are called or wherever they are declared.
-    let interface = json!({
+    let mut interface = json!({
         "input": f.input,
         "output": f.output,
         "errors": sorted(f.errors.iter().cloned()),
@@ -563,6 +1210,10 @@ fn function_unit(
         "purpose": f.purpose,
         "types": scope.types(&roots),
     });
+    // Only units with capabilities carry it, so a pure unit's interface hash is unchanged.
+    if !surface.is_empty() {
+        interface["capabilitySignatures"] = json!(surface);
+    }
     let imports = sorted(imports);
     let wit = (!f.generated).then(|| crate::wit::function_world(scope, f, &imports));
     let (kind, implementation) = if f.generated {
@@ -587,6 +1238,8 @@ fn function_unit(
         imports,
         bindings: sorted(bindings),
         wit,
+        sources: vec![],
+        anchor: Some(f.id.clone()),
     }
 }
 
@@ -594,6 +1247,7 @@ fn operation_unit(
     scope: &Scope,
     r: &Resource,
     op: &Operation,
+    sends_bindings: &dyn Fn(&str, &str) -> Vec<Binding>,
     resource_bindings: &dyn Fn(&str) -> Vec<Binding>,
 ) -> PlannedUnit {
     let record = TypeSpec {
@@ -626,12 +1280,15 @@ fn operation_unit(
     {
         field_types.extend(t.input.iter().map(|f| f.ty.clone()));
     }
+    // Audited resources publish one change event per commit on the implicit `<Resource>.changes`
+    // channel (runtime engine.ts changeEvent, blobs.ts); projections consume it.
+    let changes = change_message(r, &op.kind).map(|m| (format!("{}.changes", r.id), m));
     let interface = json!({
         "operation": { "kind": op.kind, "query": op.query, "action": op.action },
         "resource": r.id,
         "detail": detail,
         "errors": [],
-        "effects": { "sends": [] },
+        "effects": { "sends": changes.iter().map(|(c, m)| format!("{c}#{m}")).collect::<Vec<_>>() },
         "capabilities": [],
         "types": scope.types(&field_types.iter().collect::<Vec<_>>()),
     });
@@ -655,6 +1312,17 @@ fn operation_unit(
     ) {
         bindings.retain(|b| b.ty != "r2");
     }
+    let mut imports = vec![CapabilityImport {
+        capability: format!("resource:{}#{}", r.id, storage_capability(&op.kind)),
+        provider: runtime("resource-store"),
+    }];
+    if let Some((channel, message)) = &changes {
+        imports.push(CapabilityImport {
+            capability: format!("send:{channel}#{message}"),
+            provider: runtime("outbox"),
+        });
+        bindings.extend(sends_bindings(channel, message));
+    }
     PlannedUnit {
         symbol: op.id.clone(),
         role: "operation".into(),
@@ -663,12 +1331,27 @@ fn operation_unit(
         interface,
         implementation,
         dependencies: vec![],
-        imports: vec![CapabilityImport {
-            capability: format!("resource:{}#{}", r.id, storage_capability(&op.kind)),
-            provider: runtime("resource-store"),
-        }],
+        imports: sorted(imports),
         bindings: sorted(bindings),
         wit: None,
+        sources: vec![],
+        anchor: Some(r.id.clone()),
+    }
+}
+
+/// The message an operation publishes on its audited resource's implicit `<Resource>.changes`
+/// channel, as the runtime names it. `move` and the blob upload steps commit as updates.
+fn change_message(r: &Resource, kind: &str) -> Option<&'static str> {
+    if !r.decorators.audited {
+        return None;
+    }
+    match kind {
+        "create" => Some("Created"),
+        "update" | "move" | "beginUpload" | "finalizeUpload" => Some("Updated"),
+        "delete" => Some("Deleted"),
+        "restore" => Some("Restored"),
+        "transition" => Some("Transitioned"),
+        _ => None,
     }
 }
 
@@ -791,5 +1474,7 @@ fn workflow_unit(scope: &Scope, w: &Workflow, cf_binding: Option<&str>) -> Plann
         imports: sorted(imports),
         bindings: sorted(bindings),
         wit: None,
+        sources: vec![],
+        anchor: Some(w.id.clone()),
     }
 }
