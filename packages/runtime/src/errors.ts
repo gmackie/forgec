@@ -34,6 +34,7 @@ export const ERROR_STATUS: Record<string, { status: number; retryable: boolean; 
   BudgetExceeded: { status: 422, retryable: false, title: "Budget exceeded" },
   ProjectionNotReady: { status: 503, retryable: true, title: "Projection not ready" },
   NotPermitted: { status: 403, retryable: false, title: "Not permitted" },
+  CapabilityDenied: { status: 403, retryable: false, title: "Capability denied" },
   InspectionPending: { status: 409, retryable: true, title: "Content inspection pending" },
   InspectionBlocked: { status: 403, retryable: false, title: "Content blocked by inspection" },
   WriteFenced: { status: 503, retryable: true, title: "Writes fenced" },
@@ -55,6 +56,8 @@ export class ForgeError extends Data.TaggedError("ForgeError")<{
   constraint?: string;
   /** Structured, provider-specific detail (e.g. the physical atomic budget); never free text. */
   budget?: Record<string, number>;
+  /** `CapabilityDenied` only: what the gate refused and where. */
+  denial?: CapabilityDenial;
 }> {
   /** Declared domain errors (`<function id>.<Name>`) are 409 unless declared otherwise. */
   get status(): number {
@@ -77,6 +80,7 @@ export class ForgeError extends Data.TaggedError("ForgeError")<{
       ...(this.fields ? { fields: this.fields } : {}),
       ...(this.constraint ? { constraint: this.constraint } : {}),
       ...(this.budget ? { budget: this.budget } : {}),
+      ...(this.denial ? { capability: this.denial.capability, ...(this.denial.unit ? { unit: this.denial.unit } : {}), ...(this.denial.entryPoint ? { entryPoint: this.denial.entryPoint } : {}) } : {}),
     };
   }
 }
@@ -87,3 +91,56 @@ function kebab(s: string): string {
 
 export const err = (code: string, detail?: string, extra: { fields?: ProblemField[]; constraint?: string; budget?: Record<string, number> } = {}) =>
   new ForgeError({ code, ...(detail !== undefined ? { detail } : {}), ...extra });
+
+/**
+ * A capability gate's refusal (FORG-34): the closure was linked without the capability it reached
+ * for. `capability` names it in Closure Manifest terms where the gate can (`resource:<id>#write`,
+ * `binding:<type>:<name>`, `egress:<origin>`); `unit` and `entryPoint` say who reached, when known.
+ */
+export interface CapabilityDenial {
+  capability: string;
+  unit?: string;
+  entryPoint?: string;
+  detail?: string;
+}
+
+const DENIAL_MARK = "forge.capability-denied:";
+
+const denialDetail = (d: CapabilityDenial) => d.detail ?? `${d.capability} is not granted to ${d.entryPoint ?? d.unit ?? "this closure"}`;
+
+/** The 403 `CapabilityDenied` error for a denial. */
+export function capabilityDenied(d: CapabilityDenial): ForgeError {
+  const denial: CapabilityDenial = { capability: d.capability, ...(d.unit ? { unit: d.unit } : {}), ...(d.entryPoint ? { entryPoint: d.entryPoint } : {}) };
+  return new ForgeError({ code: "CapabilityDenied", detail: denialDetail(d), denial });
+}
+
+/**
+ * What a gate throws. A Workers RPC hop keeps only an error's message, and adapters may prefix it,
+ * so the denial travels in the message, after the readable detail; `asCapabilityDenied` recovers it.
+ */
+export function capabilityDeniedError(d: CapabilityDenial): Error {
+  const e = new Error(`${denialDetail(d)} ${DENIAL_MARK}${JSON.stringify(d)}`);
+  e.name = "CapabilityDenied";
+  return e;
+}
+
+/** The `CapabilityDenied` error `e` carries (thrown by a gate, possibly across RPC), or null. */
+export function asCapabilityDenied(e: unknown): ForgeError | null {
+  if (e instanceof ForgeError) return e.code === "CapabilityDenied" ? e : null;
+  const msg = e instanceof Error ? e.message : typeof e === "string" ? e : null;
+  const at = msg?.indexOf(DENIAL_MARK) ?? -1;
+  if (!msg || at < 0) return null;
+  const rest = msg.slice(at + DENIAL_MARK.length);
+  for (let end = rest.lastIndexOf("}"); end > 0; end = rest.lastIndexOf("}", end - 1)) {
+    try {
+      const d = JSON.parse(rest.slice(0, end + 1)) as Partial<CapabilityDenial>;
+      if (typeof d.capability === "string") return capabilityDenied({ capability: d.capability, ...(typeof d.unit === "string" ? { unit: d.unit } : {}), ...(typeof d.entryPoint === "string" ? { entryPoint: d.entryPoint } : {}), ...(typeof d.detail === "string" ? { detail: d.detail } : {}) });
+    } catch {
+      // not the end of the encoded denial; try an earlier brace
+    }
+  }
+  return capabilityDenied({ capability: "unknown" });
+}
+
+/** Maps a provider failure: a gate's denial stays a denial, anything else is `fallback`. */
+export const deniedOr = (e: unknown, fallback: () => ForgeError): ForgeError => asCapabilityDenied(e) ?? fallback();
