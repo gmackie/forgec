@@ -1,0 +1,414 @@
+{
+  "version": "t5-results/1",
+  "label": "local",
+  "measuredOn": {
+    "node": "v24.14.0",
+    "platform": "darwin 24.6.0 arm64",
+    "cpu": "Apple M2 Max",
+    "workerd": "miniflare@4.20260730.0 (bundled workerd)",
+    "transpiler": "@bytecodealliance/jco@1.39.0",
+    "component": {
+      "rustc": "1.97.1",
+      "wit-bindgen": "0.63.0",
+      "wasm-tools": "1.262.0"
+    },
+    "compatibilityDate": "2026-07-01"
+  },
+  "unit": {
+    "symbol": "@acme/pricing/_/QuoteOrder",
+    "interfaceHash": "sha256:b686c06be6925222376576b64d91ff56dbe6bd952bcaffdd4879bf0c0bd7fddc",
+    "unitHash": {
+      "wasm-component": "sha256:0b854f162f4a4facef1e5a7c4a95d83359adb38abe30d3fb587117ac9256233d",
+      "js-module": "sha256:7ba12e3cd0db55580c83a5f922657373e61baac7f78f66b828deae8109787733"
+    },
+    "implementationHash": {
+      "wasm-component": "sha256:14876cddb2744aaeede70e19281edbd34ed0c5de4359828b14ec9118e47bdee0",
+      "js-module": "sha256:42504b4863fa05be7442b5044bceabba985a9daf409397cf083174421cf4bd17"
+    },
+    "world": "sha256:d37359c580a9e7f13fd5dc195b5a98d08625fe50c2695a2fccb60d302f72bc84"
+  },
+  "sizes": {
+    "component": {
+      "raw": 24728,
+      "gzip": 11140
+    },
+    "transpiled": {
+      "default (linker setting: minified glue)": {
+        "glue": {
+          "raw": 47540,
+          "gzip": 13140
+        },
+        "core": {
+          "raw": 23831,
+          "gzip": 10675
+        },
+        "total": {
+          "raw": 71371,
+          "gzip": 23815
+        },
+        "coreModules": [
+          "unit.core.wasm"
+        ]
+      },
+      "unminified glue": {
+        "glue": {
+          "raw": 117318,
+          "gzip": 26099
+        },
+        "core": {
+          "raw": 23831,
+          "gzip": 10675
+        },
+        "total": {
+          "raw": 141149,
+          "gzip": 36774
+        },
+        "coreModules": [
+          "unit.core.wasm"
+        ]
+      },
+      "minified glue + wasm-opt": {
+        "glue": {
+          "raw": 47540,
+          "gzip": 13140
+        },
+        "core": {
+          "raw": 21135,
+          "gzip": 10103
+        },
+        "total": {
+          "raw": 68675,
+          "gzip": 23243
+        },
+        "coreModules": [
+          "unit.core.wasm"
+        ]
+      }
+    },
+    "workerModules": {
+      "wasm-component": {
+        "modules": {
+          "caller.js": {
+            "raw": 1032,
+            "gzip": 474
+          },
+          "bound.js": {
+            "raw": 8514,
+            "gzip": 2068
+          },
+          "unit.js": {
+            "raw": 47540,
+            "gzip": 13140
+          },
+          "unit.core.wasm": {
+            "raw": 23831,
+            "gzip": 10675
+          }
+        },
+        "total": {
+          "raw": 80917,
+          "gzip": 26357
+        }
+      },
+      "js-module": {
+        "modules": {
+          "caller.js": {
+            "raw": 1032,
+            "gzip": 474
+          },
+          "bound.js": {
+            "raw": 208814,
+            "gzip": 46452
+          }
+        },
+        "total": {
+          "raw": 209846,
+          "gzip": 46926
+        }
+      }
+    },
+    "jsUnitModule": {
+      "raw": 2488,
+      "gzip": 1122
+    },
+    "lowering": {
+      "raw": 3878,
+      "gzip": 693
+    },
+    "notes": [
+      "component: impl/quote-order.wasm as sealed (wasm32-unknown-unknown, opt-level s, LTO, panic=abort, stripped, no wasm-opt).",
+      "workerModules: what the harness linker uploads per variant. The js-module variant carries Effect (a shared library a real host would load once for all units); its unit module alone is jsUnitModule."
+    ],
+    "transpileDeterministic": true
+  },
+  "perCall": {
+    "workerd": {
+      "clockReadingsAllWholeMs": true,
+      "minReadingMs": 37,
+      "note": "Median of 7 runs of n calls inside one request; the in-Worker clock is coarse, so n is sized for >= tens of ms per run. Includes the caller's await per call.",
+      "1 line(s)": {
+        "payloadBytes": 121,
+        "iterations": 200000,
+        "wasm-component": {
+          "nsPerCallMedian": 3180,
+          "samplesNsPerCall": [
+            3455,
+            3460,
+            3280,
+            3180,
+            2950,
+            2965,
+            2920
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 755,
+          "samplesNsPerCall": [
+            770,
+            760,
+            750,
+            755,
+            845,
+            745,
+            745
+          ]
+        },
+        "plain-js-function": {
+          "nsPerCallMedian": 510,
+          "samplesNsPerCall": [
+            845,
+            820,
+            630,
+            505,
+            505,
+            510,
+            510
+          ]
+        },
+        "wasmOverJsModule": 4.21,
+        "wasmOverPlainJs": 6.24
+      },
+      "10 line(s)": {
+        "payloadBytes": 605,
+        "iterations": 20000,
+        "wasm-component": {
+          "nsPerCallMedian": 8100,
+          "samplesNsPerCall": [
+            8850,
+            8100,
+            8150,
+            8000,
+            8100,
+            8050,
+            8150
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 2100,
+          "samplesNsPerCall": [
+            2650,
+            2100,
+            2100,
+            2100,
+            2100,
+            2150,
+            2150
+          ]
+        },
+        "plain-js-function": {
+          "nsPerCallMedian": 1900,
+          "samplesNsPerCall": [
+            2300,
+            1900,
+            1900,
+            1900,
+            1900,
+            1850,
+            1900
+          ]
+        },
+        "wasmOverJsModule": 3.86,
+        "wasmOverPlainJs": 4.26
+      },
+      "100 line(s)": {
+        "payloadBytes": 5537,
+        "iterations": 2000,
+        "wasm-component": {
+          "nsPerCallMedian": 56500,
+          "samplesNsPerCall": [
+            63500,
+            56500,
+            55500,
+            56000,
+            57000,
+            56500,
+            56000
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 25000,
+          "samplesNsPerCall": [
+            30500,
+            25000,
+            25500,
+            25000,
+            25000,
+            25000,
+            24500
+          ]
+        },
+        "plain-js-function": {
+          "nsPerCallMedian": 24500,
+          "samplesNsPerCall": [
+            30000,
+            25000,
+            24500,
+            24500,
+            24000,
+            24500,
+            24500
+          ]
+        },
+        "wasmOverJsModule": 2.26,
+        "wasmOverPlainJs": 2.31
+      },
+      "1000 line(s)": {
+        "payloadBytes": 54827,
+        "iterations": 200,
+        "wasm-component": {
+          "nsPerCallMedian": 530000,
+          "samplesNsPerCall": [
+            595000,
+            535000,
+            515000,
+            515000,
+            525000,
+            535000,
+            530000
+          ]
+        },
+        "js-module": {
+          "nsPerCallMedian": 265000,
+          "samplesNsPerCall": [
+            320000,
+            265000,
+            265000,
+            260000,
+            260000,
+            265000,
+            260000
+          ]
+        },
+        "plain-js-function": {
+          "nsPerCallMedian": 270000,
+          "samplesNsPerCall": [
+            325000,
+            270000,
+            280000,
+            270000,
+            280000,
+            270000,
+            265000
+          ]
+        },
+        "wasmOverJsModule": 2,
+        "wasmOverPlainJs": 1.96
+      }
+    },
+    "node": {
+      "debugLogProbe": {
+        "note": "Glue + WASM only, 1 line, in Node: as shipped vs with the per-step JCO_DEBUG env read replaced by `false`. workerd without nodejs_compat has no process, so it does not pay this.",
+        "asShippedNs": 6071,
+        "envReadRemovedNs": 1908
+      },
+      "note": "Same glue and core module in Node's V8, to split the boundary: loweringAdapter = wire<->jco value conversion; jcoGlueAndWasm = canonical-ABI copy in the glue plus the computation.",
+      "1 line(s)": {
+        "iterations": 200000,
+        "wasmUnitNs": 6890,
+        "jcoGlueAndWasmNs": 6202,
+        "loweringAdapterNs": 688,
+        "plainJsNs": 532,
+        "wasmOverPlainJs": 12.95
+      },
+      "10 line(s)": {
+        "iterations": 20000,
+        "wasmUnitNs": 11981,
+        "jcoGlueAndWasmNs": 10017,
+        "loweringAdapterNs": 1964,
+        "plainJsNs": 2487,
+        "wasmOverPlainJs": 4.82
+      },
+      "100 line(s)": {
+        "iterations": 2000,
+        "wasmUnitNs": 59278,
+        "jcoGlueAndWasmNs": 40448,
+        "loweringAdapterNs": 18830,
+        "plainJsNs": 22103,
+        "wasmOverPlainJs": 2.68
+      },
+      "1000 line(s)": {
+        "iterations": 200,
+        "wasmUnitNs": 520384,
+        "jcoGlueAndWasmNs": 338961,
+        "loweringAdapterNs": 181423,
+        "plainJsNs": 207115,
+        "wasmOverPlainJs": 2.51
+      }
+    }
+  },
+  "instantiation": {
+    "workerdReadyMs": {
+      "samples": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
+      ],
+      "median": 0,
+      "note": "First instantiate() of the glue with the precompiled core module in a fresh isolate, by the in-Worker clock (ms resolution)."
+    },
+    "workerdFirstCallMs": {
+      "wasm-component": [
+        5,
+        2,
+        2,
+        2,
+        2
+      ],
+      "js-module": [
+        0,
+        1,
+        1,
+        0,
+        1
+      ]
+    },
+    "nodeCompileCoreMs": {
+      "median": 0.085,
+      "note": "WebAssembly.compile of the core module. A Worker gets it precompiled as a module import; this is the work deploy/upload pays."
+    },
+    "nodeInstantiateMs": {
+      "median": 0.151,
+      "p90": 0.181
+    },
+    "nodeFirstCallMs": {
+      "median": 0.102
+    }
+  },
+  "missing": [
+    "Deployed Cloudflare Workers numbers (cold start, CPU time per call, isolate memory): not measured; everything here is local.",
+    "Script-size effect on real cold start across a closure of many units.",
+    "Calls that cross capability imports (WASM -> host handles): the T5 unit is pure and the harness does not wire imports yet.",
+    "componentize-js or other non-Rust component sources."
+  ],
+  "caller": {
+    "bytes": 1032,
+    "identicalForBothKinds": true
+  }
+}
