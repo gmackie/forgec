@@ -1,0 +1,114 @@
+{
+  "source": "examples/acme sealed on main 0f8a3e4 (before FORG-33) with forgec build --units and @forgegraph/units, 2026-10-24",
+  "manifestHash": "sha256:bcb22196f83b35784ad66f63c6e6a8d328ba13f31bb9c60ed6fb494efee518ff",
+  "units": {
+    "total": 56,
+    "byRole": {
+      "external": 1,
+      "function": 3,
+      "operation": 51,
+      "workflow": 1
+    },
+    "byKind": {
+      "forge-native": 52,
+      "js-module": 4
+    }
+  },
+  "entryPoints": {
+    "total": 64,
+    "byKind": {
+      "cron": 2,
+      "durable-object": 1,
+      "http-route": 55,
+      "queue-consumer": 1,
+      "workflow": 1,
+      "workflow-step": 4
+    },
+    "rooted": 60
+  },
+  "servedByRuntimeAlone": [
+    "ForgeRealtime (realtime-fanout)",
+    "GET /v1/workflows/process-order/{id} (workflow-instances)",
+    "POST /v1/workflows/process-order/{id}/cancel (workflow-instances)",
+    "forge:sweep (outbox-and-workflow-sweep)"
+  ],
+  "uncovered": [
+    "view @acme/commerce/_/PendingOrders",
+    "projection @acme/commerce/_/CustomerOrderSummary",
+    "cache @acme/commerce/_/CurrentSitePolicy",
+    "schedule-routes @acme/commerce/_/NightlyReconciliation"
+  ],
+  "hostBindings": [
+    "DB",
+    "CURSOR_SECRET",
+    "FORGE_AUTH"
+  ],
+  "cancelRouteBindings": [
+    {
+      "id": "POST /v1/workflows/process-order/{id}/cancel",
+      "bindings": []
+    }
+  ],
+  "sources": {
+    "unitsWithDeclaration": 0,
+    "unitsWithBody": 0,
+    "unitsWithout": [
+      "@acme/commerce/_/Customer.create",
+      "@acme/commerce/_/Customer.delete",
+      "@acme/commerce/_/Customer.find.byCode",
+      "@acme/commerce/_/Customer.get",
+      "@acme/commerce/_/Customer.list.all",
+      "@acme/commerce/_/Customer.list.byTier",
+      "@acme/commerce/_/Customer.restore",
+      "@acme/commerce/_/Customer.update",
+      "@acme/commerce/_/Department.ancestors",
+      "@acme/commerce/_/Department.children",
+      "@acme/commerce/_/Department.create",
+      "@acme/commerce/_/Department.delete",
+      "@acme/commerce/_/Department.get",
+      "@acme/commerce/_/Department.list.all",
+      "@acme/commerce/_/Department.list.byCustomer",
+      "@acme/commerce/_/Department.move",
+      "@acme/commerce/_/Department.update",
+      "@acme/commerce/_/FulfillOrder",
+      "@acme/commerce/_/Order.create",
+      "@acme/commerce/_/Order.delete",
+      "@acme/commerce/_/Order.get",
+      "@acme/commerce/_/Order.list.all",
+      "@acme/commerce/_/Order.list.byCustomer",
+      "@acme/commerce/_/Order.list.bySiteStatus",
+      "@acme/commerce/_/Order.status.approve",
+      "@acme/commerce/_/Order.status.cancel",
+      "@acme/commerce/_/Order.status.complete",
+      "@acme/commerce/_/Order.status.submit",
+      "@acme/commerce/_/Order.update",
+      "@acme/commerce/_/OrderDocument.beginUpload",
+      "@acme/commerce/_/OrderDocument.create",
+      "@acme/commerce/_/OrderDocument.delete",
+      "@acme/commerce/_/OrderDocument.download",
+      "@acme/commerce/_/OrderDocument.finalizeUpload",
+      "@acme/commerce/_/OrderDocument.get",
+      "@acme/commerce/_/OrderDocument.list.all",
+      "@acme/commerce/_/OrderDocument.list.byOrder",
+      "@acme/commerce/_/OrderDocument.update",
+      "@acme/commerce/_/ProcessOrder",
+      "@acme/commerce/_/RebuildOrderSummary",
+      "@acme/commerce/_/Site.create",
+      "@acme/commerce/_/Site.delete",
+      "@acme/commerce/_/Site.find.byCustomerCode",
+      "@acme/commerce/_/Site.get",
+      "@acme/commerce/_/Site.list.all",
+      "@acme/commerce/_/Site.list.byCustomer",
+      "@acme/commerce/_/Site.update",
+      "@acme/commerce/_/SitePolicy.create",
+      "@acme/commerce/_/SitePolicy.delete",
+      "@acme/commerce/_/SitePolicy.effective.bySite",
+      "@acme/commerce/_/SitePolicy.get",
+      "@acme/commerce/_/SitePolicy.list.all",
+      "@acme/commerce/_/SitePolicy.list.bySite",
+      "@acme/commerce/_/SitePolicy.update",
+      "@acme/commerce/_/SubmitOrder",
+      "@acme/payments/_/AuthorizePayment"
+    ]
+  }
+}

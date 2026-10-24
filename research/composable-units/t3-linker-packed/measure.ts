@@ -1,7 +1,8 @@
 // FORG-29 measurements for linker A over examples/acme. Run from the repository root after
 // `cargo build -p forgegraph-cli` and building the runtime (see run.sh):
 //   node research/composable-units/t3-linker-packed/measure.ts
-// Writes results/sizes.json and results/edits.json. Everything here is measured on this machine;
+// Writes results/sizes.json and results/edits.json (or under $LINK_RESULTS, which r2-coverage/run.sh
+// sets so a re-run does not overwrite this spike's record). Everything here is measured on this machine;
 // nothing is estimated (the README labels estimates separately).
 import { execFileSync } from "node:child_process";
 import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -13,6 +14,7 @@ import { bundleWholeApp } from "./baseline.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
 const here = import.meta.dirname;
+const resultsDir = resolve(process.env["LINK_RESULTS"] ?? join(here, "results"));
 const forgec = join(root, "target/debug/forgec");
 const scratch: string[] = [];
 const STRATEGIES = ["single", "per-entry-point"] as const;
@@ -74,7 +76,7 @@ function summarize(l: Link & { linkMs: number }) {
     gzip: stats(scripts.map((s) => s.gzip)),
     deployRaw: scripts.reduce((n, s) => n + s.raw, 0) + (l.router?.bytes?.raw ?? 0),
     deployGzip: scripts.reduce((n, s) => n + s.gzip, 0) + (l.router?.bytes?.gzip ?? 0),
-    appJsonSlice: { sliced: sliced.length, fallback: scripts.length - sliced.length, slicedBytes: stats(sliced.map((s) => s.appJson.bytes)) },
+    appJsonSlice: { sliced: sliced.length, whole: scripts.filter((s) => s.appJson.mode === "whole").length, fallback: scripts.filter((s) => s.appJson.mode === "fallback").length, slicedBytes: stats(sliced.map((s) => s.appJson.bytes)) },
     warnings: [...new Set(l.scripts.flatMap((s) => s.capabilities.warnings))],
     perScript: scripts,
   };
@@ -133,7 +135,7 @@ try {
       strategies: Object.fromEntries(STRATEGIES.map((s) => [s, summarize(base.links[s]!)])),
     },
   };
-  writeFileSync(join(here, "results/sizes.json"), stableJson(sizes));
+  writeFileSync(join(resultsDir, "sizes.json"), stableJson(sizes));
 
   // Edit 1: one unit's body (T2's edit). Edit 2: a documentation-only edit to a .forge declaration.
   const bodyEdit = await buildAndLink(
@@ -160,7 +162,7 @@ try {
       "doc only: src/customers/customer.forge `///` comment on Customer": editDiff(base, docEdit),
     },
   };
-  writeFileSync(join(here, "results/edits.json"), stableJson(edits));
+  writeFileSync(join(resultsDir, "edits.json"), stableJson(edits));
   const pe = sizes.measured.strategies["per-entry-point"];
   console.log(JSON.stringify({ wholeApp: wholeApp.bytes, single: sizes.measured.strategies.single.raw, perEntryPoint: { scripts: pe.scripts, raw: pe.raw, gzip: pe.gzip } }));
   console.log(JSON.stringify(edits.measured, (k, v) => (k === "otherwise" || k === "becauseAClosureMoved" ? (Array.isArray(v) ? v.length : v) : v)));

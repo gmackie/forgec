@@ -5,6 +5,14 @@ The linker is `packages/linker-packed`. It reads a sealed Closure Manifest and w
 scripts. Each script holds one closure group's unit modules, a slice of `app.json`, and a thin host
 that passes the runtime only the manifest's declared bindings.
 
+> **Addendum (FORG-33, 2026-10-24).** Fallbacks 1 and 2, open question 4 and finding 4's cancel
+> and `FORGE_CORS` gaps are resolved: the planner now owns entry points for every residual surface
+> and roots the sweep at a dispatch unit. Per-entry-point linking produces no whole-app fallback
+> script; the residual is an empty slice and the sweep is sliced. `measure.ts` and
+> `test/differential.test.ts` take `LINK_RESULTS` so the re-run writes to
+> [`../r2-coverage/results/linker-packed/`](../r2-coverage/README.md) and the numbers below stay T3's
+> record.
+
 ## Reproduce
 
 ```sh

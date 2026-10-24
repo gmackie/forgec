@@ -1,0 +1,609 @@
+{
+  "version": "t3-linker-differential/1",
+  "issue": "FORG-29",
+  "measured": true,
+  "harness": {
+    "runtime": "workerd via Miniflare (one instance per target, in-memory D1/R2/Queues/Workflows/DOs)",
+    "compatibilityDate": "2026-09-01",
+    "explainedKeys": [
+      "at",
+      "cursor",
+      "endedAt",
+      "freshUntil",
+      "generation",
+      "lastEventAt",
+      "loadedAt",
+      "next",
+      "physicalActions",
+      "physicalLimit",
+      "requestId",
+      "startedAt"
+    ]
+  },
+  "targets": [
+    {
+      "name": "whole-app",
+      "describe": "today's Worker: deploy/cloudflare/worker.ts with the whole app.json",
+      "scripts": 1,
+      "startupMs": 820,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    },
+    {
+      "name": "whole-app-repeat",
+      "describe": "A/A control: today's Worker again, fresh instance; its differences from whole-app are run-to-run nondeterminism",
+      "scripts": 1,
+      "startupMs": 1017,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    },
+    {
+      "name": "single",
+      "describe": "linker A, strategy single: one script rebuilt from the manifest",
+      "scripts": 1,
+      "startupMs": 983,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    },
+    {
+      "name": "per-entry-point",
+      "describe": "linker A, strategy per-entry-point, sliced app.json, router + dispatch owner",
+      "scripts": 88,
+      "startupMs": 6527,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    },
+    {
+      "name": "per-entry-point-full",
+      "describe": "control: per-entry-point with the whole app.json in every script (separates splitting from slicing)",
+      "scripts": 88,
+      "startupMs": 8989,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    }
+  ],
+  "differential": [
+    {
+      "a": "whole-app",
+      "b": "whole-app-repeat",
+      "compared": 221,
+      "explained": 101,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    },
+    {
+      "a": "whole-app",
+      "b": "single",
+      "compared": 221,
+      "explained": 89,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    },
+    {
+      "a": "whole-app",
+      "b": "per-entry-point",
+      "compared": 221,
+      "explained": 100,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "race",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    },
+    {
+      "a": "whole-app",
+      "b": "per-entry-point-full",
+      "compared": 221,
+      "explained": 100,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "race",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    }
+  ]
+}

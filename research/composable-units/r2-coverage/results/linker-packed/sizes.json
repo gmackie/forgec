@@ -1,0 +1,3286 @@
+{
+  "issue": "FORG-29",
+  "measured": {
+    "bundling": "esbuild, minified, format esm, platform neutral, conditions source/workerd/worker/browser/import, cloudflare:* and node:* external; gzip -9",
+    "manifestHash": "sha256:fe04b7efb1e71a43663c68904a797c9d5d4c2057fc4fdba22a864d35b5a8ff0f",
+    "strategies": {
+      "per-entry-point": {
+        "appJsonSlice": {
+          "fallback": 0,
+          "sliced": 84,
+          "slicedBytes": {
+            "count": 84,
+            "max": 85528,
+            "median": 49768,
+            "min": 5671,
+            "total": 4144050
+          },
+          "whole": 3
+        },
+        "deployGzip": 8855951,
+        "deployRaw": 30725254,
+        "gzip": {
+          "count": 87,
+          "max": 114215,
+          "median": 101494,
+          "min": 97977,
+          "total": 8854018
+        },
+        "linkMs": 26848,
+        "perScript": [
+          {
+            "appJson": {
+              "bytes": 50109,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "0 3 * * *",
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 44103,
+              "effect": 92421,
+              "entry": 282,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 78
+            },
+            "dispatch": "forward",
+            "gzip": 101580,
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation"
+            ],
+            "modules": 1,
+            "name": "acme-commerce-nightlyreconciliation-04c042",
+            "raw": 347117,
+            "units": 2,
+            "unusedBindings": [
+              "0 3 * * *"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 63594,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "*/5 * * * *",
+              "DB",
+              "REALTIME",
+              "Q_FULFILL_ORDER",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS",
+              "WF_PROCESS_ORDER"
+            ],
+            "composition": {
+              "app.json": 56072,
+              "effect": 92421,
+              "entry": 359,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 992
+            },
+            "dispatch": "local",
+            "gzip": 103971,
+            "members": [
+              "forge:sweep",
+              "projection:CustomerOrderSummary"
+            ],
+            "modules": 3,
+            "name": "acme-commerce-forge-sweep-24ec0b",
+            "raw": 360077,
+            "units": 12,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 50911,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "REALTIME",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 44734,
+              "effect": 92421,
+              "entry": 370,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101589,
+            "members": [
+              "ForgeRealtime"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-forgerealtime-90f206",
+            "raw": 347731,
+            "units": 0,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 60287,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 53067,
+              "effect": 92421,
+              "entry": 451,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101721,
+            "members": [
+              "DELETE /v1/customers/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-delete-v1-customers-id-865077",
+            "raw": 356125,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 461,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99998,
+            "members": [
+              "DELETE /v1/departments/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-delete-v1-departments-id-f492ac",
+            "raw": 329442,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 481,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102059,
+            "members": [
+              "DELETE /v1/order-documents/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-delete-v1-order-documents-id-4182d4",
+            "raw": 357760,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 436,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102058,
+            "members": [
+              "DELETE /v1/orders/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-delete-v1-orders-id-8f6f3d",
+            "raw": 357715,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 41647,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 471,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100726,
+            "members": [
+              "DELETE /v1/site-policies/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-delete-v1-site-policies-id-6ff684",
+            "raw": 339671,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 60438,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 53161,
+              "effect": 92421,
+              "entry": 431,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101834,
+            "members": [
+              "DELETE /v1/sites/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-delete-v1-sites-id-8ab91c",
+            "raw": 356199,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 5671,
+              "mode": "slice",
+              "resources": []
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 5007,
+              "effect": 92421,
+              "entry": 426,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 97977,
+            "members": [
+              "GET /_forge/objects/{token}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-forge-objects-token-ee9303",
+            "raw": 308040,
+            "units": 0,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 258265,
+              "fallbackReason": "contract metadata (discovery, OpenAPI, record workspace) publishes the whole contract",
+              "mode": "whole",
+              "resources": []
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 233009,
+              "effect": 92421,
+              "entry": 354,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 114210,
+            "members": [
+              "GET /forge/discovery"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-forge-discovery-102862",
+            "raw": 535970,
+            "units": 0,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 258265,
+              "fallbackReason": "contract metadata (discovery, OpenAPI, record workspace) publishes the whole contract",
+              "mode": "whole",
+              "resources": []
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 233009,
+              "effect": 92421,
+              "entry": 363,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 114215,
+            "members": [
+              "GET /forge/openapi.json"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-forge-openapi-json-dd823b",
+            "raw": 535979,
+            "units": 0,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 258265,
+              "fallbackReason": "contract metadata (discovery, OpenAPI, record workspace) publishes the whole contract",
+              "mode": "whole",
+              "resources": []
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 233009,
+              "effect": 92421,
+              "entry": 369,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 114215,
+            "members": [
+              "GET /forge/workspace.json"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-forge-workspace-json-cd5a71",
+            "raw": 535985,
+            "units": 0,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 42538,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 37388,
+              "effect": 92421,
+              "entry": 396,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100936,
+            "members": [
+              "GET /v1/caches/current-site-policy"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea",
+            "raw": 340391,
+            "units": 2,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 369,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103193,
+            "members": [
+              "GET /v1/changesets/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-changesets-id-03c07e",
+            "raw": 378310,
+            "units": 52,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 393,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103204,
+            "members": [
+              "GET /v1/changesets/{id}/preview"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-changesets-id-preview-3d7025",
+            "raw": 378334,
+            "units": 52,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 49768,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 43808,
+              "effect": 92421,
+              "entry": 411,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101496,
+            "members": [
+              "GET /v1/customer-order-summaries/status"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-customer-order-summaries-status-312396",
+            "raw": 346826,
+            "units": 2,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 49768,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 43808,
+              "effect": 92421,
+              "entry": 403,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101494,
+            "members": [
+              "GET /v1/customer-order-summaries/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-customer-order-summaries-id-06679c",
+            "raw": 346818,
+            "units": 2,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 18280,
+              "mode": "slice",
+              "resources": [
+                "Customer"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 382,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99438,
+            "members": [
+              "GET /v1/customers"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-customers-5bc671",
+            "raw": 319079,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 18280,
+              "mode": "slice",
+              "resources": [
+                "Customer"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 393,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99439,
+            "members": [
+              "GET /v1/customers/queries/by-code"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-customers-queries-by-code-de4fe5",
+            "raw": 319090,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 18280,
+              "mode": "slice",
+              "resources": [
+                "Customer"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 393,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99439,
+            "members": [
+              "GET /v1/customers/queries/by-tier"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-customers-queries-by-tier-33dddc",
+            "raw": 319090,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 18280,
+              "mode": "slice",
+              "resources": [
+                "Customer"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 445,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99447,
+            "members": [
+              "GET /v1/customers/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-customers-id-859df7",
+            "raw": 319142,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 390,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99992,
+            "members": [
+              "GET /v1/departments"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-departments-5a7635",
+            "raw": 329371,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 411,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99994,
+            "members": [
+              "GET /v1/departments/queries/by-customer"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-departments-queries-by-customer-9931ae",
+            "raw": 329392,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 455,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100001,
+            "members": [
+              "GET /v1/departments/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-departments-id-94b682",
+            "raw": 329436,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 394,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99992,
+            "members": [
+              "GET /v1/departments/{id}/ancestors"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-departments-id-ancestors-e358ff",
+            "raw": 329375,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 391,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99992,
+            "members": [
+              "GET /v1/departments/{id}/children"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-departments-id-children-419b77",
+            "raw": 329372,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 50911,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "REALTIME",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 44734,
+              "effect": 92421,
+              "entry": 362,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101531,
+            "members": [
+              "GET /v1/live/orders"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-live-orders-c072a7",
+            "raw": 347703,
+            "units": 0,
+            "unusedBindings": [
+              "REALTIME"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 406,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102052,
+            "members": [
+              "GET /v1/order-documents"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-order-documents-7008be",
+            "raw": 357685,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 414,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102054,
+            "members": [
+              "GET /v1/order-documents/queries/by-order"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-order-documents-queries-by-order-e2499a",
+            "raw": 357693,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 475,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102060,
+            "members": [
+              "GET /v1/order-documents/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-order-documents-id-e9b35d",
+            "raw": 357754,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 408,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102061,
+            "members": [
+              "GET /v1/order-documents/{id}/content"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-order-documents-id-content-d0b378",
+            "raw": 357687,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 370,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101272,
+            "members": [
+              "GET /v1/orders"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-orders-ba0b2c",
+            "raw": 345760,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 396,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101273,
+            "members": [
+              "GET /v1/orders/queries/by-customer"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-orders-queries-by-customer-ed5c4c",
+            "raw": 345786,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 405,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101274,
+            "members": [
+              "GET /v1/orders/queries/by-site-status"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-orders-queries-by-site-status-c57bcb",
+            "raw": 345795,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 430,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101280,
+            "members": [
+              "GET /v1/orders/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-orders-id-2d0e31",
+            "raw": 345820,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 50109,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 44103,
+              "effect": 92421,
+              "entry": 414,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101530,
+            "members": [
+              "GET /v1/schedules/nightly-reconciliation"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-95bbdb",
+            "raw": 347124,
+            "units": 0,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 41647,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 398,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100717,
+            "members": [
+              "GET /v1/site-policies"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-site-policies-e6b603",
+            "raw": 339598,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 41647,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 411,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100720,
+            "members": [
+              "GET /v1/site-policies/effective/by-site"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-site-policies-effective-by-site-4b1aed",
+            "raw": 339611,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 41647,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 405,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100721,
+            "members": [
+              "GET /v1/site-policies/queries/by-site"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-site-policies-queries-by-site-c0df71",
+            "raw": 339605,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 41647,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 465,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100728,
+            "members": [
+              "GET /v1/site-policies/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-site-policies-id-db0b1f",
+            "raw": 339665,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29858,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 366,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99986,
+            "members": [
+              "GET /v1/sites"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-sites-a9083b",
+            "raw": 329188,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29858,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 393,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99987,
+            "members": [
+              "GET /v1/sites/queries/by-customer"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-b2abb6",
+            "raw": 329215,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29858,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 408,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99988,
+            "members": [
+              "GET /v1/sites/queries/by-customer-code"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-sites-queries-by-customer-code-a50f4f",
+            "raw": 329230,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29858,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 425,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99994,
+            "members": [
+              "GET /v1/sites/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-sites-id-18c7c2",
+            "raw": 329247,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 49867,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 43888,
+              "effect": 92421,
+              "entry": 378,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101408,
+            "members": [
+              "GET /v1/views/pending-orders"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-views-pending-orders-7c7782",
+            "raw": 346873,
+            "units": 2,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 61085,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 400,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102946,
+            "members": [
+              "GET /v1/workflows/process-order/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-get-v1-workflows-process-order-id-76eb96",
+            "raw": 356773,
+            "units": 0,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 18280,
+              "mode": "slice",
+              "resources": [
+                "Customer"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 449,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99445,
+            "members": [
+              "PATCH /v1/customers/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-patch-v1-customers-id-a19e97",
+            "raw": 319146,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 459,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99999,
+            "members": [
+              "PATCH /v1/departments/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-patch-v1-departments-id-93fb26",
+            "raw": 329440,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 479,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102060,
+            "members": [
+              "PATCH /v1/order-documents/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-patch-v1-order-documents-id-f2787a",
+            "raw": 357758,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 434,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101280,
+            "members": [
+              "PATCH /v1/orders/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-patch-v1-orders-id-c8bd2f",
+            "raw": 345824,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 41647,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 469,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100726,
+            "members": [
+              "PATCH /v1/site-policies/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-patch-v1-site-policies-id-25dc21",
+            "raw": 339669,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29858,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 429,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99993,
+            "members": [
+              "PATCH /v1/sites/{id}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-patch-v1-sites-id-f8a7c7",
+            "raw": 329251,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 365,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103196,
+            "members": [
+              "POST /v1/admin/export"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-admin-export-e88510",
+            "raw": 378306,
+            "units": 14,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 362,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103197,
+            "members": [
+              "POST /v1/admin/fence"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-admin-fence-cfcde5",
+            "raw": 378303,
+            "units": 14,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 365,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103198,
+            "members": [
+              "POST /v1/admin/import"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-admin-import-6d6745",
+            "raw": 378306,
+            "units": 14,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 368,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103199,
+            "members": [
+              "POST /v1/admin/inspect"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-admin-inspect-7d553f",
+            "raw": 378309,
+            "units": 14,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 392,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103209,
+            "members": [
+              "POST /v1/admin/subjects/locate"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-admin-subjects-locate-99dbef",
+            "raw": 378333,
+            "units": 14,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 365,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103199,
+            "members": [
+              "POST /v1/admin/verify"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-admin-verify-760020",
+            "raw": 378306,
+            "units": 14,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 359,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103191,
+            "members": [
+              "POST /v1/changesets"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-changesets-d4dc90",
+            "raw": 378300,
+            "units": 52,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 396,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103206,
+            "members": [
+              "POST /v1/changesets/{id}/approve"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-changesets-id-approve-c1a763",
+            "raw": 378337,
+            "units": 52,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 393,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103204,
+            "members": [
+              "POST /v1/changesets/{id}/commit"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-changesets-id-commit-ec9a99",
+            "raw": 378334,
+            "units": 52,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 49768,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 43808,
+              "effect": 92421,
+              "entry": 417,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101501,
+            "members": [
+              "POST /v1/customer-order-summaries/rebuild"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-customer-order-summaries-rebuild-0a84e8",
+            "raw": 346832,
+            "units": 2,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 18280,
+              "mode": "slice",
+              "resources": [
+                "Customer"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 384,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99439,
+            "members": [
+              "POST /v1/customers"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-customers-b01b8e",
+            "raw": 319081,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 18280,
+              "mode": "slice",
+              "resources": [
+                "Customer"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 16090,
+              "effect": 92421,
+              "entry": 385,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99439,
+            "members": [
+              "POST /v1/customers/{id}/restore"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-customers-id-restore-c67045",
+            "raw": 319082,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 392,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99993,
+            "members": [
+              "POST /v1/departments"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-departments-965f9d",
+            "raw": 329373,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29918,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26374,
+              "effect": 92421,
+              "entry": 382,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99993,
+            "members": [
+              "POST /v1/departments/{id}/move"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-departments-id-move-24a6b1",
+            "raw": 329363,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 374,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103200,
+            "members": [
+              "POST /v1/imports/inspect"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-imports-inspect-ff77f4",
+            "raw": 378315,
+            "units": 53,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 85528,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Department",
+                "Order",
+                "OrderDocument",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 75334,
+              "effect": 92421,
+              "entry": 368,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 103197,
+            "members": [
+              "POST /v1/imports/stage"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-imports-stage-865a08",
+            "raw": 378309,
+            "units": 53,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 408,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102054,
+            "members": [
+              "POST /v1/order-documents"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-order-documents-dcce15",
+            "raw": 357687,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 414,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102062,
+            "members": [
+              "POST /v1/order-documents/{id}/finalize"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-order-documents-id-finalize-99d42d",
+            "raw": 357693,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 62101,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "OrderDocument",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 54672,
+              "effect": 92421,
+              "entry": 408,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102062,
+            "members": [
+              "POST /v1/order-documents/{id}/upload"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-order-documents-id-upload-6608dc",
+            "raw": 357687,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 372,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101274,
+            "members": [
+              "POST /v1/orders"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-orders-292d83",
+            "raw": 345762,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 400,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101277,
+            "members": [
+              "POST /v1/orders/{id}/actions/approve"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-orders-id-actions-approve-311eae",
+            "raw": 345790,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 397,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101278,
+            "members": [
+              "POST /v1/orders/{id}/actions/cancel"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-orders-id-actions-cancel-f293bb",
+            "raw": 345787,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 48649,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 42783,
+              "effect": 92421,
+              "entry": 403,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 101278,
+            "members": [
+              "POST /v1/orders/{id}/actions/complete"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-orders-id-actions-complete-2b8d43",
+            "raw": 345793,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 61085,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "REALTIME",
+              "Q_FULFILL_ORDER",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS",
+              "WF_PROCESS_ORDER"
+            ],
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 476,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 992
+            },
+            "dispatch": "forward",
+            "gzip": 103442,
+            "members": [
+              "POST /v1/orders/{order}/process"
+            ],
+            "modules": 3,
+            "name": "acme-commerce-post-v1-orders-order-process-745789",
+            "raw": 357888,
+            "units": 7,
+            "unusedBindings": [
+              "REALTIME",
+              "Q_FULFILL_ORDER"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 52930,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "REALTIME",
+              "Q_FULFILL_ORDER",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 46528,
+              "effect": 92421,
+              "entry": 451,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 914
+            },
+            "dispatch": "forward",
+            "gzip": 102147,
+            "members": [
+              "POST /v1/orders/{order}/submit"
+            ],
+            "modules": 2,
+            "name": "acme-commerce-post-v1-orders-order-submit-19d055",
+            "raw": 350547,
+            "units": 3,
+            "unusedBindings": [
+              "REALTIME",
+              "Q_FULFILL_ORDER"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 50109,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 44103,
+              "effect": 92421,
+              "entry": 431,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 78
+            },
+            "dispatch": "forward",
+            "gzip": 101608,
+            "members": [
+              "POST /v1/schedules/nightly-reconciliation/tick"
+            ],
+            "modules": 1,
+            "name": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1",
+            "raw": 347266,
+            "units": 3,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 41647,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site",
+                "SitePolicy"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 36593,
+              "effect": 92421,
+              "entry": 400,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 100719,
+            "members": [
+              "POST /v1/site-policies"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-site-policies-e288dc",
+            "raw": 339600,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 29858,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 26215,
+              "effect": 92421,
+              "entry": 368,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 99987,
+            "members": [
+              "POST /v1/sites"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-sites-985075",
+            "raw": 329190,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 61085,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "REALTIME",
+              "Q_FULFILL_ORDER",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS",
+              "WF_PROCESS_ORDER"
+            ],
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 528,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 992
+            },
+            "dispatch": "forward",
+            "gzip": 103461,
+            "members": [
+              "POST /v1/workflows/process-order/signals/{message}"
+            ],
+            "modules": 3,
+            "name": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+            "raw": 357940,
+            "units": 7,
+            "unusedBindings": [
+              "REALTIME",
+              "Q_FULFILL_ORDER"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 61085,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS",
+              "WF_PROCESS_ORDER"
+            ],
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 443,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 102956,
+            "members": [
+              "POST /v1/workflows/process-order/{id}/cancel"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-post-v1-workflows-process-order-id-cancel-4ffe45",
+            "raw": 356816,
+            "units": 0,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 5671,
+              "mode": "slice",
+              "resources": []
+            },
+            "bindings": [
+              "DB",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 5007,
+              "effect": 92421,
+              "entry": 426,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 97979,
+            "members": [
+              "PUT /_forge/objects/{token}"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-put-forge-objects-token-e15b5c",
+            "raw": 308040,
+            "units": 0,
+            "unusedBindings": [
+              "BLOBS"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 51891,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "forge-acme-commerce-fulfill-order",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 45609,
+              "effect": 92421,
+              "entry": 274,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 124
+            },
+            "dispatch": "forward",
+            "gzip": 101633,
+            "members": [
+              "fulfill-order"
+            ],
+            "modules": 1,
+            "name": "acme-commerce-fulfill-order-4ca05b",
+            "raw": 348661,
+            "units": 1,
+            "unusedBindings": []
+          },
+          {
+            "appJson": {
+              "bytes": 61085,
+              "mode": "slice",
+              "resources": [
+                "Customer",
+                "Order",
+                "Site"
+              ]
+            },
+            "bindings": [
+              "DB",
+              "REALTIME",
+              "Q_FULFILL_ORDER",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS",
+              "WF_PROCESS_ORDER"
+            ],
+            "composition": {
+              "app.json": 53766,
+              "effect": 92421,
+              "entry": 454,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 992
+            },
+            "dispatch": "forward",
+            "gzip": 103486,
+            "members": [
+              "@acme/commerce/_/ProcessOrder",
+              "@acme/commerce/_/ProcessOrder#approve",
+              "@acme/commerce/_/ProcessOrder#short",
+              "@acme/commerce/_/ProcessOrder#submit",
+              "@acme/commerce/_/ProcessOrder#summary"
+            ],
+            "modules": 3,
+            "name": "acme-commerce-processorder-c5fc00",
+            "raw": 357893,
+            "units": 7,
+            "unusedBindings": [
+              "REALTIME",
+              "Q_FULFILL_ORDER"
+            ]
+          },
+          {
+            "appJson": {
+              "bytes": 5671,
+              "mode": "slice",
+              "resources": []
+            },
+            "bindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ],
+            "composition": {
+              "app.json": 5007,
+              "effect": 92421,
+              "entry": 4097,
+              "host": 2097,
+              "runtime": 207973
+            },
+            "dispatch": "forward",
+            "gzip": 98459,
+            "members": [
+              "forge:residual"
+            ],
+            "modules": 0,
+            "name": "acme-commerce-forge-residual-8b7058",
+            "raw": 311711,
+            "units": 0,
+            "unusedBindings": [
+              "DB",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS"
+            ]
+          }
+        ],
+        "raw": {
+          "count": 87,
+          "max": 535985,
+          "median": 346826,
+          "min": 308040,
+          "total": 30717677
+        },
+        "router": {
+          "gzip": 1933,
+          "raw": 7577,
+          "routes": 81
+        },
+        "scripts": 87,
+        "strategy": "per-entry-point",
+        "warnings": []
+      },
+      "single": {
+        "appJsonSlice": {
+          "fallback": 0,
+          "sliced": 0,
+          "slicedBytes": {
+            "count": 0,
+            "max": 0,
+            "median": 0,
+            "min": 0,
+            "total": 0
+          },
+          "whole": 1
+        },
+        "deployGzip": 114899,
+        "deployRaw": 537330,
+        "gzip": {
+          "count": 1,
+          "max": 114899,
+          "median": 114899,
+          "min": 114899,
+          "total": 114899
+        },
+        "linkMs": 753,
+        "perScript": [
+          {
+            "appJson": {
+              "bytes": 258265,
+              "fallbackReason": "contract metadata (discovery, OpenAPI, record workspace) publishes the whole contract",
+              "mode": "whole",
+              "resources": []
+            },
+            "bindings": [
+              "*/5 * * * *",
+              "0 3 * * *",
+              "DB",
+              "REALTIME",
+              "forge-acme-commerce-fulfill-order",
+              "Q_FULFILL_ORDER",
+              "BLOBS",
+              "CURSOR_SECRET",
+              "FORGE_AUTH",
+              "FORGE_CORS",
+              "WF_PROCESS_ORDER"
+            ],
+            "composition": {
+              "app.json": 233009,
+              "effect": 92421,
+              "entry": 504,
+              "host": 2097,
+              "runtime": 208020,
+              "units": 1116
+            },
+            "dispatch": "local",
+            "gzip": 114899,
+            "members": [
+              "@acme/commerce/_/NightlyReconciliation",
+              "@acme/commerce/_/ProcessOrder",
+              "@acme/commerce/_/ProcessOrder#approve",
+              "@acme/commerce/_/ProcessOrder#short",
+              "@acme/commerce/_/ProcessOrder#submit",
+              "@acme/commerce/_/ProcessOrder#summary",
+              "DELETE /v1/customers/{id}",
+              "DELETE /v1/departments/{id}",
+              "DELETE /v1/order-documents/{id}",
+              "DELETE /v1/orders/{id}",
+              "DELETE /v1/site-policies/{id}",
+              "DELETE /v1/sites/{id}",
+              "ForgeRealtime",
+              "GET /_forge/objects/{token}",
+              "GET /forge/discovery",
+              "GET /forge/openapi.json",
+              "GET /forge/workspace.json",
+              "GET /v1/caches/current-site-policy",
+              "GET /v1/changesets/{id}",
+              "GET /v1/changesets/{id}/preview",
+              "GET /v1/customer-order-summaries/status",
+              "GET /v1/customer-order-summaries/{id}",
+              "GET /v1/customers",
+              "GET /v1/customers/queries/by-code",
+              "GET /v1/customers/queries/by-tier",
+              "GET /v1/customers/{id}",
+              "GET /v1/departments",
+              "GET /v1/departments/queries/by-customer",
+              "GET /v1/departments/{id}",
+              "GET /v1/departments/{id}/ancestors",
+              "GET /v1/departments/{id}/children",
+              "GET /v1/live/orders",
+              "GET /v1/order-documents",
+              "GET /v1/order-documents/queries/by-order",
+              "GET /v1/order-documents/{id}",
+              "GET /v1/order-documents/{id}/content",
+              "GET /v1/orders",
+              "GET /v1/orders/queries/by-customer",
+              "GET /v1/orders/queries/by-site-status",
+              "GET /v1/orders/{id}",
+              "GET /v1/schedules/nightly-reconciliation",
+              "GET /v1/site-policies",
+              "GET /v1/site-policies/effective/by-site",
+              "GET /v1/site-policies/queries/by-site",
+              "GET /v1/site-policies/{id}",
+              "GET /v1/sites",
+              "GET /v1/sites/queries/by-customer",
+              "GET /v1/sites/queries/by-customer-code",
+              "GET /v1/sites/{id}",
+              "GET /v1/views/pending-orders",
+              "GET /v1/workflows/process-order/{id}",
+              "PATCH /v1/customers/{id}",
+              "PATCH /v1/departments/{id}",
+              "PATCH /v1/order-documents/{id}",
+              "PATCH /v1/orders/{id}",
+              "PATCH /v1/site-policies/{id}",
+              "PATCH /v1/sites/{id}",
+              "POST /v1/admin/export",
+              "POST /v1/admin/fence",
+              "POST /v1/admin/import",
+              "POST /v1/admin/inspect",
+              "POST /v1/admin/subjects/locate",
+              "POST /v1/admin/verify",
+              "POST /v1/changesets",
+              "POST /v1/changesets/{id}/approve",
+              "POST /v1/changesets/{id}/commit",
+              "POST /v1/customer-order-summaries/rebuild",
+              "POST /v1/customers",
+              "POST /v1/customers/{id}/restore",
+              "POST /v1/departments",
+              "POST /v1/departments/{id}/move",
+              "POST /v1/imports/inspect",
+              "POST /v1/imports/stage",
+              "POST /v1/order-documents",
+              "POST /v1/order-documents/{id}/finalize",
+              "POST /v1/order-documents/{id}/upload",
+              "POST /v1/orders",
+              "POST /v1/orders/{id}/actions/approve",
+              "POST /v1/orders/{id}/actions/cancel",
+              "POST /v1/orders/{id}/actions/complete",
+              "POST /v1/orders/{order}/process",
+              "POST /v1/orders/{order}/submit",
+              "POST /v1/schedules/nightly-reconciliation/tick",
+              "POST /v1/site-policies",
+              "POST /v1/sites",
+              "POST /v1/workflows/process-order/signals/{message}",
+              "POST /v1/workflows/process-order/{id}/cancel",
+              "PUT /_forge/objects/{token}",
+              "forge:residual",
+              "forge:sweep",
+              "fulfill-order",
+              "projection:CustomerOrderSummary"
+            ],
+            "modules": 4,
+            "name": "acme-commerce-all",
+            "raw": 537330,
+            "units": 65,
+            "unusedBindings": []
+          }
+        ],
+        "raw": {
+          "count": 1,
+          "max": 537330,
+          "median": 537330,
+          "min": 537330,
+          "total": 537330
+        },
+        "router": null,
+        "scripts": 1,
+        "strategy": "single",
+        "warnings": []
+      }
+    },
+    "toolchain": {
+      "bundler": "esbuild@0.27.7",
+      "forgec": "0.5.0",
+      "linker": "@forgegraph/linker-packed@0.5.0",
+      "node": "v24.14.0",
+      "units": "@forgegraph/units@0.5.0"
+    },
+    "wholeAppWorker": {
+      "bytes": {
+        "gzip": 113964,
+        "raw": 534986
+      },
+      "composition": {
+        "app.json": 233009,
+        "effect": 92421,
+        "impl": 1178,
+        "runtime": 208020
+      },
+      "source": "examples/acme/deploy/cloudflare/worker.ts",
+      "wranglerDryRun": "Total Upload: 1118.24 KiB / gzip: 163.14 KiB"
+    }
+  },
+  "version": "t3-linker-packed-sizes/1"
+}
