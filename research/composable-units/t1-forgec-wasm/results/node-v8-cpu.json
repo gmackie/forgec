@@ -1,0 +1,22 @@
+{
+  "host": "node v24.14.0 (V8 13.6.233.17-node.41), not workerd",
+  "note": "process.cpuUsage() around one synchronous call, after one discarded warm-up. It is process-wide (GC and compiler helper threads included), so tails are noisy; a proxy for isolate CPU, not a Workers measurement",
+  "check": {
+    "n": 20,
+    "min": 2.66,
+    "median": 3.92,
+    "p90": 10.34,
+    "max": 17.56,
+    "mean": 5.41
+  },
+  "build": {
+    "n": 20,
+    "min": 28.6,
+    "median": 40.91,
+    "p90": 113.07,
+    "max": 144.42,
+    "mean": 49.94
+  },
+  "wasmModuleCompileMs": 1,
+  "wasmModuleCompileNote": "synchronous new WebAssembly.Module on an already-seen module; V8 compiles function bodies lazily, so this is not full compilation cost"
+}

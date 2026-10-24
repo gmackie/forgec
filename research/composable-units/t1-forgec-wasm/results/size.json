@@ -1,0 +1,22 @@
+{
+  "wasm": {
+    "file": "forgegraph_wasm.wasm (cargo build --release, workspace default profile)",
+    "rawBytes": 3635765,
+    "gzipBytes": 851083
+  },
+  "bundledAcmeRequestBytes": 15981,
+  "limits": {
+    "source": "Cloudflare Workers platform limits page (developers.cloudflare.com/workers/platform/limits/), as recalled; not re-fetched for this run",
+    "workerSizeCompressed": {
+      "free": "3 MB",
+      "paid": "10 MB",
+      "note": "limit applies to the gzip-compressed upload"
+    },
+    "memoryPerIsolate": "128 MB",
+    "cpuPerRequest": {
+      "free": "10 ms",
+      "paid": "30 s default, configurable higher"
+    },
+    "startup": "Worker global scope must finish within the startup limit (about 1 s; unverified)"
+  }
+}
