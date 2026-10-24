@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Composable units on Workers isolates</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--background, #fff); color: var(--foreground, #202124); font: 14px/1.5 var(--font-sans, system-ui, sans-serif); }
+  main { width: 100%; min-width: 0; }
+  h1 { font-size: 1.2rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1rem; margin: 1.5rem 0 .5rem; }
+  h3 { font-size: .9rem; margin: 0 0 .25rem; }
+  p { max-width: 75ch; margin: .5rem 0; }
+  a { color: var(--accent-surface-foreground, #2458ac); }
+  .meta, .muted { color: var(--muted-foreground, #606773); }
+  code, pre { font-family: var(--font-mono, Menlo, Consolas, monospace); background: var(--code-background, #f1f3f5); color: var(--code-foreground, #202124); border-radius: 4px; }
+  code { padding: 0 .25rem; font-size: .85em; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; vertical-align: top; padding: .45rem .5rem; border-bottom: 1px solid var(--border, #d8dce2); }
+  th { font-size: .78rem; color: var(--muted-foreground, #606773); font-weight: 600; }
+  svg { max-width: 100%; }
+  .badge, .chip { display: inline-block; border-radius: 999px; padding: .1rem .5rem; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+  .badge { background: var(--accent-surface, #eaf0ff); color: var(--accent-surface-foreground, #2458ac); }
+  .chip.active { background: var(--accent-surface, #eaf0ff); color: var(--accent-surface-foreground, #2458ac); }
+  .chip.todo { background: var(--muted, #f1f3f5); color: var(--muted-foreground, #606773); }
+  .chip.risk { background: var(--warning-surface, #fff4d6); color: var(--warning-foreground, #7a5200); }
+  .callout { border-left: 3px solid var(--accent, #2458ac); background: var(--accent-surface, #eaf0ff); color: var(--accent-surface-foreground, #1a2b4d); border-radius: 0 var(--radius, .625rem) var(--radius, .625rem) 0; padding: .65rem .85rem; margin: .75rem 0; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: .75rem; }
+  .card { border: 1px solid var(--border, #d8dce2); border-radius: var(--radius, .625rem); background: var(--card, #f7f8fa); color: var(--card-foreground, #202124); padding: .75rem; }
+  .card.recommended { border-color: var(--accent, #2458ac); box-shadow: 0 0 0 1px var(--accent, #2458ac); }
+  .card ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+  .card p { margin: .3rem 0 0; }
+  .decisions { display: grid; gap: .5rem; }
+  .decision { border: 1px solid var(--border, #d8dce2); border-radius: var(--radius, .625rem); padding: .55rem .75rem; background: var(--card, #f7f8fa); }
+  .decision strong { display: block; }
+  .scope { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: .75rem; }
+  .scope ul { list-style: none; padding: 0; margin: 0; }
+  .scope li { padding: .2rem 0 .2rem 1.4rem; position: relative; }
+  .scope .goals li::before { content: "✓"; position: absolute; left: 0; color: var(--success, #1e8e3e); font-weight: 700; }
+  .scope .non li::before { content: "✕"; position: absolute; left: 0; color: var(--destructive, #c5221f); font-weight: 700; }
+  .flow { border: 1px solid var(--border, #d8dce2); border-radius: var(--radius, .625rem); background: var(--card, #f7f8fa); padding: .5rem; }
+  .flow text { fill: var(--card-foreground, #202124); font: 600 11px var(--font-sans, system-ui, sans-serif); }
+  .flow text.sub { fill: var(--muted-foreground, #606773); font-weight: 400; font-size: 10px; }
+  .flow rect { fill: var(--background, #fff); stroke: var(--border, #c8ccd2); stroke-width: 1.2; }
+  .flow rect.hub { stroke: var(--accent, #2458ac); stroke-width: 2; }
+  .flow path { fill: none; stroke: var(--accent, #2458ac); stroke-width: 1.6; }
+  .flow .arrow { fill: var(--accent, #2458ac); stroke: none; }
+  .tracks { display: grid; gap: .5rem; }
+  .track { display: grid; grid-template-columns: 3.2rem 1fr auto; gap: .6rem; align-items: start; border: 1px solid var(--border, #d8dce2); border-radius: var(--radius, .625rem); padding: .55rem .7rem; background: var(--card, #f7f8fa); }
+  .track.active { border-color: var(--accent, #2458ac); }
+  .track .id { font: 700 .85rem var(--font-mono, Menlo, monospace); color: var(--accent-surface-foreground, #2458ac); }
+  .track .dep { font-size: .75rem; }
+  details { border: 1px solid var(--border, #d8dce2); border-radius: var(--radius, .625rem); background: var(--card, #f7f8fa); padding: .6rem .75rem; margin: .75rem 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  pre { padding: .6rem; overflow-x: auto; font-size: .8rem; }
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { animation: rise .45s cubic-bezier(.2,.7,.3,1) both; animation-delay: calc(var(--i, 0) * 60ms); }
+    .flow path.draw { stroke-dasharray: 200; animation: draw .6s ease-out both; animation-delay: calc(400ms + var(--i, 0) * 120ms); }
+    .track.active { animation: pulse 2s ease-in-out infinite; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+    @keyframes draw { from { stroke-dashoffset: 200; } to { stroke-dashoffset: 0; } }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #2458ac) 22%, transparent); } }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="reveal">Composable units on Workers isolates <span class="badge">Design · Draft</span></h1>
+  <p class="meta reveal" style="--i:1">2026-10-23 · forgec + loom · epics <a href="https://tasks.gmac.io/gmacko/issue/FORG-26">FORG-26</a>, <a href="https://tasks.gmac.io/gmacko/issue/LOOM-11">LOOM-11</a></p>
+
+  <div class="callout reveal" style="--i:2"><strong>North star:</strong> Loom symbols compile to content-addressed <em>units</em>. Composing a program means linking unit hashes against interfaces derived from <code>domain-ir</code>. Worker isolates run exactly the closure each entry point needs, and deploying is a manifest-hash pointer flip. We get there through two steps: forgec running as WASM, and forgec producing units.</div>
+
+  <h2 class="reveal" style="--i:3">Decisions so far</h2>
+  <div class="decisions">
+    <div class="decision reveal" style="--i:4"><strong>Vision = symbol-level composition; steps = forgec→WASM, then units</strong><span class="muted">Iterate on each step separately. Neither step is the final goal.</span></div>
+    <div class="decision reveal" style="--i:5"><strong>Languages: TS/Effect → JS modules, plus Rust → WASM components, for now</strong><span class="muted">Long-term aim is a Forge-native behaviour language. WASM-everywhere must remain possible.</span></div>
+    <div class="decision reveal" style="--i:6"><strong>A unit's format is an attribute of the artifact, never part of its identity</strong><span class="muted"><code>kind</code> ∈ js-module | wasm-component | forge-native is metadata. Identity = interface hash + implementation hash + dependency <em>interface</em> hashes, so a body edit re-identifies only that unit. Closure identity covers the resolved <code>unitHash</code>es and pins the exact implementations.</span></div>
+    <div class="decision reveal" style="--i:7"><strong>Linking is pluggable; explore strategies in parallel</strong><span class="muted">Every linker consumes the same Closure Manifest and is checked against the same conformance suite.</span></div>
+    <div class="decision reveal" style="--i:8"><strong>Capabilities, not <code>env</code></strong><span class="muted">Units declare capabilities, and the linker injects narrowed handles. This enables sandboxing, maps cleanly to WIT imports, and is the cost of giving up direct <code>env.DB</code> access.</span></div>
+  </div>
+
+  <h2 class="reveal" style="--i:9">Core model</h2>
+  <div class="flow reveal" style="--i:10" role="img" aria-label="Flow: Loom Session edits go to forgec running as WASM in a build Worker; forgec writes unit bytes to an R2 content-addressed store and produces a Closure Manifest; linkers A packed, B dynamic, and C tiered consume the manifest and produce running Worker isolates.">
+    <svg viewBox="0 0 700 210" width="100%" style="display:block;height:auto">
+      <defs><marker id="cu-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path class="arrow" d="M0,0 L8,4 L0,8 z"/></marker></defs>
+      <rect x="8" y="78" width="110" height="52" rx="8"/><text x="63" y="100" text-anchor="middle">Loom Session</text><text class="sub" x="63" y="116" text-anchor="middle">symbols + snapshot</text>
+      <rect class="hub" x="160" y="78" width="120" height="52" rx="8"/><text x="220" y="100" text-anchor="middle">forgec (WASM)</text><text class="sub" x="220" y="116" text-anchor="middle">build Worker · T1</text>
+      <rect x="160" y="160" width="120" height="40" rx="8"/><text x="220" y="184" text-anchor="middle">R2 unit store</text>
+      <rect class="hub" x="322" y="78" width="120" height="52" rx="8"/><text x="382" y="100" text-anchor="middle">Closure Manifest</text><text class="sub" x="382" y="116" text-anchor="middle">per entry point · T2</text>
+      <rect x="486" y="12" width="96" height="42" rx="8"/><text x="534" y="30" text-anchor="middle">A · packed</text><text class="sub" x="534" y="45" text-anchor="middle">T3</text>
+      <rect x="486" y="83" width="96" height="42" rx="8"/><text x="534" y="101" text-anchor="middle">B · dynamic</text><text class="sub" x="534" y="116" text-anchor="middle">T4</text>
+      <rect x="486" y="154" width="96" height="42" rx="8"/><text x="534" y="172" text-anchor="middle">C · tiered</text><text class="sub" x="534" y="187" text-anchor="middle">A + B</text>
+      <rect x="612" y="78" width="80" height="52" rx="8"/><text x="652" y="100" text-anchor="middle">Isolates</text><text class="sub" x="652" y="116" text-anchor="middle">workerd</text>
+      <path class="draw" style="--i:0" d="M118,104 L156,104" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:1" d="M220,130 L220,156" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:1" d="M280,104 L318,104" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:2" d="M442,98 C462,70 466,36 482,34" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:2" d="M442,104 L482,104" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:2" d="M442,110 C462,140 466,174 482,175" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:3" d="M582,33 C600,40 600,90 608,98" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:3" d="M582,104 L608,104" marker-end="url(#cu-arrow)"/>
+      <path class="draw" style="--i:3" d="M582,175 C600,168 600,118 608,110" marker-end="url(#cu-arrow)"/>
+    </svg>
+  </div>
+
+  <div class="table-scroll reveal" style="--i:11"><table>
+    <thead><tr><th>Concept</th><th>Definition</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Unit</strong></td><td>The smallest compiled thing. In v1, a forgec function, transition, workflow step or handler plus the Loom symbols it reaches. Later it can be a single symbol. Fields: <code>interfaceHash</code>, <code>unitHash</code>, <code>kind</code>.</td></tr>
+      <tr><td><strong>Interface</strong></td><td>Inputs, outputs, errors, effects and required capabilities, all taken from <code>domain-ir</code>. Structural: the symbol is the binding name, not part of the interface hash, so a JS unit and a WASM unit of the same shape share one. WIT is <em>generated</em> from this, never hand-written and never taken from TS types.</td></tr>
+      <tr><td><strong>Closure Manifest</strong></td><td>Content-addressed. Each entry point (route, queue consumer, cron, workflow step or DO class) maps to a root unit plus its resolved dependency closure, capability imports bound to providers, and required bindings. Its <code>closureHash</code> covers the closure's <code>unitHash</code>es, so it changes whenever any implementation it runs changes.</td></tr>
+      <tr><td><strong>Linker</strong></td><td>Turns a manifest into something that runs. A: deploy-time packed scripts. B: a host Worker plus Dynamic Worker Loader, with isolates cached by closure hash. C: A by default, B for closures marked <code>dynamic</code> (previews, Sessions, tenant extensions).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="reveal" style="--i:12">Linker strategies <span class="muted" style="font-weight:400">— run in parallel, same contract</span></h2>
+  <div class="options">
+    <section class="card recommended reveal" style="--i:13"><h3>A · Packed <span class="badge">Start here</span></h3><ul><li>Uses only stable platform features, easy to test</li><li>Tree-shaking down to the symbol</li><li>A one-symbol change still means re-uploading every script that contains it</li></ul></section>
+    <section class="card reveal" style="--i:14"><h3>B · Dynamic</h3><ul><li>Closures load by hash at request time; deploy takes milliseconds</li><li>Real per-closure capability sandboxing</li><li>Depends on a newer platform feature, and cold-start behaviour is harder to predict</li></ul></section>
+    <section class="card reveal" style="--i:15"><h3>C · Tiered</h3><ul><li>Production stays predictable, agents get instant iteration</li><li>Fits Loom's private Sessions</li><li>Needs A and B both working first</li></ul></section>
+  </div>
+
+  <h2 class="reveal" style="--i:16">JS ↔ WASM boundary</h2>
+  <p class="reveal" style="--i:17">Workers run core WASM but don't natively support the component model. The linker therefore transpiles components to a core module plus JS glue generated from WIT (jco-style). Calls between JS units are plain imports with no overhead. Values are serialized only when they cross into or out of WASM. Because both kinds share one interface, swapping a Rust unit for a JS unit with the same <code>interfaceHash</code> needs no change in callers.</p>
+
+  <h2 class="reveal" style="--i:18">Tracks</h2>
+  <div class="tracks">
+    <div class="track active reveal" style="--i:19"><span class="id">T1</span><div><strong>forgec → WASM, running <code>check</code> + <code>build</code> in a Worker</strong><div class="muted">Proves size fits the limit, CPU per build is acceptable, and no hidden filesystem/thread/clock dependency. <a href="https://tasks.gmac.io/gmacko/issue/FORG-27">FORG-27</a></div><div class="dep muted">No dependencies</div></div><span class="chip active">In progress</span></div>
+    <div class="track active reveal" style="--i:20"><span class="id">T2</span><div><strong>Unit extraction + Closure Manifest for <code>examples/acme</code></strong><div class="muted">Proves the format and that the same input gives the same <code>unitHash</code>. <a href="https://tasks.gmac.io/gmacko/issue/FORG-28">FORG-28</a></div><div class="dep muted">Unblocks T3, T4, T5</div></div><span class="chip active">In progress</span></div>
+    <div class="track reveal" style="--i:21"><span class="id">T3</span><div><strong>Linker A (packed)</strong><div class="muted">acme runs from a manifest. <a href="https://tasks.gmac.io/gmacko/issue/FORG-29">FORG-29</a></div><div class="dep muted">Needs T2</div></div><span class="chip todo">Todo</span></div>
+    <div class="track reveal" style="--i:22"><span class="id">T4</span><div><strong>Linker B (Dynamic Worker Loader)</strong><div class="muted">Cold/warm latency, closure-hash cache, capability sandbox. <a href="https://tasks.gmac.io/gmacko/issue/FORG-30">FORG-30</a></div><div class="dep muted">Needs T2</div></div><span class="chip todo">Todo</span></div>
+    <div class="track reveal" style="--i:23"><span class="id">T5</span><div><strong>Rust WASM unit behind WIT generated from <code>domain-ir</code></strong><div class="muted">Boundary cost, swapping JS and WASM units. <a href="https://tasks.gmac.io/gmacko/issue/FORG-31">FORG-31</a></div><div class="dep muted">Needs T2</div></div><span class="chip todo">Todo</span></div>
+    <div class="track reveal" style="--i:24"><span class="id">T6</span><div><strong>Symbol provenance + Session-driven incremental builds</strong><div class="muted">Loom-side step toward Vision 3, without changing v1 byte-canonical storage. <a href="https://tasks.gmac.io/gmacko/issue/LOOM-12">LOOM-12</a></div><div class="dep muted">Provenance design can start now; integration needs T2</div></div><span class="chip todo">Todo</span></div>
+  </div>
+
+  <h2>Scope</h2>
+  <div class="scope">
+    <div class="card goals"><h3>Goals</h3><ul><li>One manifest format consumed by every linker</li><li>JS and WASM units composing through one interface layer</li><li>Measured budgets for size, cold start and boundary cost</li><li>Reproducible, content-addressed builds</li></ul></div>
+    <div class="card non"><h3>Non-goals (for now)</h3><ul><li>Changing Loom v1's byte-canonical storage (ADR 0093)</li><li>Designing the Forge-native behaviour language</li><li>Compiling TS to WASM</li><li>Production deploys; these are research spikes</li></ul></div>
+  </div>
+
+  <h2>Failure handling &amp; verification</h2>
+  <div class="table-scroll"><table>
+    <thead><tr><th>Rule</th><th>Behaviour</th></tr></thead>
+    <tbody>
+      <tr><td>Missing unit hash or interface mismatch</td><td>Fails while the manifest is being resolved, never at request time</td></tr>
+      <tr><td>Undeclared capability</td><td>No handle is injected, so the unit fails closed</td></tr>
+      <tr><td>Dynamic cache miss (C)</td><td>Falls back to the packed path. The fallback is logged as a fallback, never hidden</td></tr>
+      <tr><td>Linker differential</td><td>The same manifest under A, B and C must give identical results on the applicable conformance scenarios</td></tr>
+      <tr><td>Reproducibility</td><td>Two builds produce byte-identical units and manifests</td></tr>
+      <tr><td>Budgets</td><td>Recorded as evidence. If a budget is exceeded, the result is reported as unverified, not as passed</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>Risks</h2>
+  <p><span class="chip risk">High</span> forgec has dependencies that can't run on Workers (filesystem, threads, native crates). <span class="muted">T1 finds them first. Abstract I/O behind a virtual filesystem fed from Loom or R2.</span></p>
+  <p><span class="chip risk">Medium</span> The Dynamic Worker Loader may be unavailable on our account, or may change. <span class="muted">Linker B is a spike, and A works without it.</span></p>
+  <p><span class="chip risk">Medium</span> The cost of crossing the JS↔WASM boundary dominates fine-grained units. <span class="muted">T5 measures it, and the planner can merge units that call each other a lot into one closure group.</span></p>
+
+  <h2>Open questions</h2>
+  <ul>
+    <li>v1 unit size: forgec function vs a single Loom symbol. We're starting with function and will revisit after T2 and T6.</li>
+    <li>Whether the manifest should become part of <code>contract.json</code> or stay a sibling artifact.</li>
+  </ul>
+</main>
+</body>
+</html>

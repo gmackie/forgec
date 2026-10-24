@@ -1,0 +1,198 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://forge.dev/schemas/closure-manifest.schema.json",
+  "title": "Forge Closure Manifest (FORG-28, research)",
+  "description": "Content-addressed description of a deployment as composable units. Each entry point (route, queue consumer, cron, workflow, workflow step, Durable Object class) maps to a root unit, the resolved closure of units it can reach, the capability imports those units bind to runtime providers, and the platform bindings the closure needs. Every linker consumes this one format. Digests are `sha256:` + hex(sha256(domain + canonical JSON)), where canonical JSON sorts object keys and has no whitespace. interfaceHash uses domain `forge:unit-interface:` over the DomainIR-derived interface, which is structural: no symbol, no role, docs removed, so units of the same shape share it. implementationHash uses `forge:unit-impl:` over the unit's `implementation` object. unitHash uses `forge:unit:` over {interface, implementation, dependencies} with the dependencies' interface hashes sorted, so a body edit re-identifies only that unit. closureHash uses `forge:closure:` over an entry point's sorted closure of unit hashes and pins the exact implementations it runs. manifestHash uses `forge:closure-manifest:` over the manifest without `manifestHash`. `kind` is metadata and never enters a digest; `symbol` is the binding name and enters no unit digest.",
+  "type": "object",
+  "required": ["version", "manifestHash", "package", "target", "buildHash", "toolchain", "units", "modules", "entryPoints", "hostBindings", "uncovered"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": "closure-manifest/1" },
+    "manifestHash": { "$ref": "#/$defs/digest" },
+    "package": {
+      "type": "object",
+      "required": ["name", "version"],
+      "additionalProperties": false,
+      "properties": { "name": { "type": "string" }, "version": { "type": "string" } }
+    },
+    "target": { "enum": ["cloudflare-workers"], "description": "Binding names are those of this target." },
+    "buildHash": { "type": "string", "pattern": "^[0-9a-f]{64}$", "description": "forgec build identity of the app bundle the unit plan was derived from (app.json `buildHash`)." },
+    "toolchain": {
+      "type": "object",
+      "required": ["forgec", "bundler", "units"],
+      "additionalProperties": false,
+      "properties": {
+        "forgec": { "type": "string" },
+        "bundler": { "type": "string", "description": "e.g. esbuild@0.27.7. Byte-identical modules are only claimed for an identical toolchain." },
+        "units": { "type": "string", "description": "Version of the tool that bundled and sealed the manifest." }
+      }
+    },
+    "units": {
+      "type": "object",
+      "description": "Units keyed by unit hash.",
+      "propertyNames": { "$ref": "#/$defs/digest" },
+      "additionalProperties": { "$ref": "#/$defs/unit" }
+    },
+    "modules": {
+      "type": "object",
+      "description": "JavaScript module blobs keyed by sha256 of their bytes. Several units may share one blob.",
+      "propertyNames": { "$ref": "#/$defs/digest" },
+      "additionalProperties": { "$ref": "#/$defs/module" }
+    },
+    "entryPoints": { "type": "array", "items": { "$ref": "#/$defs/entryPoint" } },
+    "hostBindings": { "type": "array", "items": { "$ref": "#/$defs/binding" }, "description": "Bindings the runtime host needs whatever closure it runs." },
+    "uncovered": {
+      "type": "array",
+      "description": "Served surfaces not yet split into units, listed so their absence is explicit.",
+      "items": {
+        "type": "object",
+        "required": ["kind", "id", "reason"],
+        "additionalProperties": false,
+        "properties": { "kind": { "type": "string" }, "id": { "type": "string" }, "reason": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "binding": {
+      "type": "object",
+      "required": ["type", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "enum": ["d1", "r2", "secret", "var", "queue-producer", "queue-consumer", "durable-object", "workflow", "cron"] },
+        "name": { "type": "string" }
+      }
+    },
+    "provider": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["kind", "unit"],
+          "additionalProperties": false,
+          "properties": { "kind": { "const": "unit" }, "unit": { "$ref": "#/$defs/digest" } }
+        },
+        {
+          "type": "object",
+          "required": ["kind", "service"],
+          "additionalProperties": false,
+          "properties": {
+            "kind": { "const": "runtime" },
+            "service": { "enum": ["resource-store", "outbox", "signals", "timers"] }
+          }
+        }
+      ]
+    },
+    "import": {
+      "type": "object",
+      "required": ["capability", "provider"],
+      "additionalProperties": false,
+      "properties": {
+        "capability": {
+          "type": "string",
+          "pattern": "^(resource:[^#]+#[A-Za-z]+|transition:.+|function:.+|send:[^#]+#.+|wait:[^#]+#.+|sleep)$",
+          "description": "A handle the linker injects. A unit gets exactly these handles, never the raw environment; an undeclared capability gets no handle and fails closed."
+        },
+        "provider": { "$ref": "#/$defs/provider" }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": ["rule", "match", "source"],
+      "additionalProperties": false,
+      "description": "Heuristic scan of a module's own code for authority that does not go through a capability handle.",
+      "properties": {
+        "rule": { "enum": ["raw-env", "raw-network", "platform-module", "nondeterminism", "clock", "global-scope"] },
+        "match": { "type": "string" },
+        "source": { "type": "string", "description": "App-relative source file the match came from." }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "required": ["symbol", "role", "kind", "interfaceHash", "implementationHash", "implementation", "dependencies", "imports", "bindings", "findings"],
+      "additionalProperties": false,
+      "properties": {
+        "symbol": { "type": "string", "description": "Stable id of the declaration (specs/language/identity.md): the name callers bind to. Not part of interfaceHash or unitHash." },
+        "role": { "enum": ["function", "external", "operation", "workflow"] },
+        "kind": { "enum": ["js-module", "wasm-component", "forge-native"], "description": "Artifact format. Metadata only." },
+        "interfaceHash": { "$ref": "#/$defs/digest" },
+        "implementationHash": { "$ref": "#/$defs/digest" },
+        "implementation": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "js-module: the default export of a module blob.",
+              "required": ["module", "export", "abi", "libraries"],
+              "additionalProperties": false,
+              "properties": {
+                "module": { "$ref": "#/$defs/digest" },
+                "export": { "const": "default" },
+                "abi": { "enum": ["forgegraph-function/1", "forgegraph-external-binding/1"], "description": "function: a FunctionImpl from defineFunction(). external-binding: an ExternalBinding." },
+                "libraries": {
+                  "type": "object",
+                  "description": "Shared libraries the module imports and the linker provides, name -> exact version.",
+                  "additionalProperties": { "type": "string" }
+                }
+              }
+            },
+            {
+              "type": "object",
+              "description": "forge-native: the runtime executes the declaration itself.",
+              "required": ["declaration", "executor"],
+              "additionalProperties": false,
+              "properties": {
+                "declaration": { "$ref": "#/$defs/digest" },
+                "executor": { "type": "string", "description": "e.g. @forgegraph/runtime@0.5.0" }
+              }
+            }
+          ]
+        },
+        "dependencies": { "type": "array", "items": { "$ref": "#/$defs/digest" }, "uniqueItems": true, "description": "Unit hashes the called units resolve to in this manifest. unitHash covers their interface hashes, not these." },
+        "imports": { "type": "array", "items": { "$ref": "#/$defs/import" } },
+        "bindings": { "type": "array", "items": { "$ref": "#/$defs/binding" } },
+        "findings": { "type": "array", "items": { "$ref": "#/$defs/finding" } }
+      }
+    },
+    "module": {
+      "type": "object",
+      "required": ["path", "bytes", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "pattern": "^modules/[0-9a-f]{64}\\.js$" },
+        "bytes": { "type": "integer", "minimum": 0 },
+        "sources": { "type": "array", "items": { "type": "string" }, "description": "App-relative files bundled into the module." }
+      }
+    },
+    "entryPoint": {
+      "type": "object",
+      "required": ["kind", "id", "trigger", "root", "closure", "closureHash", "imports", "bindings"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "enum": ["http-route", "queue-consumer", "cron", "workflow", "workflow-step", "durable-object"] },
+        "id": { "type": "string" },
+        "trigger": { "type": "object" },
+        "root": {
+          "oneOf": [{ "$ref": "#/$defs/digest" }, { "type": "null" }],
+          "description": "Null when the runtime serves the entry point without application code (see runtimeService)."
+        },
+        "runtimeService": { "type": "string" },
+        "closure": { "type": "array", "items": { "$ref": "#/$defs/digest" }, "uniqueItems": true, "description": "Root plus every unit reachable through dependencies, sorted." },
+        "closureHash": { "$ref": "#/$defs/digest", "description": "Identity of exactly what this entry point runs: H(`forge:closure:`, closure). Changes when any implementation in the closure changes, even when no unit hash outside it does." },
+        "imports": {
+          "type": "array",
+          "description": "Runtime-provided imports of every unit in the closure; unit-provided imports are satisfied inside the closure.",
+          "items": {
+            "type": "object",
+            "required": ["unit", "capability", "provider"],
+            "additionalProperties": false,
+            "properties": {
+              "unit": { "$ref": "#/$defs/digest" },
+              "capability": { "type": "string" },
+              "provider": { "$ref": "#/$defs/provider" }
+            }
+          }
+        },
+        "bindings": { "type": "array", "items": { "$ref": "#/$defs/binding" }, "description": "Trigger bindings plus the bindings of every unit in the closure (host bindings are separate)." }
+      }
+    }
+  }
+}

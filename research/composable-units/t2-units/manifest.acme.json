@@ -1,0 +1,3904 @@
+{
+  "buildHash": "32e9b0b863f61fef49205532c4afb710da13b3a6e0961de915887fe192b60efb",
+  "entryPoints": [
+    {
+      "bindings": [
+        {
+          "name": "0 3 * * *",
+          "type": "cron"
+        },
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+      ],
+      "closureHash": "sha256:665c73fc705ccc91f564d02999ebc9276aac5fa783e68ef4e631ba2ed74a1cdc",
+      "id": "@acme/commerce/_/NightlyReconciliation",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+        }
+      ],
+      "kind": "cron",
+      "root": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f",
+      "trigger": {
+        "cron": "0 3 * * *",
+        "tick": false,
+        "timezone": "UTC"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "*/5 * * * *",
+          "type": "cron"
+        }
+      ],
+      "closure": [],
+      "closureHash": "sha256:0fb2d5bda96af8e3d07cd6193700d8e538f7355d3ab9d1b88271b556499c8093",
+      "id": "forge:sweep",
+      "imports": [],
+      "kind": "cron",
+      "root": null,
+      "runtimeService": "outbox-and-workflow-sweep",
+      "trigger": {
+        "cron": "*/5 * * * *",
+        "timezone": "UTC"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "REALTIME",
+          "type": "durable-object"
+        }
+      ],
+      "closure": [],
+      "closureHash": "sha256:0fb2d5bda96af8e3d07cd6193700d8e538f7355d3ab9d1b88271b556499c8093",
+      "id": "ForgeRealtime",
+      "imports": [],
+      "kind": "durable-object",
+      "root": null,
+      "runtimeService": "realtime-fanout",
+      "trigger": {
+        "className": "ForgeRealtime",
+        "streams": [
+          "@acme/commerce/_/OrderEvents"
+        ]
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:aaaa898336c27481b768f23f918af235695d64c62a14c56953276fa3c5fce6c8"
+      ],
+      "closureHash": "sha256:acbec2d90eb424352d55203313001198d29edcf0097f9094dda8332eb6acceb1",
+      "id": "DELETE /v1/customers/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:aaaa898336c27481b768f23f918af235695d64c62a14c56953276fa3c5fce6c8"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:aaaa898336c27481b768f23f918af235695d64c62a14c56953276fa3c5fce6c8",
+      "trigger": {
+        "method": "DELETE",
+        "path": "/v1/customers/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:48b181e15724bf3bf5e4ebf77253fa0985303daeb79834caaa3c1e22b7352e2a"
+      ],
+      "closureHash": "sha256:3af1fedd077dbad9c4026483d1f2e195c1666030badcdf3e017dc198eeaf76c8",
+      "id": "DELETE /v1/departments/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:48b181e15724bf3bf5e4ebf77253fa0985303daeb79834caaa3c1e22b7352e2a"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:48b181e15724bf3bf5e4ebf77253fa0985303daeb79834caaa3c1e22b7352e2a",
+      "trigger": {
+        "method": "DELETE",
+        "path": "/v1/departments/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:af88304fc28f790f68d9e460c0c08e505164e49eadd5f98e7d426ef3529a6468"
+      ],
+      "closureHash": "sha256:499e0f2441b0d31594638334623cba1034f47d80c83a18f5a24a2eef0cdd6c3d",
+      "id": "DELETE /v1/order-documents/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:af88304fc28f790f68d9e460c0c08e505164e49eadd5f98e7d426ef3529a6468"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:af88304fc28f790f68d9e460c0c08e505164e49eadd5f98e7d426ef3529a6468",
+      "trigger": {
+        "method": "DELETE",
+        "path": "/v1/order-documents/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:725b37f94babccfad504e35451e3da4482e1d8f1773ce5e8e7d2dd8d7ebe3285"
+      ],
+      "closureHash": "sha256:bc44f9092217ed8c41f16cfaf2785587cb4dcf009e36954d5951c85fed4aff97",
+      "id": "DELETE /v1/orders/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:725b37f94babccfad504e35451e3da4482e1d8f1773ce5e8e7d2dd8d7ebe3285"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:725b37f94babccfad504e35451e3da4482e1d8f1773ce5e8e7d2dd8d7ebe3285",
+      "trigger": {
+        "method": "DELETE",
+        "path": "/v1/orders/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:a75d196d397f5522a1e4df320e94cc19adddc478093356701fa7b3b8ec05c9cb"
+      ],
+      "closureHash": "sha256:cb7e1f7213fc84cc53986997b4dd3b64338a210a2246084f4951968b3d6e2d76",
+      "id": "DELETE /v1/site-policies/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:a75d196d397f5522a1e4df320e94cc19adddc478093356701fa7b3b8ec05c9cb"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:a75d196d397f5522a1e4df320e94cc19adddc478093356701fa7b3b8ec05c9cb",
+      "trigger": {
+        "method": "DELETE",
+        "path": "/v1/site-policies/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:1a57143e7f35825a9f49b0056ab4b24943b584a8b1bec4546112d1c055f4b19b"
+      ],
+      "closureHash": "sha256:a9fbb7b96d62994fdde72ba79e85ac91573e5e6c9f04d5d1bfdf1884caf11921",
+      "id": "DELETE /v1/sites/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:1a57143e7f35825a9f49b0056ab4b24943b584a8b1bec4546112d1c055f4b19b"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:1a57143e7f35825a9f49b0056ab4b24943b584a8b1bec4546112d1c055f4b19b",
+      "trigger": {
+        "method": "DELETE",
+        "path": "/v1/sites/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:c0546a458d8cc5c2d1c1c53b2b16ce5037070fb3452b00f0db634b71081bfe92"
+      ],
+      "closureHash": "sha256:3c16edfb32797bb4ea486fbc7627b9db22738ec748bf437e246ff8e2c4a920c7",
+      "id": "GET /v1/customers",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:c0546a458d8cc5c2d1c1c53b2b16ce5037070fb3452b00f0db634b71081bfe92"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:c0546a458d8cc5c2d1c1c53b2b16ce5037070fb3452b00f0db634b71081bfe92",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/customers"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:0094e340e41d5f9888e49d28aa64da524091a1296f43c8d7c37edde67a1eaff6"
+      ],
+      "closureHash": "sha256:fcb52b27d84c7dae60503db35481b6676d200bf9182544c691c4423d4a182b64",
+      "id": "GET /v1/customers/queries/by-code",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:0094e340e41d5f9888e49d28aa64da524091a1296f43c8d7c37edde67a1eaff6"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:0094e340e41d5f9888e49d28aa64da524091a1296f43c8d7c37edde67a1eaff6",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/customers/queries/by-code"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:16796aebc4773060b028b4cb94aa7eee3aa20cd323e007f1f0feacc17b64e03d"
+      ],
+      "closureHash": "sha256:984099abe7ba4391ae965ccc1a139bf9dad38d5a51ddfe3dae094b8a8acbf083",
+      "id": "GET /v1/customers/queries/by-tier",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:16796aebc4773060b028b4cb94aa7eee3aa20cd323e007f1f0feacc17b64e03d"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:16796aebc4773060b028b4cb94aa7eee3aa20cd323e007f1f0feacc17b64e03d",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/customers/queries/by-tier"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:b772b9a5edc023e870b33d8ac5aa32df46d933d1af5feefdb0322428927bbd3c"
+      ],
+      "closureHash": "sha256:f243b33c2c58e7d5e228dff7b24f58e8e52542d377c083d6eaee3b828b6640b5",
+      "id": "GET /v1/customers/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:b772b9a5edc023e870b33d8ac5aa32df46d933d1af5feefdb0322428927bbd3c"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:b772b9a5edc023e870b33d8ac5aa32df46d933d1af5feefdb0322428927bbd3c",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/customers/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:12ace2c06d2a42372ee2da8f33bfc4063edc26372e8945a98445683a76a0b329"
+      ],
+      "closureHash": "sha256:a03beffc4380de85e48c3c06e1bb0c3ed644c902e5230077a12a18414566d51d",
+      "id": "GET /v1/departments",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:12ace2c06d2a42372ee2da8f33bfc4063edc26372e8945a98445683a76a0b329"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:12ace2c06d2a42372ee2da8f33bfc4063edc26372e8945a98445683a76a0b329",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/departments"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:4d9af52dc2304d9e457a992d12c570b3aeffd88ddb1858334842161d2524d767"
+      ],
+      "closureHash": "sha256:878b5be82fc765a3c324ecced8d58ca9a6b69185924cd78c38416a76f45f9ed1",
+      "id": "GET /v1/departments/queries/by-customer",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:4d9af52dc2304d9e457a992d12c570b3aeffd88ddb1858334842161d2524d767"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:4d9af52dc2304d9e457a992d12c570b3aeffd88ddb1858334842161d2524d767",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/departments/queries/by-customer"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:181dbdb487b474fde26a0ed36e7b42f1ebe9531828e427fad948d400ad75c704"
+      ],
+      "closureHash": "sha256:4145feb72727579c69ec40177d51bc72ebcd42f55d873386adb275ad068dc6d3",
+      "id": "GET /v1/departments/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:181dbdb487b474fde26a0ed36e7b42f1ebe9531828e427fad948d400ad75c704"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:181dbdb487b474fde26a0ed36e7b42f1ebe9531828e427fad948d400ad75c704",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/departments/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:06cf8cc34c29861fd9ccc6ada61e1eaceac293816ec12a22070c1d9eaf48a1e2"
+      ],
+      "closureHash": "sha256:ff5903049519e602f7aa094524e892ad1c9986097af64293839c6bdfa36523ca",
+      "id": "GET /v1/departments/{id}/ancestors",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:06cf8cc34c29861fd9ccc6ada61e1eaceac293816ec12a22070c1d9eaf48a1e2"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:06cf8cc34c29861fd9ccc6ada61e1eaceac293816ec12a22070c1d9eaf48a1e2",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/departments/{id}/ancestors"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:69c68a489e23af585808454192cfd59608a563e0afe35317ea36d4cfe8d15687"
+      ],
+      "closureHash": "sha256:903ff9a9dc55e657b6fda8823b4a442fc14dee61b43c24db35a45c7f5a3c6505",
+      "id": "GET /v1/departments/{id}/children",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:69c68a489e23af585808454192cfd59608a563e0afe35317ea36d4cfe8d15687"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:69c68a489e23af585808454192cfd59608a563e0afe35317ea36d4cfe8d15687",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/departments/{id}/children"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:a6d1ce06685699e276d3a036e7f0da4f8ceb47e0d88deb4d44b8623ec0d078e3"
+      ],
+      "closureHash": "sha256:77b946dafc5dfe7c2376b68dc434feffeed32c418c83df0d08e7ac86a9e11257",
+      "id": "GET /v1/order-documents",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:a6d1ce06685699e276d3a036e7f0da4f8ceb47e0d88deb4d44b8623ec0d078e3"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:a6d1ce06685699e276d3a036e7f0da4f8ceb47e0d88deb4d44b8623ec0d078e3",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/order-documents"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:56669afda125ca4732408e7fb55e452f21b82b0ceb0ae958be9778e394ced4b4"
+      ],
+      "closureHash": "sha256:c08abbd9693dc49a1a1f6a7730d5943d9d90b1706793470de8fba9aba0818004",
+      "id": "GET /v1/order-documents/queries/by-order",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:56669afda125ca4732408e7fb55e452f21b82b0ceb0ae958be9778e394ced4b4"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:56669afda125ca4732408e7fb55e452f21b82b0ceb0ae958be9778e394ced4b4",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/order-documents/queries/by-order"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:e6e02e50f5db4042e00f74f5dbae32f1fc28138e6806539fd52634289a356922"
+      ],
+      "closureHash": "sha256:0412e24fe880b625ce99aea68b27a3f1a3b39bab7b24820122ba97052141778a",
+      "id": "GET /v1/order-documents/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:e6e02e50f5db4042e00f74f5dbae32f1fc28138e6806539fd52634289a356922"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:e6e02e50f5db4042e00f74f5dbae32f1fc28138e6806539fd52634289a356922",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/order-documents/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "BLOBS",
+          "type": "r2"
+        }
+      ],
+      "closure": [
+        "sha256:ff007d378253ba5d0ad29e173b007fa647c93aff8992392016ecdc5a3ac80157"
+      ],
+      "closureHash": "sha256:1dae7f7da102b851792ee1b247741c5b80d7be745304e04afe5c72337a676067",
+      "id": "GET /v1/order-documents/{id}/content",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:ff007d378253ba5d0ad29e173b007fa647c93aff8992392016ecdc5a3ac80157"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:ff007d378253ba5d0ad29e173b007fa647c93aff8992392016ecdc5a3ac80157",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/order-documents/{id}/content"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:b971407fb8b435e490822d2b08da8f66af86a71069f68e93fd6228694090f605"
+      ],
+      "closureHash": "sha256:485239b680ea4fab9d4084c850193cca51be9db498f3267c8327f0d375c04398",
+      "id": "GET /v1/orders",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:b971407fb8b435e490822d2b08da8f66af86a71069f68e93fd6228694090f605"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:b971407fb8b435e490822d2b08da8f66af86a71069f68e93fd6228694090f605",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/orders"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:7f2ad4ea2e963118150303a5c634e788dada54bcc6ea18db512478c493ea0fe0"
+      ],
+      "closureHash": "sha256:cd500f58559d65d811c02c5cc8edb096cbe082fd38c0cf4ed440cc2e74712516",
+      "id": "GET /v1/orders/queries/by-customer",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:7f2ad4ea2e963118150303a5c634e788dada54bcc6ea18db512478c493ea0fe0"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:7f2ad4ea2e963118150303a5c634e788dada54bcc6ea18db512478c493ea0fe0",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/orders/queries/by-customer"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:d44893040a29307fa153af8da5548155c9638865f1c2180f0f540123fa57fcef"
+      ],
+      "closureHash": "sha256:b79f3ec27b41f464813c98c2aeab62bcc9c2d5a52e7ea79bbf23d2aba430a5c7",
+      "id": "GET /v1/orders/queries/by-site-status",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:d44893040a29307fa153af8da5548155c9638865f1c2180f0f540123fa57fcef"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:d44893040a29307fa153af8da5548155c9638865f1c2180f0f540123fa57fcef",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/orders/queries/by-site-status"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:47beefedcce04f05197f589641800b1397f61f3bd8d869faf50a20d9771902e4"
+      ],
+      "closureHash": "sha256:bba3e652d1f4f01fdde4537d3652156264aee7a6ab3f4766b7c1bcb505edce8b",
+      "id": "GET /v1/orders/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:47beefedcce04f05197f589641800b1397f61f3bd8d869faf50a20d9771902e4"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:47beefedcce04f05197f589641800b1397f61f3bd8d869faf50a20d9771902e4",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/orders/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:ebcb46034236cc1f5d9a4e53a59b447fd920c8a33600fe3b5f991d02532dbec7"
+      ],
+      "closureHash": "sha256:66c39986847d85ac23d05b8fde476e3906e6d5c0e40bf2fda2c744bc7c93a07c",
+      "id": "GET /v1/site-policies",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:ebcb46034236cc1f5d9a4e53a59b447fd920c8a33600fe3b5f991d02532dbec7"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:ebcb46034236cc1f5d9a4e53a59b447fd920c8a33600fe3b5f991d02532dbec7",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/site-policies"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:1e5bd3cdd15969bbb90a3ce0e91da0855d5d5a7993ec37a9b3f5f9f50f17474f"
+      ],
+      "closureHash": "sha256:fba91af45ac2cd8fd7c3894de187a4d93d83fcb7e26685142f4e7ca8a0afd4ba",
+      "id": "GET /v1/site-policies/effective/by-site",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:1e5bd3cdd15969bbb90a3ce0e91da0855d5d5a7993ec37a9b3f5f9f50f17474f"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:1e5bd3cdd15969bbb90a3ce0e91da0855d5d5a7993ec37a9b3f5f9f50f17474f",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/site-policies/effective/by-site"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:95f5fd8ef7f4f17304947c7fc966cee5a9b98c7881bf1ee11fafcf119f03efc3"
+      ],
+      "closureHash": "sha256:86c3bbdb5ab21e6bb438d01909215f08cc68da84e75540c8dd07a6fd12f40f57",
+      "id": "GET /v1/site-policies/queries/by-site",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:95f5fd8ef7f4f17304947c7fc966cee5a9b98c7881bf1ee11fafcf119f03efc3"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:95f5fd8ef7f4f17304947c7fc966cee5a9b98c7881bf1ee11fafcf119f03efc3",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/site-policies/queries/by-site"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:bd7f54d2b2d98722ae56bf9fff685495b59075ea78a71affd1ba2e9596622065"
+      ],
+      "closureHash": "sha256:6497c5374a71946e283827678ced2ed6ba5e6c957ba7f895cea5bdff1f3184ec",
+      "id": "GET /v1/site-policies/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:bd7f54d2b2d98722ae56bf9fff685495b59075ea78a71affd1ba2e9596622065"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:bd7f54d2b2d98722ae56bf9fff685495b59075ea78a71affd1ba2e9596622065",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/site-policies/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:893cbdd83c56d33f60fedf45d2d06340b9572f8b26ce465a7bf704766a26c0e9"
+      ],
+      "closureHash": "sha256:fdcd7df865dce5461c529d415fb54d65ea7c1bec3a00a853c4d9820594caea42",
+      "id": "GET /v1/sites",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:893cbdd83c56d33f60fedf45d2d06340b9572f8b26ce465a7bf704766a26c0e9"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:893cbdd83c56d33f60fedf45d2d06340b9572f8b26ce465a7bf704766a26c0e9",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/sites"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:bf0abaa5432fbda8b5a3d490d0656564d5318d79de45ab51b3506d0a251c979e"
+      ],
+      "closureHash": "sha256:a91350c28e054ec80e2d8b6acdd2655c23eef085a0b56546418bb7ff394aeeab",
+      "id": "GET /v1/sites/queries/by-customer",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:bf0abaa5432fbda8b5a3d490d0656564d5318d79de45ab51b3506d0a251c979e"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:bf0abaa5432fbda8b5a3d490d0656564d5318d79de45ab51b3506d0a251c979e",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/sites/queries/by-customer"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:0cc46b31206c256b51fc060dd8cba6fcf368556fea1599103ffb72cea05541c4"
+      ],
+      "closureHash": "sha256:9ffaffc0056efb64475f12c9b8bff0d69c552e4f3de6b3e6d74314dc92531a18",
+      "id": "GET /v1/sites/queries/by-customer-code",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:0cc46b31206c256b51fc060dd8cba6fcf368556fea1599103ffb72cea05541c4"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:0cc46b31206c256b51fc060dd8cba6fcf368556fea1599103ffb72cea05541c4",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/sites/queries/by-customer-code"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:7bc7a81b46cde16b3d1a79f3f463574c923039019eb0dad570908471541e0b6f"
+      ],
+      "closureHash": "sha256:750d1344fb684f8f1fe3c88e86fb24e206176ce97d9333f173aeb58b57fca686",
+      "id": "GET /v1/sites/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:7bc7a81b46cde16b3d1a79f3f463574c923039019eb0dad570908471541e0b6f"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:7bc7a81b46cde16b3d1a79f3f463574c923039019eb0dad570908471541e0b6f",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/sites/{id}"
+      }
+    },
+    {
+      "bindings": [],
+      "closure": [],
+      "closureHash": "sha256:0fb2d5bda96af8e3d07cd6193700d8e538f7355d3ab9d1b88271b556499c8093",
+      "id": "GET /v1/workflows/process-order/{id}",
+      "imports": [],
+      "kind": "http-route",
+      "root": null,
+      "runtimeService": "workflow-instances",
+      "trigger": {
+        "method": "GET",
+        "path": "/v1/workflows/process-order/{id}",
+        "workflow": "@acme/commerce/_/ProcessOrder"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:710459ad9d4f828ed050e82f3deb19995ed88a87ab6cdebd968ed7854e2ea6b9"
+      ],
+      "closureHash": "sha256:c9121ae933e33d792a58b8201fa20b42cfa4493e51cb81c646bd5c40b43b0dca",
+      "id": "PATCH /v1/customers/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:710459ad9d4f828ed050e82f3deb19995ed88a87ab6cdebd968ed7854e2ea6b9"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:710459ad9d4f828ed050e82f3deb19995ed88a87ab6cdebd968ed7854e2ea6b9",
+      "trigger": {
+        "method": "PATCH",
+        "path": "/v1/customers/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:a3ba8fbabd10e86207f76a4756060063958246c11be282ce082330b787ffe93f"
+      ],
+      "closureHash": "sha256:0a9865da77fc0ff20ba05af7514bc51c8050800b745312f40ebbef6601327061",
+      "id": "PATCH /v1/departments/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:a3ba8fbabd10e86207f76a4756060063958246c11be282ce082330b787ffe93f"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:a3ba8fbabd10e86207f76a4756060063958246c11be282ce082330b787ffe93f",
+      "trigger": {
+        "method": "PATCH",
+        "path": "/v1/departments/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:5ef083e1c1db4012e1c9393a9c9259ad875cafe2316bdcfc6b073514924c127f"
+      ],
+      "closureHash": "sha256:11712c6f8a7116107ac9f82299239adbdbf036f9c5259a30fe73360512a6b973",
+      "id": "PATCH /v1/order-documents/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:5ef083e1c1db4012e1c9393a9c9259ad875cafe2316bdcfc6b073514924c127f"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:5ef083e1c1db4012e1c9393a9c9259ad875cafe2316bdcfc6b073514924c127f",
+      "trigger": {
+        "method": "PATCH",
+        "path": "/v1/order-documents/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:d2075d5486a315fb5dce7970d96383560195cb32ecc4f143889cee056fdb5885"
+      ],
+      "closureHash": "sha256:d20f2865742386562f67e46b86d0ca654fcdc90b9b435800fb2c2c26bc2770b4",
+      "id": "PATCH /v1/orders/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:d2075d5486a315fb5dce7970d96383560195cb32ecc4f143889cee056fdb5885"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:d2075d5486a315fb5dce7970d96383560195cb32ecc4f143889cee056fdb5885",
+      "trigger": {
+        "method": "PATCH",
+        "path": "/v1/orders/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:9967de4bcf4c20fadf98ce73760ce3ff75f41a0838b26b5c036796f8b38931ce"
+      ],
+      "closureHash": "sha256:b1bcaef5601baf42616f74504b98ae2d36eaf652c64d216644b5ff5ed3237529",
+      "id": "PATCH /v1/site-policies/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:9967de4bcf4c20fadf98ce73760ce3ff75f41a0838b26b5c036796f8b38931ce"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:9967de4bcf4c20fadf98ce73760ce3ff75f41a0838b26b5c036796f8b38931ce",
+      "trigger": {
+        "method": "PATCH",
+        "path": "/v1/site-policies/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:cb458f3cec43ce99a8bc7e8fff179f82fd8f8a0222840d17fa989a5886802262"
+      ],
+      "closureHash": "sha256:83351b533056f9c1e6b3bf63493601ca16ab005d918a4e865653affcb1cec2df",
+      "id": "PATCH /v1/sites/{id}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:cb458f3cec43ce99a8bc7e8fff179f82fd8f8a0222840d17fa989a5886802262"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:cb458f3cec43ce99a8bc7e8fff179f82fd8f8a0222840d17fa989a5886802262",
+      "trigger": {
+        "method": "PATCH",
+        "path": "/v1/sites/{id}"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:d8cb1c482bc81c71d7957a5167f0e08acb23bac6fbebe7380023902818177eeb"
+      ],
+      "closureHash": "sha256:383e7ddb800993149b07762112a8c39a5680f9026d7e4d14697f0c9704be303f",
+      "id": "POST /v1/customers",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:d8cb1c482bc81c71d7957a5167f0e08acb23bac6fbebe7380023902818177eeb"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:d8cb1c482bc81c71d7957a5167f0e08acb23bac6fbebe7380023902818177eeb",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/customers"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:843b8fae59eafd17a88e9bf70c5a771582acec4c6dbd01c6641da38e95d386cd"
+      ],
+      "closureHash": "sha256:52d6bfb63b4e30a8fb6325289373800cfdd4f1b5b95cbbf9b4b54667d251b0cd",
+      "id": "POST /v1/customers/{id}/restore",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:843b8fae59eafd17a88e9bf70c5a771582acec4c6dbd01c6641da38e95d386cd"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:843b8fae59eafd17a88e9bf70c5a771582acec4c6dbd01c6641da38e95d386cd",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/customers/{id}/restore"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:ac886b03a695d8fd414c2964f282a1b9dedf207b154c704fbbd2223b484276a2"
+      ],
+      "closureHash": "sha256:89644b2ce26cc5d0d5da11c81e7b2ff5d7231aba95c91a0c8de5b687dc574fe9",
+      "id": "POST /v1/departments",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:ac886b03a695d8fd414c2964f282a1b9dedf207b154c704fbbd2223b484276a2"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:ac886b03a695d8fd414c2964f282a1b9dedf207b154c704fbbd2223b484276a2",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/departments"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:0b76f2fbb14b3d4b2d369037667d523333d46f714cf5f590f18182c5023c92a0"
+      ],
+      "closureHash": "sha256:d06c253a4c72ca98def20a1d514af6a705ec63dd86cbfb17fca69b0fbfd97edb",
+      "id": "POST /v1/departments/{id}/move",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:0b76f2fbb14b3d4b2d369037667d523333d46f714cf5f590f18182c5023c92a0"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:0b76f2fbb14b3d4b2d369037667d523333d46f714cf5f590f18182c5023c92a0",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/departments/{id}/move"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:166fd571e6b8c8f3283857b95663f5df6bbca9d2a0d2f39e469bec0f3b14931a"
+      ],
+      "closureHash": "sha256:2c810f6996055ad966edf460828f2f63175f32ce230f24cd7711539bbb2d6b94",
+      "id": "POST /v1/order-documents",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:166fd571e6b8c8f3283857b95663f5df6bbca9d2a0d2f39e469bec0f3b14931a"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:166fd571e6b8c8f3283857b95663f5df6bbca9d2a0d2f39e469bec0f3b14931a",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/order-documents"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "BLOBS",
+          "type": "r2"
+        }
+      ],
+      "closure": [
+        "sha256:8b2b6f21aecfe50ea287377326b6dabd493560a3e1d5954068704f85790fe015"
+      ],
+      "closureHash": "sha256:ae6726dec2ed4a9e9d4ec35dc17b1ceef85262d5cba6b3e1001ca1ad25bfab0d",
+      "id": "POST /v1/order-documents/{id}/finalize",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:8b2b6f21aecfe50ea287377326b6dabd493560a3e1d5954068704f85790fe015"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:8b2b6f21aecfe50ea287377326b6dabd493560a3e1d5954068704f85790fe015",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/order-documents/{id}/finalize"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "BLOBS",
+          "type": "r2"
+        }
+      ],
+      "closure": [
+        "sha256:591c00470cd6a248a97a4cd8ddc0fbb96419d589647f197d408885708588c08e"
+      ],
+      "closureHash": "sha256:98eae00c13f20c2bad18cf9029e3df36ad484413ecddbc64b0fa6f3003282dae",
+      "id": "POST /v1/order-documents/{id}/upload",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:591c00470cd6a248a97a4cd8ddc0fbb96419d589647f197d408885708588c08e"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:591c00470cd6a248a97a4cd8ddc0fbb96419d589647f197d408885708588c08e",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/order-documents/{id}/upload"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:5f6c76555d65eb161c4a4986b1977d58be6de7547fdc1251f0a03ce76bdf555e"
+      ],
+      "closureHash": "sha256:ae94568ee04b119e4f60929b9849ac9e70e73f4d2e197de9e8e09947f0f850bd",
+      "id": "POST /v1/orders",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:5f6c76555d65eb161c4a4986b1977d58be6de7547fdc1251f0a03ce76bdf555e"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:5f6c76555d65eb161c4a4986b1977d58be6de7547fdc1251f0a03ce76bdf555e",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/orders"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+      ],
+      "closureHash": "sha256:00aed8903f2a3775874b8e559e4c7bc8faeba3868dc02e2e5d8fa22eff15bc70",
+      "id": "POST /v1/orders/{id}/actions/approve",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/orders/{id}/actions/approve"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+      ],
+      "closureHash": "sha256:bcbf2c6f1a4692a42aa3eb2921afef4e4a7988aa2a775ea9011c8b3a0634d226",
+      "id": "POST /v1/orders/{id}/actions/cancel",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/orders/{id}/actions/cancel"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:36eccaf6e79f859bad28b65555dedbf6a3e19666efbe153fc6037a001057d229"
+      ],
+      "closureHash": "sha256:6c2bd9cfe5ad776a98d8c53c0e0204f205d37f6151c9158f0c04d427b10d6e5b",
+      "id": "POST /v1/orders/{id}/actions/complete",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:36eccaf6e79f859bad28b65555dedbf6a3e19666efbe153fc6037a001057d229"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:36eccaf6e79f859bad28b65555dedbf6a3e19666efbe153fc6037a001057d229",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/orders/{id}/actions/complete"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "REALTIME",
+          "type": "durable-object"
+        },
+        {
+          "name": "Q_FULFILL_ORDER",
+          "type": "queue-producer"
+        },
+        {
+          "name": "WF_PROCESS_ORDER",
+          "type": "workflow"
+        }
+      ],
+      "closure": [
+        "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f",
+        "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a",
+        "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+        "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46",
+        "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662",
+        "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c",
+        "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+      ],
+      "closureHash": "sha256:ba2c9074f835225884cd2e6410a80874a440af947f1ec61aa2a6d375bc7b9e46",
+      "id": "POST /v1/orders/{order}/process",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "send:@acme/commerce/_/OrderEvents#OrderSubmitted",
+          "provider": {
+            "kind": "runtime",
+            "service": "outbox"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "sleep",
+          "provider": {
+            "kind": "runtime",
+            "service": "timers"
+          },
+          "unit": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46"
+        },
+        {
+          "capability": "wait:@acme/commerce/_/PaymentEvents#PaymentCaptured",
+          "provider": {
+            "kind": "runtime",
+            "service": "signals"
+          },
+          "unit": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/orders/{order}/process"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "REALTIME",
+          "type": "durable-object"
+        },
+        {
+          "name": "Q_FULFILL_ORDER",
+          "type": "queue-producer"
+        }
+      ],
+      "closure": [
+        "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a",
+        "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+        "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+      ],
+      "closureHash": "sha256:fa0b05e70c6b71849d64f6b3d3d812ea381e7c59e1614b4e0abe41672448919e",
+      "id": "POST /v1/orders/{order}/submit",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "send:@acme/commerce/_/OrderEvents#OrderSubmitted",
+          "provider": {
+            "kind": "runtime",
+            "service": "outbox"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/orders/{order}/submit"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:bb5051eb3dc460a3782b1633b91e6e84ee0e3161f5a349d5c8a4b12ada0bfecc"
+      ],
+      "closureHash": "sha256:e961a06e330fb4a478da32337e83e88a766724863beac644a2ccf00aa9f6f058",
+      "id": "POST /v1/site-policies",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:bb5051eb3dc460a3782b1633b91e6e84ee0e3161f5a349d5c8a4b12ada0bfecc"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:bb5051eb3dc460a3782b1633b91e6e84ee0e3161f5a349d5c8a4b12ada0bfecc",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/site-policies"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:c6df1ef1580f74224dc6ce98b05e0002f7f1c0a069949c256b200ec7ee6d4450"
+      ],
+      "closureHash": "sha256:90551db81c3793aaf768df751086ac6a4902eaa54d79a0215a725ff17c50ea33",
+      "id": "POST /v1/sites",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:c6df1ef1580f74224dc6ce98b05e0002f7f1c0a069949c256b200ec7ee6d4450"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:c6df1ef1580f74224dc6ce98b05e0002f7f1c0a069949c256b200ec7ee6d4450",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/sites"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "REALTIME",
+          "type": "durable-object"
+        },
+        {
+          "name": "Q_FULFILL_ORDER",
+          "type": "queue-producer"
+        },
+        {
+          "name": "WF_PROCESS_ORDER",
+          "type": "workflow"
+        }
+      ],
+      "closure": [
+        "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f",
+        "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a",
+        "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+        "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46",
+        "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662",
+        "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c",
+        "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+      ],
+      "closureHash": "sha256:ba2c9074f835225884cd2e6410a80874a440af947f1ec61aa2a6d375bc7b9e46",
+      "id": "POST /v1/workflows/process-order/signals/{message}",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "send:@acme/commerce/_/OrderEvents#OrderSubmitted",
+          "provider": {
+            "kind": "runtime",
+            "service": "outbox"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "sleep",
+          "provider": {
+            "kind": "runtime",
+            "service": "timers"
+          },
+          "unit": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46"
+        },
+        {
+          "capability": "wait:@acme/commerce/_/PaymentEvents#PaymentCaptured",
+          "provider": {
+            "kind": "runtime",
+            "service": "signals"
+          },
+          "unit": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+        }
+      ],
+      "kind": "http-route",
+      "root": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/workflows/process-order/signals/{message}"
+      }
+    },
+    {
+      "bindings": [],
+      "closure": [],
+      "closureHash": "sha256:0fb2d5bda96af8e3d07cd6193700d8e538f7355d3ab9d1b88271b556499c8093",
+      "id": "POST /v1/workflows/process-order/{id}/cancel",
+      "imports": [],
+      "kind": "http-route",
+      "root": null,
+      "runtimeService": "workflow-instances",
+      "trigger": {
+        "method": "POST",
+        "path": "/v1/workflows/process-order/{id}/cancel",
+        "workflow": "@acme/commerce/_/ProcessOrder"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "forge-acme-commerce-fulfill-order",
+          "type": "queue-consumer"
+        }
+      ],
+      "closure": [
+        "sha256:f1c7aa1a782f67c67a6f2ed3066889e43439ee5a21d6c15dd1e16ed9b4e1e465"
+      ],
+      "closureHash": "sha256:ea0d59812e38a8dd62a8a3d21a5d191cddbe71a996ee28e2b8ea2a4849575235",
+      "id": "fulfill-order",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:f1c7aa1a782f67c67a6f2ed3066889e43439ee5a21d6c15dd1e16ed9b4e1e465"
+        }
+      ],
+      "kind": "queue-consumer",
+      "root": "sha256:f1c7aa1a782f67c67a6f2ed3066889e43439ee5a21d6c15dd1e16ed9b4e1e465",
+      "trigger": {
+        "channel": "@acme/commerce/_/OrderEvents",
+        "message": "OrderSubmitted",
+        "queue": "forge-acme-commerce-fulfill-order"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "REALTIME",
+          "type": "durable-object"
+        },
+        {
+          "name": "Q_FULFILL_ORDER",
+          "type": "queue-producer"
+        },
+        {
+          "name": "WF_PROCESS_ORDER",
+          "type": "workflow"
+        }
+      ],
+      "closure": [
+        "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f",
+        "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a",
+        "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+        "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46",
+        "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662",
+        "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c",
+        "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+      ],
+      "closureHash": "sha256:ba2c9074f835225884cd2e6410a80874a440af947f1ec61aa2a6d375bc7b9e46",
+      "id": "@acme/commerce/_/ProcessOrder",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "send:@acme/commerce/_/OrderEvents#OrderSubmitted",
+          "provider": {
+            "kind": "runtime",
+            "service": "outbox"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "sleep",
+          "provider": {
+            "kind": "runtime",
+            "service": "timers"
+          },
+          "unit": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46"
+        },
+        {
+          "capability": "wait:@acme/commerce/_/PaymentEvents#PaymentCaptured",
+          "provider": {
+            "kind": "runtime",
+            "service": "signals"
+          },
+          "unit": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+        }
+      ],
+      "kind": "workflow",
+      "root": "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46",
+      "trigger": {
+        "className": "ProcessOrderWorkflow",
+        "name": "forge-acme-commerce-process-order"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+      ],
+      "closureHash": "sha256:00aed8903f2a3775874b8e559e4c7bc8faeba3868dc02e2e5d8fa22eff15bc70",
+      "id": "@acme/commerce/_/ProcessOrder#approve",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+        }
+      ],
+      "kind": "workflow-step",
+      "root": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337",
+      "trigger": {
+        "step": "approve",
+        "workflow": "@acme/commerce/_/ProcessOrder"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+      ],
+      "closureHash": "sha256:bcbf2c6f1a4692a42aa3eb2921afef4e4a7988aa2a775ea9011c8b3a0634d226",
+      "id": "@acme/commerce/_/ProcessOrder#short",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+        }
+      ],
+      "kind": "workflow-step",
+      "root": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662",
+      "trigger": {
+        "step": "short",
+        "workflow": "@acme/commerce/_/ProcessOrder"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "REALTIME",
+          "type": "durable-object"
+        },
+        {
+          "name": "Q_FULFILL_ORDER",
+          "type": "queue-producer"
+        }
+      ],
+      "closure": [
+        "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a",
+        "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+        "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+      ],
+      "closureHash": "sha256:fa0b05e70c6b71849d64f6b3d3d812ea381e7c59e1614b4e0abe41672448919e",
+      "id": "@acme/commerce/_/ProcessOrder#submit",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "send:@acme/commerce/_/OrderEvents#OrderSubmitted",
+          "provider": {
+            "kind": "runtime",
+            "service": "outbox"
+          },
+          "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+        }
+      ],
+      "kind": "workflow-step",
+      "root": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+      "trigger": {
+        "step": "submit",
+        "workflow": "@acme/commerce/_/ProcessOrder"
+      }
+    },
+    {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "closure": [
+        "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+      ],
+      "closureHash": "sha256:665c73fc705ccc91f564d02999ebc9276aac5fa783e68ef4e631ba2ed74a1cdc",
+      "id": "@acme/commerce/_/ProcessOrder#summary",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          },
+          "unit": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+        }
+      ],
+      "kind": "workflow-step",
+      "root": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f",
+      "trigger": {
+        "step": "summary",
+        "workflow": "@acme/commerce/_/ProcessOrder"
+      }
+    }
+  ],
+  "hostBindings": [
+    {
+      "name": "DB",
+      "type": "d1"
+    },
+    {
+      "name": "CURSOR_SECRET",
+      "type": "secret"
+    },
+    {
+      "name": "FORGE_AUTH",
+      "type": "var"
+    }
+  ],
+  "manifestHash": "sha256:bcb22196f83b35784ad66f63c6e6a8d328ba13f31bb9c60ed6fb494efee518ff",
+  "modules": {
+    "sha256:1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427": {
+      "bytes": 1065,
+      "path": "modules/1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427.js",
+      "sources": [
+        "impl/submit-order.ts"
+      ]
+    },
+    "sha256:45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee": {
+      "bytes": 288,
+      "path": "modules/45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee.js",
+      "sources": [
+        "impl/rebuild-order-summary.ts"
+      ]
+    },
+    "sha256:4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9": {
+      "bytes": 502,
+      "path": "modules/4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9.js",
+      "sources": [
+        "impl/payment-adapter.ts"
+      ]
+    },
+    "sha256:d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9": {
+      "bytes": 377,
+      "path": "modules/d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9.js",
+      "sources": [
+        "impl/fulfill-order.ts"
+      ]
+    }
+  },
+  "package": {
+    "name": "@acme/commerce",
+    "version": "0.1.0"
+  },
+  "target": "cloudflare-workers",
+  "toolchain": {
+    "bundler": "esbuild@0.27.7",
+    "forgec": "0.5.0",
+    "units": "@forgegraph/units@0.5.0"
+  },
+  "uncovered": [
+    {
+      "id": "@acme/commerce/_/PendingOrders",
+      "kind": "view",
+      "reason": "read model served by the runtime query engine; not split into a unit in T2"
+    },
+    {
+      "id": "@acme/commerce/_/CustomerOrderSummary",
+      "kind": "projection",
+      "reason": "rebuildable projection maintained by the runtime; not split into a unit in T2"
+    },
+    {
+      "id": "@acme/commerce/_/CurrentSitePolicy",
+      "kind": "cache",
+      "reason": "loader runs inside the runtime; not split into a unit in T2"
+    },
+    {
+      "id": "@acme/commerce/_/NightlyReconciliation",
+      "kind": "schedule-routes",
+      "reason": "status and manual tick routes are served by the runtime scheduler"
+    }
+  ],
+  "units": {
+    "sha256:0094e340e41d5f9888e49d28aa64da524091a1296f43c8d7c37edde67a1eaff6": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:a43897f3f4d76607751ef2346f19cf7e41a680b5072fb86b20ad175601c28562",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:93f09d880a5d86fc3bb2214e365c5a5ba8b2532399b145c6e3ffffc5e0af43d9",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:7217ca960cad0fab806ad8857d3e039044f74b82891c93837d0fdeddf2e03c9f",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.find.byCode"
+    },
+    "sha256:06cf8cc34c29861fd9ccc6ada61e1eaceac293816ec12a22070c1d9eaf48a1e2": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:cff00c6d77b697f66199d5d9fc992b65ae1d015cd47678a0fed7f41509fe1eff",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:e4b377b02bbc5a95464bb3fb28541034347c930fd311123595cb2b072bb474b3",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:19eb662ac3de3b4f20e77f99fcf517ea61f4517173d635263909b06f575ad35c",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.ancestors"
+    },
+    "sha256:0b76f2fbb14b3d4b2d369037667d523333d46f714cf5f590f18182c5023c92a0": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:59fe466c83631bf32026eb6a716a4e5f6749bf9b3ccde730c6a60bd9d1b7f113",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:a735a20cec9bbeb31dd579e14c9ea4aef979834f94cad2c072673f7578cef44d",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:3ddf26066a8ef590898aee343a299fd6bacf464c2fd5875d76b5776014ab3dfc",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.move"
+    },
+    "sha256:0cc46b31206c256b51fc060dd8cba6fcf368556fea1599103ffb72cea05541c4": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:2e6b6ea062d8cddebda24fe46ca830be677aefd94fb8c59c34db320d5cf39f8f",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:16f72b37ad9c6145956a40203fff0bb4aeef1f8c70d328ff9797e4f1df58e1b6",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:a1ff402e122a7cb5172b366b174e8141bc10db396c08576199e86e38d04c8f5b",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Site.find.byCustomerCode"
+    },
+    "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "abi": "forgegraph-function/1",
+        "export": "default",
+        "libraries": {
+          "@forgegraph/runtime": "0.5.0",
+          "effect": "4.0.3"
+        },
+        "module": "sha256:45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee"
+      },
+      "implementationHash": "sha256:8f74fdf8d1c22d292648feb3b01f7b2a409ccf2e6567f663c0e4c472eb30f1cc",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:5b45025690948180ea3da4148b1853d92bf9a14b46379d3585705bfa132ce987",
+      "kind": "js-module",
+      "role": "function",
+      "symbol": "@acme/commerce/_/RebuildOrderSummary"
+    },
+    "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a": {
+      "bindings": [],
+      "dependencies": [],
+      "findings": [
+        {
+          "match": "Math.random(",
+          "rule": "nondeterminism",
+          "source": "impl/payment-adapter.ts"
+        }
+      ],
+      "implementation": {
+        "abi": "forgegraph-external-binding/1",
+        "export": "default",
+        "libraries": {},
+        "module": "sha256:4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9"
+      },
+      "implementationHash": "sha256:cea1e5101d6fadcd441b508297a66961d21f1e98cd213c7973ecdc7e259abab3",
+      "imports": [],
+      "interfaceHash": "sha256:768b9d2eb8d1984e9e27df164642a4a8effc7c1c43d846dd253220f380f03db9",
+      "kind": "js-module",
+      "role": "external",
+      "symbol": "@acme/payments/_/AuthorizePayment"
+    },
+    "sha256:12ace2c06d2a42372ee2da8f33bfc4063edc26372e8945a98445683a76a0b329": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:b8cf83fbd573b23f04afb46aa313265953c73c9c29308663a0008272b651dae8",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:6d13c938f00cfe2d0c5e0b7fefac2ab0e99e7c9a573e05f724dfdbef1321f2e9",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:72bc9159fa5791631ef5fef1ce66e12ace1dc91360c6a19ab7ff2f4ee388d70d",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.list.all"
+    },
+    "sha256:166fd571e6b8c8f3283857b95663f5df6bbca9d2a0d2f39e469bec0f3b14931a": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:a99091ee650c08feb4ea2210558de0420e17d177f86e38daa4afeaff897fbb73",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:88455ff804daadf4f39674ddb8297bc5b054515852586242fa990bce1f998d0b",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:d10eecf77ead2bb345037eb508e65e82acaf6e1dcf19678cfaf94bb96d50eb65",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.create"
+    },
+    "sha256:16796aebc4773060b028b4cb94aa7eee3aa20cd323e007f1f0feacc17b64e03d": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:9bb7d3748c9c2695f861069203782ffa01d48d3364c46206fe4c49169efe1bea",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:04ef841bcefd855fdb0b9590b314eaf7bb0c15610290ea5a57eeedef482b95d7",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:3f139073ba11184e7c39874696bc7c0cdf275ae9a9dd09d737e3f44a693fb0f6",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.list.byTier"
+    },
+    "sha256:181dbdb487b474fde26a0ed36e7b42f1ebe9531828e427fad948d400ad75c704": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:f8180d5577375141f6672d62e94a7d12a15b53d34b667793279f5be02d09ab41",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:99936db6dc97358969f2ff2bed00ef08813cd69f6dbb6e2065990c50555f1643",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:53c6b2120b50b20a6a4b6289bf29073dcd1195578bb3a23aa576e00a4f4b0602",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.get"
+    },
+    "sha256:1a57143e7f35825a9f49b0056ab4b24943b584a8b1bec4546112d1c055f4b19b": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:c4564b7860e3e1f741905b91d31780e69e51eb99aeb7738675bcb846c1abb08e",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:e578045ebed51462afd5f7b20ba9bc9b8e5df25f4e600de37afd8e299a1473d6",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:e5a34ebb9a74ace738132d90aa5f002ec5be05a3694fabe0a971c973d3d2368d",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Site.delete"
+    },
+    "sha256:1e5bd3cdd15969bbb90a3ce0e91da0855d5d5a7993ec37a9b3f5f9f50f17474f": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:c71dd81870391b5e7797559447016a5c8c29835a751667775c8281dca9800db6",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:9a412ab1cbdb4b29ad746022197f37becb78a9247501f8a27c8143dfc605b4b8",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:c6301ec466e209bf83a6a63d58df5acfdee615b43981fd32ad3d07297f975a28",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/SitePolicy.effective.bySite"
+    },
+    "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "REALTIME",
+          "type": "durable-object"
+        },
+        {
+          "name": "Q_FULFILL_ORDER",
+          "type": "queue-producer"
+        }
+      ],
+      "dependencies": [
+        "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a",
+        "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+      ],
+      "findings": [],
+      "implementation": {
+        "abi": "forgegraph-function/1",
+        "export": "default",
+        "libraries": {
+          "@forgegraph/runtime": "0.5.0",
+          "effect": "4.0.3"
+        },
+        "module": "sha256:1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427"
+      },
+      "implementationHash": "sha256:e4fba692111184bc121ba4fbf8cfe8b06d374ccf67250b73ebfebca237fdff09",
+      "imports": [
+        {
+          "capability": "function:@acme/payments/_/AuthorizePayment",
+          "provider": {
+            "kind": "unit",
+            "unit": "sha256:11ae1d26ce14d95750a53ad8cd10e0508d93590c8bfdcd7c914687a124560d4a"
+          }
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        },
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        },
+        {
+          "capability": "send:@acme/commerce/_/OrderEvents#OrderSubmitted",
+          "provider": {
+            "kind": "runtime",
+            "service": "outbox"
+          }
+        },
+        {
+          "capability": "transition:@acme/commerce/_/Order.status.submit",
+          "provider": {
+            "kind": "unit",
+            "unit": "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:f0033366125d96ddcb2ea7cc4f0a15b8288138e86b94c3eeec2b029435583315",
+      "kind": "js-module",
+      "role": "function",
+      "symbol": "@acme/commerce/_/SubmitOrder"
+    },
+    "sha256:36eccaf6e79f859bad28b65555dedbf6a3e19666efbe153fc6037a001057d229": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:b0ffbfd201fce7dc8998592b3803abac0396bfd6511571b8468ddf85a464643e",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:58ec88b2b4fffc3035db91c887afee47a506c663ebe7bcb5056acf65354a976e",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:11d6f243a44c93073f50eb3852b54c23b7f266735dadde006211e04e1bc47d6f",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.status.complete"
+    },
+    "sha256:3dd6f0f5f33ab08e7473b90eb0d49082226bdce4030174581f94f487714c9a46": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "WF_PROCESS_ORDER",
+          "type": "workflow"
+        }
+      ],
+      "dependencies": [
+        "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f",
+        "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99",
+        "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662",
+        "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+      ],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:62f3c6c402b8d49d810c3c875825d095bc7763443a7f3e9f455999a005af7e21",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:b3b2961e5f112d489b14a12b379fea43481a8341ae8a1ebe363e5549f3ad2a8c",
+      "imports": [
+        {
+          "capability": "function:@acme/commerce/_/RebuildOrderSummary",
+          "provider": {
+            "kind": "unit",
+            "unit": "sha256:1147588e3638e07d0cb1e46a230115220cb585d26c0fb923ae64422497fc571f"
+          }
+        },
+        {
+          "capability": "function:@acme/commerce/_/SubmitOrder",
+          "provider": {
+            "kind": "unit",
+            "unit": "sha256:2c8c687532ef544d0353e88ad07f788509f25887e01926f9496c456782549e99"
+          }
+        },
+        {
+          "capability": "sleep",
+          "provider": {
+            "kind": "runtime",
+            "service": "timers"
+          }
+        },
+        {
+          "capability": "transition:@acme/commerce/_/Order.status.approve",
+          "provider": {
+            "kind": "unit",
+            "unit": "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337"
+          }
+        },
+        {
+          "capability": "transition:@acme/commerce/_/Order.status.cancel",
+          "provider": {
+            "kind": "unit",
+            "unit": "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662"
+          }
+        },
+        {
+          "capability": "wait:@acme/commerce/_/PaymentEvents#PaymentCaptured",
+          "provider": {
+            "kind": "runtime",
+            "service": "signals"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:081fef8358f2009447d450b6b605d0e72f50db73273543a3e8376de74d4f91c0",
+      "kind": "forge-native",
+      "role": "workflow",
+      "symbol": "@acme/commerce/_/ProcessOrder"
+    },
+    "sha256:47beefedcce04f05197f589641800b1397f61f3bd8d869faf50a20d9771902e4": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:072b7aba2a6428cb956fa7dea2cf9ecca9af4edb25263d2686f26f515c3b00ec",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:628c1a9b0276392d6f12b9514c533e43736d72aee2d56e7251a7ef34d50958f9",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:cb2e2c9a0e9c39e380bc75d7a64af71afeb6a132b92536febe59e02bcb5c5128",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.get"
+    },
+    "sha256:48b181e15724bf3bf5e4ebf77253fa0985303daeb79834caaa3c1e22b7352e2a": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:8be5395ef6f40bcd06396a623f8c2f3680f98c834bb5e5d5c58c7ec16cea6763",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:27b7c1dac6c1a3f44e6e52d83d77f65abd5e83761cb339e98b88859b7dd4ff20",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:2dbf9a4310d74fda640dd888165fe535ba3763aede238e65e5238343cd7f0904",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.delete"
+    },
+    "sha256:4d9af52dc2304d9e457a992d12c570b3aeffd88ddb1858334842161d2524d767": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:24932449830fb10711c9b1f96482fc725f34db9005dd514a988a0dcf9a323442",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:8125f3a603a8ac4d19d9381bd12f2d8d9676b25b23a9ca344f7de1225bfd2bda",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:ccfcdad88889119e3c473b85f6046580715881a0a0736c6efb36b7ee3684e11c",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.list.byCustomer"
+    },
+    "sha256:56669afda125ca4732408e7fb55e452f21b82b0ceb0ae958be9778e394ced4b4": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:b43a1eae53ccdb33b8026e03152f6f61aa1b544d40959a3a5f16af487de3c102",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:c03b06457af6ef132aa1bb2443638acf51f3fd7b7f57d0e5e12aa26709cccd28",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:119477be4b4e404117a70e2c6b8a5bddd808a51437a859eb9e11242ffe89fc3d",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.list.byOrder"
+    },
+    "sha256:591c00470cd6a248a97a4cd8ddc0fbb96419d589647f197d408885708588c08e": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "BLOBS",
+          "type": "r2"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:4afd0716af12b9fc707eb82921c45136822c002a50f684868a678a85e989210c",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:1e6ad08709ab1bd2d160c4b1a6ce8f6c6c2e201c0aa136c98e20de8205853e43",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:1e8fb6ee9f2fd729521610f901a78db0b243a31bbe9c6164c08134758c96357c",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.beginUpload"
+    },
+    "sha256:5ef083e1c1db4012e1c9393a9c9259ad875cafe2316bdcfc6b073514924c127f": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:73d1c7deb1089707589171b92f948a1ace6c43e7630d98e9fb260dfb22f09205",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:8c87550e8a7f7ba7a1edb45d3c89dc4bafc0602c0158e0dd90940beb88d78024",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:dd1f619723fb69b99af83a8dea6b6769dacdcc987792cfc41b28b176cf359987",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.update"
+    },
+    "sha256:5f6c76555d65eb161c4a4986b1977d58be6de7547fdc1251f0a03ce76bdf555e": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:a8321688741f5451b9d6102228cdc47c361de8790221aa7c3cb102be44df7179",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:53d97c512505d3b4a0d8180a9bf98dd0acd749e4d9466f124674b22781430a86",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:0812d60d772bf78943de6df593166bafb48939435eba0d7d08254a4362834002",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.create"
+    },
+    "sha256:69c68a489e23af585808454192cfd59608a563e0afe35317ea36d4cfe8d15687": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:c8ec52753d67b4d18715e70aabbfb19db16b04cab74867bc5e01c0bcbe995fca",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:67a829c34bb972016cbdb6bb52139d402cce9bc432c0920fd1c55c8293aea422",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:8b9e17bcb1921110870bc01fa7d6c99a78c8747c5f49a589d04402f62e338a61",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.children"
+    },
+    "sha256:6dc78e3dba75cb32ba6a0e1302091b4c45d625d38d166069b43a1124e90c9662": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:2f899936e22881477e77e925c102ac4cbff2ea12b14b74594337425cc19292d2",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:4e3b2f8c255fd82e6aeb0bc1bd3badfa11a397bf2791ab448506f1b17aecaf05",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:e72af9bda409592d106a83deae936817a596d2fb9532a1d1eac1a0d7b933ee72",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.status.cancel"
+    },
+    "sha256:710459ad9d4f828ed050e82f3deb19995ed88a87ab6cdebd968ed7854e2ea6b9": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:e8b8b44dfd14cbce8c865b4219a2fc629f9f2b0f8415b6ec472ab60a8c7599c2",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:cdf9e6e8389d25968521089dc48a33e881a9d2a71805b6ba02383adf7f48cc48",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:ae32f89716c963382895ef70193a719856aa62e09c83bbdbbc2b5d7ccec47c0e",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.update"
+    },
+    "sha256:725b37f94babccfad504e35451e3da4482e1d8f1773ce5e8e7d2dd8d7ebe3285": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:19a7270d2a2a62e5ab87da5a26abc82c20b75653fbc0caa084169d4a0ed3f2dd",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:91203200d76fc67e0d8a36d826b91153a61070ab12cc80982b5b49b1f986ca8a",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:6e88a1b605cdac1cd3af829a6d1a9d38819a3ccdf4e5e29d501d2c5f19d25fd6",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.delete"
+    },
+    "sha256:77da56ee33408c6edc1dabb535d1756fe9b75a2e139b766dc5ac715e90b6127c": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:58a4915f6e927ced70014ab06b3ac4767f0a5a6d8d267547efb3617519a3fac6",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:abb3bcdfaf65262606abccf1154c4485344c802d14a44fa2e18be28f5c063130",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:0bc004dda6efaeedc60c75bc94fe5ce1f543311b0674e072ab658969281d7e91",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.status.submit"
+    },
+    "sha256:7bc7a81b46cde16b3d1a79f3f463574c923039019eb0dad570908471541e0b6f": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:e4744306753c15d1cd706a2d021aa61147d335153fc808838e21a87cc8ac3a56",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:2c71478f24016e1c0e594077f92cafdff12bddd709e3e13626196f98cd722c45",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:8e918ebf979fec2af37015111d8a8d819ec4ebaa1295b181cc6e88eac075342e",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Site.get"
+    },
+    "sha256:7f2ad4ea2e963118150303a5c634e788dada54bcc6ea18db512478c493ea0fe0": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:7f8be0eb46846e514ec4b9fe6bc4829f648a9d57dda619ca88867904b42a32dc",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:c75e6e5b6e594ffde1d4ecb9ae48a0976b5b7ab6e00b99fbe280d54df6c6e539",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:b9c902e4c4c6a1f2635ae71f78cba520c587dbd1aeeb11dcfc4c4b2f90d4fba0",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.list.byCustomer"
+    },
+    "sha256:843b8fae59eafd17a88e9bf70c5a771582acec4c6dbd01c6641da38e95d386cd": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:8a20bf1198822c4c49a46879e160b37c88758985b287c2f30a5f0512f15a952a",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:e7caa1aec7c35d06010196145675796460d62fefa750abfb8d9c1983b9d2feb0",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:291a6984a733b4e0c6b04dd83e314eb6d26f5f164cad19378ea9933f857c584b",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.restore"
+    },
+    "sha256:893cbdd83c56d33f60fedf45d2d06340b9572f8b26ce465a7bf704766a26c0e9": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:1e3633dcb6547440d8fd8e31faa0b48afc9e795f95bca3944da0508f60b45195",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:90e878fccb15c1b1217f6b18cbecfcff77aaee0d1b96e653b84a0451c59126c2",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:6e4b63a40a127bb5263a343dec15fdf6ec9dc8bee99f64bf9da95146c0287fca",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Site.list.all"
+    },
+    "sha256:8b2b6f21aecfe50ea287377326b6dabd493560a3e1d5954068704f85790fe015": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "BLOBS",
+          "type": "r2"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:64b8828c34ffb02efa19f1575a40e8a4ba0c88cbddbca92551de53cf3a930f84",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:7888505ee91606fbae391566846a98765ea82c0205e3c54717df592d4621fc45",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:50c797af46035cc1d15cce1a653c75cdf9b0944b96be399925001aad3025fee2",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.finalizeUpload"
+    },
+    "sha256:9561e976c86ba31ad45d8695af7b77582a0b4f67fab62aef9275300557331337": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:9cfb8f77a9d2873e22fee87a626f88f8f8e0ee1b5ce81ecd1dd93dbe15f4383b",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:5a6acc10ff18a4f659b22eb1ef2195b55a00fedbdd1f334ce722a0c69c2d5855",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:8f5bea5b76eaffb91253a049f32d0df8fb803dd93e0084922780a6f9356090f1",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.status.approve"
+    },
+    "sha256:95f5fd8ef7f4f17304947c7fc966cee5a9b98c7881bf1ee11fafcf119f03efc3": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:485ca68aa27eaf63dceebd37fe80ad023356c058d2246cdc3e0ab5f01d52f22b",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:8c7cec5b113d939d618e3ea9f6053aef5b4c333fabd3e1c4e6f869a5802859f6",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:a28541337cd53a9b8c43a2da277f595618343f1df7d5b49630131f63e95e1418",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/SitePolicy.list.bySite"
+    },
+    "sha256:9967de4bcf4c20fadf98ce73760ce3ff75f41a0838b26b5c036796f8b38931ce": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:48f14d17cd4c6304d7619340e85fab6bbfbde05e4c818d70f65d8aa2dc687b11",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:6ca02619289a28debe22d8898cffaebb04c6c2686c84d0dd7c9073e3b4893774",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:4a533e02a67c8d6fb45e429734fb510681ff0e951aa727306b4d3430060e89f8",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/SitePolicy.update"
+    },
+    "sha256:a3ba8fbabd10e86207f76a4756060063958246c11be282ce082330b787ffe93f": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:74bc113587dc0db05c26c920f2cdd713f821829a9eb998c723b56525778a470d",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:6475097e4256053afd5aef669e9a69da52228ce7347b42d1c158e7b330b0657f",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:7518235da55966ea98c7ce484820dc89d107e470aa8a8a79258927385b8ad425",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.update"
+    },
+    "sha256:a6d1ce06685699e276d3a036e7f0da4f8ceb47e0d88deb4d44b8623ec0d078e3": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:0407fc6fb1077ca71f7dd677f6ae326f93ce48a50bf0831c44fe0a2a9122c022",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:98aff23015b827369b2775bca67dc2b2ca47c5c6c13982babf4567486b82c859",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:5a8ed8d69eccfcb3e85ad62287bc824b7e6c7d023c1826030bb6a891472598c2",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.list.all"
+    },
+    "sha256:a75d196d397f5522a1e4df320e94cc19adddc478093356701fa7b3b8ec05c9cb": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:272d7153c3fc94faa1ec35555db22170e9b37b9096ada9fa3d202e2d1040a1cc",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:abc17a0078d01d8edc3e813142037169a14f4af72e27252fbd5d3e42e238d450",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:27dc3b25e9e850e46164ba7f0bc0206b15b738c3e2674b5078519b6485acfc84",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/SitePolicy.delete"
+    },
+    "sha256:aaaa898336c27481b768f23f918af235695d64c62a14c56953276fa3c5fce6c8": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:5b0f0ab39f1fbc7e024d48f2a81fc4269b1dc45cc82e8ff9afce661e6b44098d",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:3a7337183703a12ea9c3e9d3e841c219c38e0b8497cec184d8bb5283b9d1475d",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:ccb5377e11b770201487a8f83982787492f8f54d55ec1a55c95fc1da79214bbc",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.delete"
+    },
+    "sha256:ac886b03a695d8fd414c2964f282a1b9dedf207b154c704fbbd2223b484276a2": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:56957ee1e025eb193b3f8e096c130039e8f8aef9cbac6c569ed54b73346c081c",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:48efbbd9b666bc2b84dfe61168ee6132203bde5f0b80737818453b561bd403e8",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Department#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:086d947a0fd7b0b43c2771c1be1484c68ed830beced804f7afc0925c39d18047",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Department.create"
+    },
+    "sha256:af88304fc28f790f68d9e460c0c08e505164e49eadd5f98e7d426ef3529a6468": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:73676a12a68ded39f4a53a87ea07282ae111a37a5acaa836c62564a85da00495",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:84e37e10d5c1b3c3331c61b00b6e51f63e2273a0b412e0f55ac55ee4b13ec9e4",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#delete",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:5ba9b785ab380c6bea9cf8cb2b66fc9d2202b4cbd33072bec3c4b959e674f843",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.delete"
+    },
+    "sha256:b772b9a5edc023e870b33d8ac5aa32df46d933d1af5feefdb0322428927bbd3c": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:01e48ee799119970e3f069c8f76bc4a76cd2cf2217f4ad055ce4a3ec0953484f",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:96dce92a9086aa7e18225a415e82d069a43a4955d36686cf12373d94f95e5be8",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:fc23334ac0b0911888673b007aba69662e2c5e898c6af97a88e943f96c10de8a",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.get"
+    },
+    "sha256:b971407fb8b435e490822d2b08da8f66af86a71069f68e93fd6228694090f605": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:1cb08f75473738b03410fa69b7bc9b713aa1c8bd80eba6b2b21d43bd1a263331",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:fcfc212b752655e4f24a6277f276f5d8009594fdac2847d66da9358f0f7c8068",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:d55697e5ebb035e568978e603d37beb9ded9b204631897d0430587d0e5823a6e",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.list.all"
+    },
+    "sha256:bb5051eb3dc460a3782b1633b91e6e84ee0e3161f5a349d5c8a4b12ada0bfecc": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:e876bcc55621fc62e54cc4906ed34b029eae80d9fdfcda3f0f0b4e358e02f3cc",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:c9b5b8846e3a5007dc5ffd5a810017348a770030e1bf11d522308d59cc2317b4",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:4b3a52b5eb9ae441b408167d2aee9acf20938385f931afa2753f2e8493bfc3e1",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/SitePolicy.create"
+    },
+    "sha256:bd7f54d2b2d98722ae56bf9fff685495b59075ea78a71affd1ba2e9596622065": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:d7d68d8cd473bbf77ab376f59a15ef11266fbda9eeabb2001b71672f95e071e2",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:a3cb3d92a7fe321719f322e46000d4b4a27f5f4b422eae4bfc54479f337b56c1",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:0eb93d78e804321600412782f882d8fe7217308e47fedcfd308b2d38df3699dc",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/SitePolicy.get"
+    },
+    "sha256:bf0abaa5432fbda8b5a3d490d0656564d5318d79de45ab51b3506d0a251c979e": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:39d550a6cea9a5f57b520539b8e53857941bf4441c8c18c2952c55de06e47632",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:caaf85f0a0cb00682db49c9a7bcc2a9b4ac420deb188981cd168323e981112c0",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:44fe9dc412bad83707f74334d6634318f154f390ff5e9d99a6ac63bd6d41551f",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Site.list.byCustomer"
+    },
+    "sha256:c0546a458d8cc5c2d1c1c53b2b16ce5037070fb3452b00f0db634b71081bfe92": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:351582afc589f3ac3efe8eec6be2512978183a10c168c843a77fc8c073cc1524",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:fc865c893ea8544d06c621cf363b19b5a6a126adbdef215121be34faf027c96c",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:e92c4dedaccda1f8389b041ad9eda502c9190b0ed807a0e4f68cda67e7f730cb",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.list.all"
+    },
+    "sha256:c6df1ef1580f74224dc6ce98b05e0002f7f1c0a069949c256b200ec7ee6d4450": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:421fd8fe39a58b9a998f31e826353162620806620056e2e423ced5df9fd916ee",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:64b1febcda5ba4139d284be2c4189ad35d94f2eff0ce969e3e0a121f7f38999b",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:6de9fb4152db4256e579ae8416d114461ece11a0e652f2efa5d75dce408da500",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Site.create"
+    },
+    "sha256:cb458f3cec43ce99a8bc7e8fff179f82fd8f8a0222840d17fa989a5886802262": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:74b473f9b811c194e9889a3ec2e5721ec417a1a034132e0dc93bbe2deff5d9f1",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:da0115bf2ed24c49b4f29a3b8e353952c30cc6e55d1e13e5cdbf71b13c350371",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Site#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:96b84910278faec7aab89705baf25b978b066ae72caa12a3cb55bac1faf358cb",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Site.update"
+    },
+    "sha256:d2075d5486a315fb5dce7970d96383560195cb32ecc4f143889cee056fdb5885": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:3c4261831cae3c5e2a1ef384423ce4878daa68146ffc7ecd7dbd2519321b557a",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:fe384eb2805f451ee7de4ec6193248cb24bf76b4157cab478a21265d8c8fcb08",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#write",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:c950866428305754bfd2aa14c4a504e1fa0260327bdd0c296dd0765c6df4b021",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.update"
+    },
+    "sha256:d44893040a29307fa153af8da5548155c9638865f1c2180f0f540123fa57fcef": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:d00b9b9bdd544f5673b47893de6562765dd3d883b13da2589ef2a40b1b1c55c9",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:7f0a781d4929a61c7f7c22e575efcb7bd260a54e052f5eb052aba22ccba82a0d",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:68c264ed0c03520bfd286f26a35b211fc17d980a7137e52d91ac735c06d378d5",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Order.list.bySiteStatus"
+    },
+    "sha256:d8cb1c482bc81c71d7957a5167f0e08acb23bac6fbebe7380023902818177eeb": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:a30a3b6b16ef62614d6f4c099744d52563d09b25e9b40e3f5e164fba66c59ce6",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:e8764e756ad8403f5ead98b7209ba4d87aff1c77ad8d27f52cac07fe8e713f1f",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Customer#create",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:1284d53b08771d08373879644ea30648da20b57d60bfce4369f528b1feeff9be",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/Customer.create"
+    },
+    "sha256:e6e02e50f5db4042e00f74f5dbae32f1fc28138e6806539fd52634289a356922": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:d0c7e05aaa37e568af1be5206601090d84509530fa033e8cf3f38edd15f5c8c9",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:d5ac1b2d8061c0cc44efd8e5d985d6c063201225c102b1af1ac166bb99a737b5",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:36899d56f80b6faba01a4f9349f6964c33f78809a64579043fdb8b47dff193b0",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.get"
+    },
+    "sha256:ebcb46034236cc1f5d9a4e53a59b447fd920c8a33600fe3b5f991d02532dbec7": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:2fc98c9daa67d7ff514970a9ff1a78bc55cd7c6ed97d87df8bd4984e33e9e315",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:64dc9ad19779b2d1113e454193b84ac0e3a2a174f4413b1d4d736f504306f12e",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/SitePolicy#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:407bf68ffc8e429f691492531913a7242292a5ddec9b405865a4674756f5c4f4",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/SitePolicy.list.all"
+    },
+    "sha256:f1c7aa1a782f67c67a6f2ed3066889e43439ee5a21d6c15dd1e16ed9b4e1e465": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "abi": "forgegraph-function/1",
+        "export": "default",
+        "libraries": {
+          "@forgegraph/runtime": "0.5.0",
+          "effect": "4.0.3"
+        },
+        "module": "sha256:d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9"
+      },
+      "implementationHash": "sha256:075fd1ae5e552f5a3a934f0aa4a014a1740ba586433256941067727fc5aa19c6",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/Order#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:8a7537374b2f3b591d10f649c62ade93e03a9a80eaabd856ce72d52d97679a58",
+      "kind": "js-module",
+      "role": "function",
+      "symbol": "@acme/commerce/_/FulfillOrder"
+    },
+    "sha256:ff007d378253ba5d0ad29e173b007fa647c93aff8992392016ecdc5a3ac80157": {
+      "bindings": [
+        {
+          "name": "DB",
+          "type": "d1"
+        },
+        {
+          "name": "BLOBS",
+          "type": "r2"
+        }
+      ],
+      "dependencies": [],
+      "findings": [],
+      "implementation": {
+        "declaration": "sha256:be2355173fa6fd1dadf56fcec50f3c9ce0cb06ce9028ed501a620efe073e9b06",
+        "executor": "@forgegraph/runtime@0.5.0"
+      },
+      "implementationHash": "sha256:4d0bdeae0333f67c3daee476929e32b094a5601e3b7fbd33b0105e648faa352f",
+      "imports": [
+        {
+          "capability": "resource:@acme/commerce/_/OrderDocument#read",
+          "provider": {
+            "kind": "runtime",
+            "service": "resource-store"
+          }
+        }
+      ],
+      "interfaceHash": "sha256:caa5a371147de1fb844c1c11d719e15160d39de2cfdde88cdaeefc650be9018a",
+      "kind": "forge-native",
+      "role": "operation",
+      "symbol": "@acme/commerce/_/OrderDocument.download"
+    }
+  },
+  "version": "closure-manifest/1"
+}
