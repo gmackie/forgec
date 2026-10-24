@@ -73,6 +73,8 @@ export type LinkErrorCode =
   | "BuildMismatch"
   | "UnknownEntryPoint"
   | "UnlinkedEntryPoint"
+  | "LoaderUnavailable"
+  | "LoadFailed"
   | "CapabilityDenied";
 
 const STATUS: Record<LinkErrorCode, number> = {
@@ -86,6 +88,8 @@ const STATUS: Record<LinkErrorCode, number> = {
   BuildMismatch: 503,
   UnknownEntryPoint: 404,
   UnlinkedEntryPoint: 501,
+  LoaderUnavailable: 503,
+  LoadFailed: 503,
   CapabilityDenied: 403,
 };
 

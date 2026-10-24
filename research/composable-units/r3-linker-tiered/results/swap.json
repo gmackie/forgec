@@ -1,0 +1,153 @@
+{
+  "behaviour": {
+    "afterSwap": {
+      "closure": "sha256:3e58e1037d384f5629e3262dceeef61055348ec911ce70582f9a1fe0f45cbf42",
+      "miss": null,
+      "result": "Submitted",
+      "status": 200,
+      "tier": "dynamic"
+    },
+    "beforeSwap": {
+      "closure": "sha256:e54a47a4aade467cccfbac42c74f17df4a5b46211ece994a85b61a744ef58461",
+      "miss": null,
+      "result": 409,
+      "status": 409,
+      "tier": "dynamic"
+    },
+    "newSubmitClosure": "sha256:3e58e1037d384f5629e3262dceeef61055348ec911ce70582f9a1fe0f45cbf42",
+    "packedRouteAfterSwap": {
+      "closure": null,
+      "miss": null,
+      "status": 200,
+      "tier": "packed"
+    }
+  },
+  "closuresChanged": [
+    {
+      "id": "@acme/commerce/_/ProcessOrder",
+      "tier": "dynamic"
+    },
+    {
+      "id": "@acme/commerce/_/ProcessOrder#submit",
+      "tier": "dynamic"
+    },
+    {
+      "id": "POST /v1/orders/{order}/process",
+      "tier": "dynamic"
+    },
+    {
+      "id": "POST /v1/orders/{order}/submit",
+      "tier": "dynamic"
+    },
+    {
+      "id": "POST /v1/workflows/process-order/signals/{message}",
+      "tier": "dynamic"
+    },
+    {
+      "id": "forge:sweep",
+      "tier": "packed"
+    }
+  ],
+  "date": "2026-10-24",
+  "dynamicTier": {
+    "manifestPut": {
+      "manifestHash": "sha256:363096301fc5464933ac25bc92cfaab5b7b3850e9441432898a06361a3125f29",
+      "previous": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+      "status": 200
+    },
+    "ms": 155.33,
+    "uploaded": [
+      {
+        "bytes": 502,
+        "digest": "sha256:d559897d1aad6334dabad13cfb3cfb41961e1c70a468b23e18092398ec8ca4e4",
+        "what": "module"
+      }
+    ]
+  },
+  "edit": "impl/payment-adapter.ts: AuthorizePayment's limit `amount >= 1000` -> `amount >= 2000`, re-sealed with the unchanged unit plan",
+  "fallback": {
+    "loadFailed": {
+      "bigOrder": {
+        "closure": null,
+        "miss": "LoadFailed",
+        "result": 409,
+        "status": 409,
+        "tier": "packed-fallback"
+      },
+      "manifestPut": 200,
+      "routerStats": {
+        "byEntryPoint": {
+          "POST /v1/orders/{order}/submit": 2
+        },
+        "byReason": {
+          "LoadFailed": 2
+        },
+        "fallback": 2
+      },
+      "smallOrder": {
+        "closure": null,
+        "miss": "LoadFailed",
+        "result": "Submitted",
+        "status": 200,
+        "tier": "packed-fallback"
+      }
+    },
+    "logLines": [
+      "linker-tiered: FALLBACK POST /v1/orders/{order}/submit -> packed (LoadFailed)",
+      "linker-tiered: FALLBACK POST /v1/orders/{order}/submit -> packed (MissingModule)"
+    ],
+    "missingModule": {
+      "bigOrder": {
+        "closure": null,
+        "miss": "MissingModule",
+        "result": 409,
+        "status": 409,
+        "tier": "packed-fallback"
+      }
+    },
+    "recovered": {
+      "manifestPut": 200,
+      "smallOrder": {
+        "closure": "sha256:e54a47a4aade467cccfbac42c74f17df4a5b46211ece994a85b61a744ef58461",
+        "miss": null,
+        "result": "Submitted",
+        "status": 200,
+        "tier": "dynamic"
+      }
+    },
+    "routerStatsAtEnd": {
+      "byReason": {
+        "LoadFailed": 2,
+        "MissingModule": 1
+      },
+      "dynamic": 5,
+      "errors": 0,
+      "fallback": 3,
+      "packed": 8
+    }
+  },
+  "issue": "FORG-43",
+  "linkerAAlone": {
+    "bytes": 1554653,
+    "scriptsReuploaded": [
+      "acme-commerce-forge-sweep-24ec0b",
+      "acme-commerce-post-v1-orders-order-process-745789",
+      "acme-commerce-post-v1-orders-order-submit-19d055",
+      "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+      "acme-commerce-processorder-c5fc00"
+    ]
+  },
+  "local": true,
+  "manifests": {
+    "after": "sha256:363096301fc5464933ac25bc92cfaab5b7b3850e9441432898a06361a3125f29",
+    "before": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9"
+  },
+  "node": "v24.14.0",
+  "scripts": {
+    "changed": [],
+    "count": 90,
+    "note": "sha256 of every worker.js in the tiered link, before and after the swap: the router, the tier host and all 87 packed scripts",
+    "uploaded": 0
+  },
+  "version": "r3-swap/1"
+}

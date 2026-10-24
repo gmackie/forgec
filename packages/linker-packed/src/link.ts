@@ -76,6 +76,8 @@ export interface LinkOptions {
   allowFindings?: boolean;
   /** Skip esbuild (link-time checks only). */
   bundle?: boolean;
+  /** Scripts holding a workflow class also serve one driver step over their service binding (linker C's packed fallback, FORG-43). */
+  advance?: boolean;
 }
 
 export interface LinkedScript {
@@ -217,6 +219,7 @@ export async function link(options: LinkOptions): Promise<Link> {
       dispatch: g.dispatch,
       dispatchOwner: g === owner && strategy.name !== "single",
       sweeps: { outbox: sweepAll, schedules: sweepAll || crons.length > 0, workflows: sweepAll },
+      ...(options.advance && workflows.length ? { advance: true } : {}),
     };
 
     // Unit modules, verified by digest when written.

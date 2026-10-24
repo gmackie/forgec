@@ -6,7 +6,9 @@
 //   wasm-component  the component transpiled to core module(s) + jco glue, instantiated from
 //                   precompiled module imports and adapted to wire values by its lowering
 //
-// Both export `invoke(input): Promise<UnitResult>` and `ready()`.
+// Both export `invoke(input): Promise<UnitResult>` and `ready()`. A wasm-component runs each
+// in-flight call on its own instance from a pool (FORG-41, `src/pool.ts`): jco serializes calls on
+// one instance, and a trap poisons it.
 //
 // Capability handles (FORG-36) come from a third module, `host.js`, which stands in for the
 // runtime's resource store, transition units, callees and outbox. It exports
@@ -18,6 +20,7 @@ import { build, type Plugin } from "esbuild";
 import { join } from "node:path";
 import type { Sealed } from "./seal.ts";
 import { transpileComponent, type TranspileOptions, type Transpiled } from "./wasm.ts";
+import { DEFAULT_POOL, type PoolOptions } from "./pool.ts";
 import { asyncImports, type Lowering } from "./wit-lowering.ts";
 
 export interface WorkerModule {
@@ -119,31 +122,62 @@ export interface BoundUnit {
 export interface BindOptions extends TranspileOptions {
   /** Source of `host.js`, which provides capability handles (default NO_CAPABILITIES_HOST). */
   host?: string;
+  /** How calls map to component instances (default DEFAULT_POOL, an instance per in-flight call). */
+  instances?: InstanceStrategy;
 }
 
 /**
- * `bound.js`, the glue and the core modules for a transpiled component and its lowering (JSON
- * text). The glue's imports are the lowering's capabilities, bound to `host.js`'s handles.
+ * How `bound.js` maps calls to component instances (FORG-41). `"shared"` is one instance for every
+ * call, as before FORG-41: jco serializes concurrent calls on it, and a trap leaves it in place.
+ * A `PoolOptions` gives each in-flight call an instance of its own (`src/pool.ts`).
  */
-export async function transpiledModules(t: Transpiled, lowering: string): Promise<WorkerModule[]> {
+export type InstanceStrategy = "shared" | PoolOptions;
+
+/**
+ * `bound.js`, the glue and the core modules for a transpiled component and its lowering (JSON
+ * text). The glue's imports are the lowering's capabilities, bound to `host.js`'s handles. Each
+ * in-flight call runs on its own instance from a pool (DEFAULT_POOL); a call that throws discards
+ * its instance. `bound.js` also exports `create()` (one bare instance) and `stats()` for measurement.
+ */
+export async function transpiledModules(t: Transpiled, lowering: string, instances: InstanceStrategy = DEFAULT_POOL): Promise<WorkerModule[]> {
   const cores = Object.keys(t.core).sort();
+  const literal = (n: number) => (Number.isFinite(n) ? String(n) : "Infinity");
   const source = [
     `import { instantiate } from "./unit.js";`,
     `import { capability } from "./host.js";`,
     `import { bindExport, bindImports } from ${JSON.stringify(join(import.meta.dirname, "wit-lowering.ts"))};`,
+    ...(instances === "shared" ? [] : [`import { instancePool } from ${JSON.stringify(join(import.meta.dirname, "pool.ts"))};`]),
     ...cores.map((n, i) => `import core${i} from ${JSON.stringify(`./${n}`)};`),
     `const cores = { ${cores.map((n, i) => `${JSON.stringify(n)}: core${i}`).join(", ")} };`,
     `const lowering = ${lowering.trim()};`,
-    `let bound;`,
-    `export async function ready() {`,
-    `  if (bound) return;`,
-    `  const imports = bindImports(lowering, Object.fromEntries(lowering.imports.map((i) => [i.capability, capability(i.capability)])));`,
-    `  bound = bindExport(lowering, await instantiate((name) => cores[name], imports));`,
+    `let imports;`,
+    `/** One instance of the component, bound to the unit call shape. The core modules are compiled once, at upload. */`,
+    `export async function create() {`,
+    `  imports ??= bindImports(lowering, Object.fromEntries(lowering.imports.map((i) => [i.capability, capability(i.capability)])));`,
+    `  return bindExport(lowering, await instantiate((name) => cores[name], imports));`,
     `}`,
-    `export async function invoke(input) {`,
-    `  if (!bound) await ready();`,
-    `  return bound(input);`,
-    `}`,
+    ...(instances === "shared"
+      ? [
+          `let bound;`,
+          `export async function ready() {`,
+          `  bound ??= await create();`,
+          `}`,
+          `export async function invoke(input) {`,
+          `  if (!bound) await ready();`,
+          `  return bound(input);`,
+          `}`,
+          `export const stats = () => ({ live: bound ? 1 : 0 });`,
+        ]
+      : [
+          `const pool = instancePool(create, { max: ${literal(instances.max)}, idle: ${literal(instances.idle)} });`,
+          `export function ready() {`,
+          `  return pool.warm();`,
+          `}`,
+          `export function invoke(input) {`,
+          `  return pool.run((call) => call(input));`,
+          `}`,
+          `export const stats = () => pool.stats();`,
+        ]),
   ].join("\n");
   const bound = await bundle(source, import.meta.dirname, ["./unit.js", "./host.js", "*.wasm"]);
   return [
@@ -170,7 +204,7 @@ export async function bindUnit(sealed: Sealed, symbol: string, appRoot: string, 
     const lowering = new TextDecoder().decode(blob(unit.implementation["lowering"]));
     const imports = asyncImports(JSON.parse(lowering) as Lowering);
     const t = await transpileComponent(blob(unit.implementation["component"]), { ...options, asyncImports: imports });
-    const [bound, ...glue] = await transpiledModules(t, lowering);
+    const [bound, ...glue] = await transpiledModules(t, lowering, options.instances);
     return { kind: unit.kind, modules: [caller, bound!, host, ...glue] };
   }
 

@@ -1,0 +1,2506 @@
+{
+  "version": "r3-results/1",
+  "label": "local",
+  "measuredOn": {
+    "node": "v24.14.0",
+    "platform": "darwin 24.6.0 arm64",
+    "cpu": "Apple M2 Max",
+    "cores": 12,
+    "loadAverageAtEnd": [
+      247.94,
+      221.87,
+      199.87
+    ],
+    "workerd": "miniflare@4.20260730.0 (bundled workerd)",
+    "transpiler": "@bytecodealliance/jco@1.39.0",
+    "component": {
+      "rustc": "1.97.1",
+      "wit-bindgen": "0.63.0",
+      "wasm-tools": "1.262.0"
+    },
+    "compatibilityDate": "2026-07-01"
+  },
+  "unit": {
+    "symbol": "@acme/pricing/_/PriceCart",
+    "itemsPerCall": 5,
+    "note": "Each call prices a 5-item cart: 5 sequential Product reads through the JSPI import."
+  },
+  "strategies": {
+    "shared": "shared",
+    "fresh": {
+      "max": "unbounded",
+      "idle": 0
+    },
+    "pool(4)": {
+      "max": 4,
+      "idle": 4
+    },
+    "pool(32)": {
+      "max": 32,
+      "idle": 32
+    },
+    "elastic(8)": {
+      "max": "unbounded",
+      "idle": 8
+    },
+    "elastic(32)": {
+      "max": "unbounded",
+      "idle": 32
+    }
+  },
+  "instantiation": {
+    "note": "workerd, in-Worker clock. 5 runs of 200; medians. firstMs: the first instance in the run (core modules are compiled at upload, so no compilation). meanMs: each later bare instantiation. warmCallMs: a 5-read PriceCart call (in-memory reads) on an existing instance. freshCallMs: instantiate + the same call.",
+    "firstMs": 1,
+    "meanMs": 0.2513,
+    "warmCallMs": 0.605,
+    "freshCallMs": 1.645,
+    "coreInstancesPerUnit": 3,
+    "linearMemoryBytesPerInstance": 1114112,
+    "runs": [
+      {
+        "firstMs": 1,
+        "meanMs": 0.11055276381909548,
+        "warmCallMs": 0.615,
+        "freshCallMs": 1.395,
+        "coreInstancesPerUnit": 3,
+        "linearMemoryBytesPerInstance": 1114112,
+        "linearMemoryBytesAfterCalls": 1179648
+      },
+      {
+        "firstMs": 1,
+        "meanMs": 0.25125628140703515,
+        "warmCallMs": 0.295,
+        "freshCallMs": 1.965,
+        "coreInstancesPerUnit": 3,
+        "linearMemoryBytesPerInstance": 1114112,
+        "linearMemoryBytesAfterCalls": 1179648
+      },
+      {
+        "firstMs": 0,
+        "meanMs": 0.2864321608040201,
+        "warmCallMs": 0.92,
+        "freshCallMs": 1.525,
+        "coreInstancesPerUnit": 3,
+        "linearMemoryBytesPerInstance": 1114112,
+        "linearMemoryBytesAfterCalls": 1179648
+      },
+      {
+        "firstMs": 1,
+        "meanMs": 0.135678391959799,
+        "warmCallMs": 0.07,
+        "freshCallMs": 1.79,
+        "coreInstancesPerUnit": 3,
+        "linearMemoryBytesPerInstance": 1114112,
+        "linearMemoryBytesAfterCalls": 1179648
+      },
+      {
+        "firstMs": 0,
+        "meanMs": 1.5226130653266332,
+        "warmCallMs": 0.605,
+        "freshCallMs": 1.645,
+        "coreInstancesPerUnit": 3,
+        "linearMemoryBytesPerInstance": 1114112,
+        "linearMemoryBytesAfterCalls": 1179648
+      }
+    ]
+  },
+  "memory": {
+    "note": "Resident set of the workerd process while N bare instances are held live (ps rss, KiB), after 300 ms to settle. perInstanceKiB = (rss at 200 - rss at 1) / 199. It includes jco's per-instance JS objects, the core instances and their linear memory, all of which the pool keeps per idle instance.",
+    "steps": [
+      {
+        "held": 1,
+        "rssKiB": 41424
+      },
+      {
+        "held": 50,
+        "rssKiB": 46528
+      },
+      {
+        "held": 100,
+        "rssKiB": 48832
+      },
+      {
+        "held": 200,
+        "rssKiB": 57696
+      }
+    ],
+    "perInstanceKiB": 81.8
+  },
+  "throughput": {
+    "note": "workerd, in-Worker clock, rounds of c concurrent calls on one isolate. io: every read waits 5 ms (scheduler.wait), ms is the median of 9 rounds. memory: reads resolve from memory with no I/O, ms is the mean of 200 rounds (single rounds are often under the clock's 1 ms resolution). The ideal for io is about 25 ms at any concurrency (5 sequential 5 ms reads). interleaved: every call made its first read before any call made its last.",
+    "io": {
+      "js-module": {
+        "1": {
+          "ms": 46,
+          "callsPerSecond": 21.7,
+          "interleaved": null,
+          "allOk": true,
+          "stats": null
+        },
+        "2": {
+          "ms": 47,
+          "callsPerSecond": 42.6,
+          "interleaved": true,
+          "allOk": true,
+          "stats": null,
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 92,
+          "callsPerSecond": 87,
+          "interleaved": true,
+          "allOk": true,
+          "stats": null
+        },
+        "32": {
+          "ms": 245,
+          "callsPerSecond": 130.6,
+          "interleaved": true,
+          "allOk": true,
+          "stats": null
+        },
+        "64": {
+          "ms": 373,
+          "callsPerSecond": 171.6,
+          "interleaved": true,
+          "allOk": true,
+          "stats": null
+        }
+      },
+      "shared": {
+        "1": {
+          "ms": 52,
+          "callsPerSecond": 19.2,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          }
+        },
+        "2": {
+          "ms": 105,
+          "callsPerSecond": 19,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c0-2",
+            "c0-3",
+            "c0-4",
+            "c0-5",
+            "c1-1",
+            "c1-2",
+            "c1-3",
+            "c1-4",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 406,
+          "callsPerSecond": 19.7,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          }
+        },
+        "32": {
+          "ms": 1532,
+          "callsPerSecond": 20.9,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          }
+        },
+        "64": {
+          "ms": 3048,
+          "callsPerSecond": 21,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          }
+        }
+      },
+      "fresh": {
+        "1": {
+          "ms": 62,
+          "callsPerSecond": 16.1,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 17,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 71,
+          "callsPerSecond": 28.2,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 36,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 217,
+          "callsPerSecond": 36.9,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 109,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 695,
+          "callsPerSecond": 46,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 398,
+            "discarded": 0,
+            "peak": 32
+          }
+        },
+        "64": {
+          "ms": 1075,
+          "callsPerSecond": 59.5,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 975,
+            "discarded": 0,
+            "peak": 64
+          }
+        }
+      },
+      "pool(4)": {
+        "1": {
+          "ms": 43,
+          "callsPerSecond": 23.3,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 49,
+          "callsPerSecond": 40.8,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 146,
+          "callsPerSecond": 54.8,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 4,
+            "idle": 4,
+            "waiting": 0,
+            "created": 4,
+            "discarded": 0,
+            "peak": 4
+          }
+        },
+        "32": {
+          "ms": 414,
+          "callsPerSecond": 77.3,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 4,
+            "idle": 4,
+            "waiting": 0,
+            "created": 4,
+            "discarded": 0,
+            "peak": 4
+          }
+        },
+        "64": {
+          "ms": 770,
+          "callsPerSecond": 83.1,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 4,
+            "idle": 4,
+            "waiting": 0,
+            "created": 4,
+            "discarded": 0,
+            "peak": 4
+          }
+        }
+      },
+      "pool(32)": {
+        "1": {
+          "ms": 37,
+          "callsPerSecond": 27,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 45,
+          "callsPerSecond": 44.4,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 121,
+          "callsPerSecond": 66.1,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 8,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 362,
+          "callsPerSecond": 88.4,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 32,
+            "idle": 32,
+            "waiting": 0,
+            "created": 32,
+            "discarded": 0,
+            "peak": 32
+          }
+        },
+        "64": {
+          "ms": 581,
+          "callsPerSecond": 110.2,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 32,
+            "idle": 32,
+            "waiting": 0,
+            "created": 32,
+            "discarded": 0,
+            "peak": 32
+          }
+        }
+      },
+      "elastic(8)": {
+        "1": {
+          "ms": 38,
+          "callsPerSecond": 26.3,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 46,
+          "callsPerSecond": 43.5,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 95,
+          "callsPerSecond": 84.2,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 8,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 407,
+          "callsPerSecond": 78.6,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 224,
+            "discarded": 0,
+            "peak": 32
+          }
+        },
+        "64": {
+          "ms": 1026,
+          "callsPerSecond": 62.4,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 728,
+            "discarded": 0,
+            "peak": 64
+          }
+        }
+      },
+      "elastic(32)": {
+        "1": {
+          "ms": 42,
+          "callsPerSecond": 23.8,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 47,
+          "callsPerSecond": 42.6,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 145,
+          "callsPerSecond": 55.2,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 8,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 433,
+          "callsPerSecond": 73.9,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 32,
+            "idle": 32,
+            "waiting": 0,
+            "created": 32,
+            "discarded": 0,
+            "peak": 32
+          }
+        },
+        "64": {
+          "ms": 799,
+          "callsPerSecond": 80.1,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 32,
+            "idle": 32,
+            "waiting": 0,
+            "created": 320,
+            "discarded": 0,
+            "peak": 64
+          }
+        }
+      }
+    },
+    "memory": {
+      "js-module": {
+        "1": {
+          "ms": 0.075,
+          "callsPerSecond": 13333.3,
+          "interleaved": null,
+          "allOk": true,
+          "stats": null
+        },
+        "2": {
+          "ms": 0.1,
+          "callsPerSecond": 20000,
+          "interleaved": true,
+          "allOk": true,
+          "stats": null,
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 0.215,
+          "callsPerSecond": 37209.3,
+          "interleaved": true,
+          "allOk": true,
+          "stats": null
+        },
+        "32": {
+          "ms": 0.44,
+          "callsPerSecond": 72727.3,
+          "interleaved": true,
+          "allOk": true,
+          "stats": null
+        }
+      },
+      "shared": {
+        "1": {
+          "ms": 0.325,
+          "callsPerSecond": 3076.9,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          }
+        },
+        "2": {
+          "ms": 0.305,
+          "callsPerSecond": 6557.4,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c0-2",
+            "c0-3",
+            "c0-4",
+            "c0-5",
+            "c1-1",
+            "c1-2",
+            "c1-3",
+            "c1-4",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 1.3,
+          "callsPerSecond": 6153.8,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          }
+        },
+        "32": {
+          "ms": 2.205,
+          "callsPerSecond": 14512.5,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 1
+          }
+        }
+      },
+      "fresh": {
+        "1": {
+          "ms": 1.555,
+          "callsPerSecond": 643.1,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 215,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 2.33,
+          "callsPerSecond": 858.4,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 623,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 7.72,
+          "callsPerSecond": 1036.3,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 2231,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 319.94,
+          "callsPerSecond": 100,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 0,
+            "idle": 0,
+            "waiting": 0,
+            "created": 8639,
+            "discarded": 0,
+            "peak": 32
+          }
+        }
+      },
+      "pool(4)": {
+        "1": {
+          "ms": 0.57,
+          "callsPerSecond": 1754.4,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 0.375,
+          "callsPerSecond": 5333.3,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 1.21,
+          "callsPerSecond": 6611.6,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 4,
+            "idle": 4,
+            "waiting": 0,
+            "created": 4,
+            "discarded": 0,
+            "peak": 4
+          }
+        },
+        "32": {
+          "ms": 2.67,
+          "callsPerSecond": 11985,
+          "interleaved": false,
+          "allOk": true,
+          "stats": {
+            "live": 4,
+            "idle": 4,
+            "waiting": 0,
+            "created": 4,
+            "discarded": 0,
+            "peak": 4
+          }
+        }
+      },
+      "pool(32)": {
+        "1": {
+          "ms": 0.33,
+          "callsPerSecond": 3030.3,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 0.49,
+          "callsPerSecond": 4081.6,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 1.415,
+          "callsPerSecond": 5653.7,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 8,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 5.085,
+          "callsPerSecond": 6293,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 32,
+            "idle": 32,
+            "waiting": 0,
+            "created": 32,
+            "discarded": 0,
+            "peak": 32
+          }
+        }
+      },
+      "elastic(8)": {
+        "1": {
+          "ms": 0.26,
+          "callsPerSecond": 3846.2,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 0.345,
+          "callsPerSecond": 5797.1,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 2.135,
+          "callsPerSecond": 3747.1,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 8,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 140.57,
+          "callsPerSecond": 227.6,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 4808,
+            "discarded": 0,
+            "peak": 32
+          }
+        }
+      },
+      "elastic(32)": {
+        "1": {
+          "ms": 0.46,
+          "callsPerSecond": 2173.9,
+          "interleaved": null,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          }
+        },
+        "2": {
+          "ms": 0.255,
+          "callsPerSecond": 7843.1,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 2,
+            "idle": 2,
+            "waiting": 0,
+            "created": 2,
+            "discarded": 0,
+            "peak": 2
+          },
+          "readOrderHead": [
+            "c0-1",
+            "c1-1",
+            "c0-2",
+            "c1-2",
+            "c0-3",
+            "c1-3",
+            "c0-4",
+            "c1-4",
+            "c0-5",
+            "c1-5"
+          ]
+        },
+        "8": {
+          "ms": 1.1,
+          "callsPerSecond": 7272.7,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 8,
+            "idle": 8,
+            "waiting": 0,
+            "created": 8,
+            "discarded": 0,
+            "peak": 8
+          }
+        },
+        "32": {
+          "ms": 7.75,
+          "callsPerSecond": 4129,
+          "interleaved": true,
+          "allOk": true,
+          "stats": {
+            "live": 32,
+            "idle": 32,
+            "waiting": 0,
+            "created": 32,
+            "discarded": 0,
+            "peak": 32
+          }
+        }
+      }
+    }
+  },
+  "failure": {
+    "note": "Three calls at once on one isolate, every read waiting 5 ms: a, then x whose last read fails, then b. Then three sequential calls and two concurrent ones. Each call is raced against a 2 s timer (hung). trap: the read answers a price the unit cannot parse, and it aborts (a WASM trap). throw: the handle throws (a host defect). missing: the handle's NotFound (a declared failure, returned as a result). Good calls price to 3.75.",
+    "trap": {
+      "js-module": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "malformed amount not-a-price"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": null
+      },
+      "shared": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: wasm `unreachable` instruction executed"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: wasm `unreachable` instruction executed"
+          }
+        ],
+        "after": [
+          {
+            "settled": "threw",
+            "error": "wasm trap: cannot enter component instance"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: cannot enter component instance"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: cannot enter component instance"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "threw",
+            "error": "wasm trap: cannot enter component instance"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: cannot enter component instance"
+          }
+        ],
+        "stats": {
+          "live": 1
+        }
+      },
+      "fresh": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: wasm `unreachable` instruction executed"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 0,
+          "idle": 0,
+          "waiting": 0,
+          "created": 9,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "pool(4)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: wasm `unreachable` instruction executed"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "pool(32)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: wasm `unreachable` instruction executed"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "elastic(8)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: wasm `unreachable` instruction executed"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "elastic(32)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "wasm trap: wasm `unreachable` instruction executed"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      }
+    },
+    "throw": {
+      "js-module": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "host defect reading throw-x3"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": null
+      },
+      "shared": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "host defect reading throw-x3"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 1
+        }
+      },
+      "fresh": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "host defect reading throw-x3"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 0,
+          "idle": 0,
+          "waiting": 0,
+          "created": 9,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "pool(4)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "host defect reading throw-x3"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "pool(32)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "host defect reading throw-x3"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "elastic(8)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "host defect reading throw-x3"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      },
+      "elastic(32)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "threw",
+            "error": "host defect reading throw-x3"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 2,
+          "idle": 2,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 1,
+          "peak": 3
+        }
+      }
+    },
+    "missing": {
+      "js-module": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "code": "NotFound"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": null
+      },
+      "shared": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "code": "NotFound"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 1
+        }
+      },
+      "fresh": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "code": "NotFound"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 0,
+          "idle": 0,
+          "waiting": 0,
+          "created": 9,
+          "discarded": 0,
+          "peak": 3
+        }
+      },
+      "pool(4)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "code": "NotFound"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 3,
+          "idle": 3,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 0,
+          "peak": 3
+        }
+      },
+      "pool(32)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "code": "NotFound"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 3,
+          "idle": 3,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 0,
+          "peak": 3
+        }
+      },
+      "elastic(8)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "code": "NotFound"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 3,
+          "idle": 3,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 0,
+          "peak": 3
+        }
+      },
+      "elastic(32)": {
+        "during": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "code": "NotFound"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "after": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "concurrentAfter": [
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          },
+          {
+            "settled": "ok",
+            "subtotal": "3.75"
+          }
+        ],
+        "stats": {
+          "live": 3,
+          "idle": 3,
+          "waiting": 0,
+          "created": 3,
+          "discarded": 0,
+          "peak": 3
+        }
+      }
+    }
+  },
+  "missing": [
+    "Deployed Cloudflare Workers: production isolates, their memory limit (128 MB per isolate) in practice, cold start and CPU time. Everything here is local workerd.",
+    "Stack memory per suspended call (JSPI's secondary stack per promising() call): not measured separately; it is inside the workerd RSS deltas, not attributed."
+  ],
+  "otherRuns": {
+    "note": "Summaries of four earlier runs of this script on the same machine the same day (the same strategies; the first two did not measure 64 concurrent calls). Kept because the machine was shared and load varied between runs; the ranking held in every run.",
+    "runs": [
+      {
+        "loadAverageAtEnd": [
+          161.09,
+          149.82,
+          156.21
+        ],
+        "instantiationMeanMs": 0.4171,
+        "memoryPerInstanceKiB": 79.4,
+        "throughputMs": {
+          "io": {
+            "js-module": {
+              "1": 31,
+              "2": 31,
+              "8": 31,
+              "32": 32
+            },
+            "shared": {
+              "1": 32,
+              "2": 64,
+              "8": 254,
+              "32": 1014
+            },
+            "fresh": {
+              "1": 30,
+              "2": 30,
+              "8": 34,
+              "32": 57
+            },
+            "pool(4)": {
+              "1": 31,
+              "2": 32,
+              "8": 59,
+              "32": 247
+            },
+            "pool(32)": {
+              "1": 32,
+              "2": 32,
+              "8": 31,
+              "32": 39
+            },
+            "elastic(8)": {
+              "1": 31,
+              "2": 32,
+              "8": 31,
+              "32": 52
+            },
+            "elastic(32)": {
+              "1": 32,
+              "2": 32,
+              "8": 32,
+              "32": 40
+            }
+          },
+          "memory": {
+            "js-module": {
+              "1": 0.04,
+              "2": 0.1,
+              "8": 0.23,
+              "32": 0.375
+            },
+            "shared": {
+              "1": 0.275,
+              "2": 0.365,
+              "8": 0.895,
+              "32": 3.21
+            },
+            "fresh": {
+              "1": 0.98,
+              "2": 1.825,
+              "8": 5.605,
+              "32": 317.34
+            },
+            "pool(4)": {
+              "1": 0.245,
+              "2": 0.48,
+              "8": 0.795,
+              "32": 2.335
+            },
+            "pool(32)": {
+              "1": 0.17,
+              "2": 0.21,
+              "8": 1.065,
+              "32": 4.005
+            },
+            "elastic(8)": {
+              "1": 0.355,
+              "2": 0.225,
+              "8": 1.13,
+              "32": 107.12
+            },
+            "elastic(32)": {
+              "1": 0.285,
+              "2": 0.395,
+              "8": 1.105,
+              "32": 5.175
+            }
+          }
+        }
+      },
+      {
+        "loadAverageAtEnd": [
+          152.12,
+          155.31,
+          157.84
+        ],
+        "instantiationMeanMs": 0.3216,
+        "memoryPerInstanceKiB": 79.1,
+        "throughputMs": {
+          "io": {
+            "js-module": {
+              "1": 41,
+              "2": 40,
+              "8": 56,
+              "32": 97
+            },
+            "shared": {
+              "1": 39,
+              "2": 86,
+              "8": 256,
+              "32": 1004
+            },
+            "fresh": {
+              "1": 30,
+              "2": 30,
+              "8": 33,
+              "32": 54
+            },
+            "pool(4)": {
+              "1": 32,
+              "2": 32,
+              "8": 59,
+              "32": 250
+            },
+            "pool(32)": {
+              "1": 32,
+              "2": 32,
+              "8": 32,
+              "32": 39
+            },
+            "elastic(8)": {
+              "1": 31,
+              "2": 33,
+              "8": 32,
+              "32": 51
+            },
+            "elastic(32)": {
+              "1": 32,
+              "2": 31,
+              "8": 31,
+              "32": 38
+            }
+          },
+          "memory": {
+            "js-module": {
+              "1": 0.04,
+              "2": 0.045,
+              "8": 0.15,
+              "32": 0.5
+            },
+            "shared": {
+              "1": 0.32,
+              "2": 0.44,
+              "8": 0.99,
+              "32": 3.02
+            },
+            "fresh": {
+              "1": 0.765,
+              "2": 1.61,
+              "8": 5.425,
+              "32": 319.745
+            },
+            "pool(4)": {
+              "1": 0.37,
+              "2": 0.37,
+              "8": 0.985,
+              "32": 3.41
+            },
+            "pool(32)": {
+              "1": 0.285,
+              "2": 0.26,
+              "8": 1.75,
+              "32": 4.345
+            },
+            "elastic(8)": {
+              "1": 0.285,
+              "2": 0.275,
+              "8": 1.31,
+              "32": 96.815
+            },
+            "elastic(32)": {
+              "1": 0.31,
+              "2": 0.515,
+              "8": 1.16,
+              "32": 3.65
+            }
+          }
+        }
+      },
+      {
+        "loadAverageAtEnd": [
+          225.19,
+          197.79,
+          176.31
+        ],
+        "instantiationMeanMs": 0.809,
+        "memoryPerInstanceKiB": 80.1,
+        "throughputMs": {
+          "io": {
+            "js-module": {
+              "1": 46,
+              "2": 45,
+              "8": 91,
+              "32": 223,
+              "64": 430
+            },
+            "shared": {
+              "1": 48,
+              "2": 88,
+              "8": 377,
+              "32": 1539,
+              "64": 2977
+            },
+            "fresh": {
+              "1": 66,
+              "2": 64,
+              "8": 229,
+              "32": 874,
+              "64": 1457
+            },
+            "pool(4)": {
+              "1": 52,
+              "2": 50,
+              "8": 161,
+              "32": 384,
+              "64": 661
+            },
+            "pool(32)": {
+              "1": 43,
+              "2": 52,
+              "8": 129,
+              "32": 331,
+              "64": 369
+            },
+            "elastic(8)": {
+              "1": 40,
+              "2": 44,
+              "8": 121,
+              "32": 427,
+              "64": 827
+            },
+            "elastic(32)": {
+              "1": 40,
+              "2": 38,
+              "8": 107,
+              "32": 413,
+              "64": 696
+            }
+          },
+          "memory": {
+            "js-module": {
+              "1": 0.085,
+              "2": 0.07,
+              "8": 0.22,
+              "32": 0.45
+            },
+            "shared": {
+              "1": 0.26,
+              "2": 0.275,
+              "8": 0.895,
+              "32": 2.72
+            },
+            "fresh": {
+              "1": 0.98,
+              "2": 2.085,
+              "8": 6.88,
+              "32": 339.265
+            },
+            "pool(4)": {
+              "1": 0.53,
+              "2": 0.64,
+              "8": 1.59,
+              "32": 4.87
+            },
+            "pool(32)": {
+              "1": 0.425,
+              "2": 0.395,
+              "8": 1.915,
+              "32": 5.605
+            },
+            "elastic(8)": {
+              "1": 0.345,
+              "2": 0.335,
+              "8": 1.875,
+              "32": 113.275
+            },
+            "elastic(32)": {
+              "1": 0.365,
+              "2": 0.505,
+              "8": 1.39,
+              "32": 4.64
+            }
+          }
+        }
+      },
+      {
+        "loadAverageAtEnd": [
+          224.72,
+          205.26,
+          184.27
+        ],
+        "instantiationMeanMs": 0.2864,
+        "memoryPerInstanceKiB": 80.5,
+        "throughputMs": {
+          "io": {
+            "js-module": {
+              "1": 34,
+              "2": 38,
+              "8": 51,
+              "32": 74,
+              "64": 179
+            },
+            "shared": {
+              "1": 36,
+              "2": 77,
+              "8": 307,
+              "32": 1315,
+              "64": 3082
+            },
+            "fresh": {
+              "1": 57,
+              "2": 59,
+              "8": 177,
+              "32": 494,
+              "64": 1029
+            },
+            "pool(4)": {
+              "1": 42,
+              "2": 49,
+              "8": 117,
+              "32": 423,
+              "64": 806
+            },
+            "pool(32)": {
+              "1": 41,
+              "2": 50,
+              "8": 131,
+              "32": 504,
+              "64": 437
+            },
+            "elastic(8)": {
+              "1": 53,
+              "2": 60,
+              "8": 169,
+              "32": 690,
+              "64": 1351
+            },
+            "elastic(32)": {
+              "1": 48,
+              "2": 40,
+              "8": 119,
+              "32": 462,
+              "64": 854
+            }
+          },
+          "memory": {
+            "js-module": {
+              "1": 0.1,
+              "2": 0.06,
+              "8": 0.22,
+              "32": 0.43
+            },
+            "shared": {
+              "1": 0.295,
+              "2": 0.35,
+              "8": 1.11,
+              "32": 2.445
+            },
+            "fresh": {
+              "1": 0.71,
+              "2": 1.5,
+              "8": 6.075,
+              "32": 318.655
+            },
+            "pool(4)": {
+              "1": 0.28,
+              "2": 0.31,
+              "8": 0.9,
+              "32": 2.945
+            },
+            "pool(32)": {
+              "1": 0.325,
+              "2": 0.27,
+              "8": 1.15,
+              "32": 4.295
+            },
+            "elastic(8)": {
+              "1": 0.285,
+              "2": 0.58,
+              "8": 2.045,
+              "32": 165.3
+            },
+            "elastic(32)": {
+              "1": 0.73,
+              "2": 0.21,
+              "8": 1.91,
+              "32": 6.27
+            }
+          }
+        }
+      }
+    ]
+  }
+}

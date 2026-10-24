@@ -18,6 +18,8 @@ export interface LocalScript {
   queues: string[];
   classes: { workflows: Array<{ className: string }>; realtime: string | null };
   services: Record<string, string>;
+  /** Miniflare worker options merged over the derived ones (`bindings` merged by key): linker C's dynamic host adds its loader and unit store. */
+  miniflare?: Record<string, unknown>;
 }
 
 export function scriptsOf(l: Link, dir: string): LocalScript[] {
@@ -69,6 +71,7 @@ export async function serve(scripts: LocalScript[], env: Environment, opts: { se
     const wfs = (env.workflows ?? []).filter((x) => has(x.binding) || s.classes.workflows.some((c) => c.className === x.class_name));
     if (wfs.length) w.workflows = Object.fromEntries(wfs.map((x) => [x.binding, { name: x.name, className: x.class_name, scriptName: owner((y) => y.classes.workflows.some((c) => c.className === x.class_name)) ?? s.name }]));
     if (Object.keys(s.services).length) w.serviceBindings = s.services;
+    if (s.miniflare) Object.assign(w, s.miniflare, { bindings: { ...(w["bindings"] as object), ...((s.miniflare["bindings"] as object | undefined) ?? {}) } });
     return w;
   });
   const mf = new Miniflare(convertV4MiniflareOptions({ workers, host: "127.0.0.1", ...(process.env["FORGE_MINIFLARE_LOG"] ? { log: new Log(LogLevel.DEBUG) } : {}), ...(opts.port ? { port: opts.port } : {}) } as V4MiniflareOptions));
