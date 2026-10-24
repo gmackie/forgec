@@ -29,6 +29,8 @@ export function scriptsOf(l: Link, dir: string): LocalScript[] {
     classes: s.classes,
     services: Object.fromEntries(s.linkerBindings.map((b) => [b.name, b.script])),
   }));
+  // FORG-42: the shared runtime Worker holds no bindings; scripts reach it by service binding.
+  if (l.runtime) scripts.push({ name: l.runtime.name, scriptPath: join(dir, l.runtime.name, "worker.js"), bindings: [], queues: [], classes: { workflows: [], realtime: null }, services: {} });
   if (!l.router) return scripts;
   const targets = [...new Set([...l.router.table.map((r) => r.script), l.router.fallback])];
   return [{ name: l.router.name, scriptPath: join(dir, l.router.name, "worker.js"), bindings: [], queues: [], classes: { workflows: [], realtime: null }, services: Object.fromEntries(targets.map((t) => [bindingOf(t), t])) }, ...scripts];
@@ -46,6 +48,8 @@ export async function serve(scripts: LocalScript[], env: Environment, opts: { se
     const has = (n: string) => s.bindings.includes(n);
     const vars: Record<string, string> = Object.fromEntries(Object.entries(env.vars ?? {}).filter(([k]) => has(k)));
     if (has("CURSOR_SECRET")) vars["CURSOR_SECRET"] = opts.secret;
+    // FORG-42 research: shared scripts log RPC calls per request when this is set (never a manifest binding).
+    if (process.env["FORGE_RPC_TRACE"]) vars["FORGE_RPC_TRACE"] = "1";
     // rootPath: Miniflare 5 (alpha) fails to load a module script by absolute path without one, as wrangler always passes it.
     const w: WorkerOptions = { name: s.name, rootPath: dirname(s.scriptPath), modules: true, scriptPath: s.scriptPath, compatibilityDate: env.compatibility_date, ...(env.compatibility_flags?.length ? { compatibilityFlags: env.compatibility_flags } : {}), bindings: vars };
     const d1 = (env.d1_databases ?? []).filter((d) => has(d.binding));
