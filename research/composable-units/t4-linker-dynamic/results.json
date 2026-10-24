@@ -1,0 +1,467 @@
+{
+  "conformance": {
+    "linker-dynamic-fallback": {
+      "failedScenarios": [],
+      "linker": {
+        "coldLoads": 66,
+        "denials": 0,
+        "distinctChildren": 66,
+        "fallbacks": 49,
+        "kindsServed": [
+          "fallback",
+          "http-route",
+          "queue-consumer",
+          "runtime",
+          "workflow"
+        ],
+        "refusedUnknownEntryPoints": [],
+        "warmRequests": 183
+      },
+      "passed": 15,
+      "steps": 221,
+      "total": 15
+    },
+    "linker-dynamic-strict": {
+      "failedScenarios": [
+        {
+          "failureCodes": {
+            "NotFound": 2,
+            "UnknownEntryPoint": 13,
+            "value": 2
+          },
+          "failures": 17,
+          "id": "m3.changesets"
+        },
+        {
+          "failureCodes": {
+            "NotFound": 1,
+            "UnknownEntryPoint": 5
+          },
+          "failures": 6,
+          "id": "m4.csv-import"
+        },
+        {
+          "failureCodes": {
+            "UnknownEntryPoint": 12,
+            "value": 3
+          },
+          "failures": 15,
+          "id": "m6.views-projections-cache"
+        },
+        {
+          "failureCodes": {
+            "UnknownEntryPoint": 6
+          },
+          "failures": 6,
+          "id": "m7.schedules"
+        },
+        {
+          "failureCodes": {
+            "UnknownEntryPoint": 7,
+            "value": 2
+          },
+          "failures": 9,
+          "id": "m8.limits"
+        }
+      ],
+      "linker": {
+        "coldLoads": 38,
+        "denials": 0,
+        "distinctChildren": 38,
+        "fallbacks": 0,
+        "kindsServed": [
+          "http-route",
+          "queue-consumer",
+          "runtime",
+          "workflow"
+        ],
+        "refusedUnknownEntryPoints": [
+          "GET /v1/caches/current-site-policy",
+          "GET /v1/changesets/{id}/preview",
+          "GET /v1/customer-order-summaries/status",
+          "GET /v1/customer-order-summaries/{id}",
+          "GET /v1/schedules/nightly-reconciliation",
+          "GET /v1/views/pending-orders",
+          "POST /v1/changesets",
+          "POST /v1/changesets/{id}/approve",
+          "POST /v1/changesets/{id}/commit",
+          "POST /v1/customer-order-summaries/rebuild",
+          "POST /v1/imports/inspect",
+          "POST /v1/imports/stage",
+          "POST /v1/schedules/nightly-reconciliation/tick"
+        ],
+        "warmRequests": 162
+      },
+      "passed": 10,
+      "steps": 221,
+      "total": 15
+    },
+    "whole-app-local": {
+      "failedScenarios": [],
+      "passed": 15,
+      "steps": 221,
+      "total": 15
+    }
+  },
+  "environment": {
+    "childCompatibilityDate": "2026-09-25",
+    "date": "2026-10-24",
+    "hostCompatibilityDate": "2026-09-25",
+    "machine": "Apple M2 Max (darwin 24.6.0)",
+    "manifestHash": "sha256:bcb22196f83b35784ad66f63c6e6a8d328ba13f31bb9c60ed6fb494efee518ff",
+    "miniflare": "5.20260918.0-alpha",
+    "node": "v24.14.0",
+    "note": "Every timing is local workerd under wrangler dev on one machine. performance.now() advances during execution locally; deployed Workers advance it only across I/O, so hostLinkMs cannot be read the same way there.",
+    "runs": 30,
+    "wholeAppCompatibilityDate": "2026-09-01",
+    "workerd": "1.20260918.1",
+    "wrangler": "4.135.0"
+  },
+  "host": {
+    "coldClientWallMs": {
+      "max": 46,
+      "median": 32.48,
+      "min": 31.14,
+      "n": 6,
+      "p95": 46
+    },
+    "coldFirstRequest": [
+      {
+        "clientWallMs": 46,
+        "hostLinkMs": 44,
+        "isolate": "cold",
+        "path": "/v1/customers",
+        "status": 200
+      },
+      {
+        "clientWallMs": 32.48,
+        "hostLinkMs": 30,
+        "isolate": "cold",
+        "path": "/v1/sites",
+        "status": 200
+      },
+      {
+        "clientWallMs": 32.27,
+        "hostLinkMs": 29,
+        "isolate": "cold",
+        "path": "/v1/orders",
+        "status": 200
+      },
+      {
+        "clientWallMs": 31.14,
+        "hostLinkMs": 29,
+        "isolate": "cold",
+        "path": "/v1/departments",
+        "status": 200
+      },
+      {
+        "clientWallMs": 31.67,
+        "hostLinkMs": 29,
+        "isolate": "cold",
+        "path": "/v1/site-policies",
+        "status": 200
+      },
+      {
+        "clientWallMs": 33.86,
+        "hostLinkMs": 32,
+        "isolate": "cold",
+        "path": "/v1/order-documents",
+        "status": 200
+      }
+    ],
+    "coldHostLinkMs": {
+      "max": 44,
+      "median": 30,
+      "min": 29,
+      "n": 6,
+      "p95": 44
+    },
+    "hostCodeBuildMs": {
+      "max": 18,
+      "median": 5,
+      "min": 3,
+      "n": 11,
+      "p95": 18
+    },
+    "isolates": {
+      "denials": 0,
+      "distinctChildrenLoaded": 12
+    },
+    "linkAcmeManifestMs": 29.47,
+    "submitOrder": {
+      "cold": {
+        "clientWallMs": 44.25,
+        "hostLinkMs": 35,
+        "isolate": "cold",
+        "status": 200
+      },
+      "warm": {
+        "clientWallMs": {
+          "max": 19.85,
+          "median": 13.74,
+          "min": 12.37,
+          "n": 10,
+          "p95": 19.85
+        },
+        "hostLinkMs": {
+          "max": 11,
+          "median": 6,
+          "min": 5,
+          "n": 10,
+          "p95": 11
+        },
+        "isolates": [
+          "warm"
+        ]
+      }
+    },
+    "swap": {
+      "changedQueueConsumerChildren": [
+        {
+          "buildMs": [
+            18
+          ],
+          "closureHash": "sha256:ea0d59812e38a8dd62a8a3d21a5d191cddbe71a996ee28e2b8ea2a4849575235",
+          "cold": 1,
+          "warm": 0
+        },
+        {
+          "buildMs": [
+            5
+          ],
+          "closureHash": "sha256:fafdf4d920931b732046113ed477ceae81af9ed7717d600a1c370a281b534c1b",
+          "cold": 1,
+          "warm": 0
+        }
+      ],
+      "edit": "impl/fulfill-order.ts body: returns { ...order, observedRevision }",
+      "entryPointsWithNewClosureHash": [
+        "fulfill-order"
+      ],
+      "linkNewManifestMs": 11.06,
+      "submitAfterSwap": [
+        {
+          "clientWallMs": 40.47,
+          "isolate": "warm",
+          "status": 200
+        }
+      ],
+      "unchangedEntryPoints": 63,
+      "untouchedClosuresAfterSwap": [
+        {
+          "clientWallMs": 3.5,
+          "isolate": "warm",
+          "path": "/v1/customers"
+        },
+        {
+          "clientWallMs": 3.34,
+          "isolate": "warm",
+          "path": "/v1/sites"
+        },
+        {
+          "clientWallMs": 4.29,
+          "isolate": "warm",
+          "path": "/v1/orders"
+        }
+      ],
+      "uploadChangedModuleMs": 3.16
+    },
+    "warm": {
+      "/v1/customers": {
+        "clientWallMs": {
+          "max": 5.89,
+          "median": 3.51,
+          "min": 2.92,
+          "n": 30,
+          "p95": 5.19
+        },
+        "hostLinkMs": {
+          "max": 3,
+          "median": 2,
+          "min": 1,
+          "n": 30,
+          "p95": 3
+        }
+      },
+      "/v1/orders": {
+        "clientWallMs": {
+          "max": 4.07,
+          "median": 3.1,
+          "min": 2.65,
+          "n": 30,
+          "p95": 4.01
+        },
+        "hostLinkMs": {
+          "max": 3,
+          "median": 2,
+          "min": 1,
+          "n": 30,
+          "p95": 3
+        }
+      },
+      "/v1/sites": {
+        "clientWallMs": {
+          "max": 5.16,
+          "median": 2.96,
+          "min": 2.6,
+          "n": 30,
+          "p95": 3.97
+        },
+        "hostLinkMs": {
+          "max": 4,
+          "median": 1,
+          "min": 1,
+          "n": 30,
+          "p95": 2
+        }
+      }
+    }
+  },
+  "issue": "FORG-30",
+  "local": true,
+  "missing": [
+    "Deployed-edge cold/warm latency and CPU: nothing was deployed (FORG-30 brief: no real Cloudflare account).",
+    "CPU time per child load: local workerd does not report CPU time.",
+    "Loader eviction behaviour: the local loader kept every child warm for the run; when a deployed loader evicts (docs: reuse 'is not guaranteed') was not observed.",
+    "Memory per child isolate: not reported locally.",
+    "Cron entry points through the host: Cron Triggers are not fired by these runs (scheduled() is wired, untested).",
+    "Realtime (Durable Object) entry point: not linked."
+  ],
+  "sizes": {
+    "appJson": {
+      "bytes": 547934,
+      "gzip": 24622
+    },
+    "childCode": {
+      "bytes": {
+        "max": 852026,
+        "median": 849248,
+        "min": 849214,
+        "n": 56,
+        "p95": 851088
+      },
+      "distinctChildren": 56,
+      "generatedMainBytes": {
+        "max": 3773,
+        "median": 3227,
+        "min": 3193,
+        "n": 56,
+        "p95": 3500
+      },
+      "gzipMedian": 121379
+    },
+    "libraries": {
+      "@forgegraph/runtime@0.5.0": {
+        "bytes": 205756,
+        "digest": "sha256:52c551141ea7fe435549d9880fafedcd5541864e01c0ca462b60ce6310b7454f",
+        "gzip": 63384
+      },
+      "effect@4.0.3": {
+        "bytes": 92331,
+        "digest": "sha256:3d62704e14f56a1da57cd90fd1983e45604a0cfa7ec6dd05010986060400a3b2",
+        "gzip": 32267
+      }
+    },
+    "sharedEntryPoints": [
+      [
+        "@acme/commerce/_/NightlyReconciliation",
+        "@acme/commerce/_/ProcessOrder#summary"
+      ],
+      [
+        "GET /v1/workflows/process-order/{id}",
+        "POST /v1/workflows/process-order/{id}/cancel"
+      ],
+      [
+        "POST /v1/orders/{id}/actions/approve",
+        "@acme/commerce/_/ProcessOrder#approve"
+      ],
+      [
+        "POST /v1/orders/{id}/actions/cancel",
+        "@acme/commerce/_/ProcessOrder#short"
+      ],
+      [
+        "POST /v1/orders/{order}/process",
+        "POST /v1/workflows/process-order/signals/{message}",
+        "@acme/commerce/_/ProcessOrder"
+      ],
+      [
+        "POST /v1/orders/{order}/submit",
+        "@acme/commerce/_/ProcessOrder#submit"
+      ]
+    ]
+  },
+  "version": "t4-linker-dynamic-results/1",
+  "wholeApp": {
+    "firstRequestPerRoute": [
+      {
+        "clientWallMs": 23.4,
+        "path": "/v1/customers",
+        "status": 200
+      },
+      {
+        "clientWallMs": 5.1,
+        "path": "/v1/sites",
+        "status": 200
+      },
+      {
+        "clientWallMs": 3.55,
+        "path": "/v1/orders",
+        "status": 200
+      },
+      {
+        "clientWallMs": 4.09,
+        "path": "/v1/departments",
+        "status": 200
+      },
+      {
+        "clientWallMs": 3.09,
+        "path": "/v1/site-policies",
+        "status": 200
+      },
+      {
+        "clientWallMs": 3.3,
+        "path": "/v1/order-documents",
+        "status": 200
+      }
+    ],
+    "submitOrder": {
+      "first": 9.22,
+      "warm": {
+        "max": 11.76,
+        "median": 8.02,
+        "min": 7.49,
+        "n": 10,
+        "p95": 11.76
+      }
+    },
+    "warm": {
+      "/v1/customers": {
+        "clientWallMs": {
+          "max": 10.65,
+          "median": 3.8,
+          "min": 2.79,
+          "n": 30,
+          "p95": 6.59
+        }
+      },
+      "/v1/orders": {
+        "clientWallMs": {
+          "max": 3.4,
+          "median": 2.68,
+          "min": 2.41,
+          "n": 30,
+          "p95": 3.19
+        }
+      },
+      "/v1/sites": {
+        "clientWallMs": {
+          "max": 7.34,
+          "median": 3.08,
+          "min": 2.51,
+          "n": 30,
+          "p95": 5.19
+        }
+      }
+    }
+  }
+}

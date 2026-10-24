@@ -204,7 +204,13 @@
             }
           }
         },
-        "bindings": { "type": "array", "items": { "$ref": "#/$defs/binding" }, "description": "Trigger bindings plus the bindings of every unit in the closure (host bindings are separate)." }
+        "bindings": { "type": "array", "items": { "$ref": "#/$defs/binding" }, "description": "Trigger bindings plus the bindings of every unit in the closure (host bindings are separate)." },
+        "egress": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^https?://[^/]+$" },
+          "uniqueItems": true,
+          "description": "FORG-30 proposal, optional: origins the entry point's closure may reach with fetch()/connect(). Absent means no network: a linker that can sandbox (Linker B) gives the closure no outbound access at all. Not emitted by the sealer yet."
+        }
       }
     }
   }

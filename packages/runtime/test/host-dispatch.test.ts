@@ -66,6 +66,33 @@ describe("Cloudflare host: dispatch hand-off (FORG-29)", () => {
     expect(rows.rows.map((r) => [r["status"], r["delivered"]])).toEqual([["delivered", "[]"]]); // CustomerOrderSummary never sees the order
   });
 
+  it("a slice with postCommit leaves other closures' rows pending; dispatch() on the whole app delivers them", async () => {
+    // The contract both linkers rely on: FORG-29's sliced scripts and FORG-30's narrowed child isolates
+    // set postCommit, and the whole-app Worker (forge:sweep script / dispatch child) runs dispatch().
+    const { env, client } = await d1();
+    const call = async (worker: ReturnType<typeof createWorker>, path: string, body: unknown) => {
+      const pending: Promise<unknown>[] = [];
+      const res = await worker.fetch(new Request(`https://forge.test${path}`, { method: "POST", headers: { "content-type": "application/json", "x-forge-tenant": "t5", "x-forge-actor": "a" }, body: JSON.stringify(body) }), env as never, { waitUntil: (p) => void pending.push(p) });
+      await Promise.all(pending);
+      return (await res.json()) as { id: string };
+    };
+    const handedOff: string[] = [];
+    const slice = structuredClone(bundle);
+    for (const m of slice.ir.modules) m.projections = [];
+    const sliced = createWorker(slice, { auth: devHeaderAuth(), postCommit: async (_env, tenant) => void handedOff.push(tenant) });
+    const customer = await call(sliced, "/v1/customers", { code: "C-5", name: "Five" });
+    const site = await call(sliced, "/v1/sites", { customer: customer.id, code: "hq", name: "HQ", timezone: "UTC" });
+    await call(sliced, "/v1/orders", { customer: customer.id, site: site.id, subtotal: "10.00", tax: "1.00", requestedOn: "2026-09-20" });
+    expect(handedOff).toEqual(["t5", "t5", "t5"]);
+    const orderRows = async () => (await client.execute("SELECT status, delivered FROM forge_outbox WHERE channel = '@acme/commerce/_/Order.changes'")).rows.map((r) => [r["status"], JSON.parse(String(r["delivered"])) as string[]]);
+    expect((await orderRows()).map(([status]) => status)).toEqual(["pending"]);
+
+    await createWorker(bundle, { auth: devHeaderAuth() }).dispatch(env as never, "t5", { sweep: true });
+    const [[status, delivered]] = (await orderRows()) as [[string, string[]]];
+    expect(status).toBe("delivered");
+    expect(delivered.some((s) => s.includes("CustomerOrderSummary"))).toBe(true);
+  });
+
   it("without postCommit the Worker still sweeps in-process, as before", async () => {
     const { env, client } = await d1();
     const worker = createWorker(bundle, { auth: devHeaderAuth() });
