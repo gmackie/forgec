@@ -42,7 +42,7 @@ Versions: wrangler 4.135.0, workerd 1.20260918.1, miniflare 5.20260918.0-alpha (
 | host Worker | `src/host.ts`, `host/acme.ts`, `host/wrangler.jsonc` | Routing, the closure cache, capability stubs (`D1Gate`, `ObjectsGate`, `QueueGate`, `WorkflowGate`, `Egress`), queue/cron/Workflows wiring and `/_linker/*` administration (local only, token-gated). `acme.ts` exports the one Workflows class the platform binds by name. |
 | unit store | `src/store.ts` | A content-addressed blob store over a (local) R2 bucket `UNITS`. Every read is checked against its digest. An in-memory store is used by the unit tests. |
 | shared libraries | `scripts/build-libs.mjs` | `effect@4.0.3` and `@forgegraph/runtime@0.5.0` as content-addressed blobs: the libraries the unit modules leave as imports (`implementation.libraries`). |
-| runtime | `packages/runtime/src/hosts/cloudflare.ts` | Adds `sweepTenant(env, tenant)`, the post-commit dispatch nudge on its own (test: `packages/runtime/test/host-dispatch.test.ts`). |
+| runtime | `packages/runtime/src/hosts/cloudflare.ts` | No change of its own. Linker B uses the dispatch hand-off FORG-29 added: `WorkerOptions.postCommit` and `createWorker().dispatch()` (see "Dispatch: one mechanism with FORG-29"). |
 | schema | `schemas/closure-manifest.schema.json` | Adds an optional `egress` list of origins to an entry point (a proposal; the sealer does not emit it). |
 
 ### Request path
@@ -51,7 +51,7 @@ Versions: wrangler 4.135.0, workerd 1.20260918.1, miniflare 5.20260918.0-alpha (
 2. Derive the policy (below).
 3. Child id = `closureHash` + `~` + 16 hex digits of a digest over the blobs the child loads (libraries, app bundle, unit modules), the policy and the vars. On a host cache miss, fetch each blob from the store, verify it against its digest and assemble the `WorkerCode`.
 4. Call `env.LOADER.get(id, cb)`. The callback mints the capability stubs for this request and sets `globalOutbound` to `null`, or to the `Egress` gateway when the entry point declares egress. The callback running at all marks the request `x-forge-isolate: cold`.
-5. Forward the request to the child's default entrypoint. After a 2xx mutation, `waitUntil` runs `sweepTenant` in the dispatch child, which holds every queue binding.
+5. Forward the request to the child's default entrypoint. Then `waitUntil` calls the runtime's `dispatch(tenant, { sweep })` in the dispatch child, which holds the whole app and every queue binding: `sweep` is true after a 2xx mutation, and a tenant this host isolate has not seen yet gets `sweep: false` (the schedule-index record a whole-app Worker makes for every tenant it serves).
 
 Linking (`PUT /_linker/manifest`) resolves the manifest, then checks that every module, library and app blob it names is in the store and that the app bundle's `buildHash` matches. Only then does it move the pointer, so a broken manifest never serves.
 
@@ -162,7 +162,37 @@ The 5 that fail (changesets, csv-import, limits, schedules, views-projections-ca
 - schedule status and tick: `/v1/schedules/nightly-reconciliation[/tick]`, in `uncovered`
 - **changesets** (`/v1/changesets[/{id}/preview|approve|commit]`) and **imports** (`/v1/imports/inspect|stage`), which are **missing from `uncovered` as well**. This is a T2 gap.
 
+Re-run on 2026-10-24 after merging main and moving to FORG-29's dispatch hand-off: same results. Whole-app 15/15, strict 10/15 (the same five scenarios, 0 denials, 38 children), fallback 15/15 (0 denials, 49 fallbacks), 221 steps each. That run used only the conformance section of `measure.ts`, so `results.json` and `conformance/*.json` still hold the 2026-10-23 run.
+
 No scenario was skipped. Realtime (`test/realtime.test.ts`) needs a websocket target and was not run, because the DO is not linked. Cron Triggers were not fired in any run.
+
+## Dispatch: one mechanism with FORG-29
+
+FORG-29 (the packed linker, `research/composable-units/t3-linker-packed/`) and this branch each fixed the same runtime hazard. The dispatcher delivers an outbox row to the subscriptions its Worker knows and then marks the row done, and the post-commit nudge sweeps every pending row of the tenant. A runtime that holds only part of the app must therefore not sweep. This branch first added `createWorker().sweepTenant(env, tenant)` for that. FORG-29, merged first, added three things to the Cloudflare host:
+
+- `WorkerOptions.postCommit(env, tenant)` replaces the in-process nudge;
+- `createWorker().dispatch(env, tenant, { sweep })` runs it on a Worker that holds the whole app, and also records the tenant in the schedule index;
+- `WorkerOptions.sweeps` limits what a cron invocation runs.
+
+After merging main, `sweepTenant` is gone and Linker B uses FORG-29's API:
+
+| | Linker A (packed, FORG-29) | Linker B (dynamic, FORG-30) |
+| --- | --- | --- |
+| partial runtime | each sliced script | each narrowed child isolate |
+| stops the in-process nudge | `postCommit` forwards over the `FORGE_DISPATCH` service binding | `postCommit` is a no-op, and the child's `fetch` gets no `ctx` |
+| who calls `dispatch()` | the `forge:sweep` script, on `POST /_forge/linker/dispatch` | the host, through the dispatch child's `Forge.dispatch(tenant, { sweep })` RPC |
+| first-sight tenant tracking | `dispatch(…, { sweep: false })`, once per script isolate | `dispatch(…, { sweep: false })`, once per host isolate |
+| cron | `sweeps` narrows each cron script | the whole `scheduled()` in a privileged child (`sweeps` unused) |
+
+`sweepTenant` was a subset of `dispatch(…, { sweep: true })`, so nothing it did is missing, and nothing Linker B needs is outside FORG-29's options. A child cannot call the dispatch child itself (it holds no service binding, only capability stubs). So the host, which already sees the tenant, method and status, makes the call after the child answers, and `postCommit` only has to stop the child from sweeping. One difference: the runtime skips the nudge for signed webhook POSTs, and the host cannot tell those apart. They get an extra `dispatch()`, which is harmless because a sweep is idempotent and the cron runs it anyway. Linker B also gains the first-sight schedule-index record, which a narrowed child did only as an unawaited promise without `ctx`.
+
+In Linker B the hazard is narrower than in a packed slice. Every child loads the whole app bundle, so its model knows every subscription. What it lacks is transports and tables: other closures' queue producers and workflow bindings, and tables outside its policy. A sweep there fails those deliveries rather than marking them done. But each failure costs an attempt and holds the row's 30-second lease (the dispatcher dead-letters after 8), and the gate records a denial. With the hand-off, the request children never claim an outbox row.
+
+Tests:
+
+- `packages/runtime/test/host-dispatch.test.ts` (FORG-29's file plus one case): a slice with `postCommit` leaves another closure's `Order.changes` row pending, and `dispatch()` on the whole app delivers it to `CustomerOrderSummary`. Both linkers rely on this contract.
+- `packages/linker-dynamic/test/resolve.test.ts`: the generated child code, narrowed and privileged, sets `postCommit`, calls `fetch` without `ctx`, exposes `dispatch` and has no `sweepTenant`.
+- `packages/linker-dynamic/test/host.test.ts`, "dispatch": on local workerd, an order created through the narrowed `POST /v1/orders` child ends with its `Order.changes` row delivered to `CustomerOrderSummary`, claimed once (`attempts = 1`), with no gate denials. This checks the delivery end to end. It cannot show the child holding back on its own: in acme, the projection is the only outbox subscriber for a request child's rows, and it stores into `forge_document`, which every storage-using child may write. With the hand-off removed and the child given `ctx`, the test still passed.
 
 ## Findings
 
@@ -191,7 +221,7 @@ No scenario was skipped. Realtime (`test/realtime.test.ts`) needs a websocket ta
    - The planner does not emit changesets, imports or the object-bytes route.
    - Realtime fan-out needs a Durable Object class in the deployed script; Durable Object Facets were not tried.
    - Each Workflows class must be exported by the host by name.
-10. **Dispatch had to leave the request child.** The runtime's post-commit nudge in a narrowed child would deliver other closures' outbox rows without their transports. The host runs it in the dispatch child (`sweepTenant`).
+10. **Dispatch had to leave the request child.** The runtime's post-commit nudge sweeps the tenant's whole outbox, not the request's rows, so a narrowed child would try other closures' deliveries without their transports. The host runs it in the dispatch child through FORG-29's `dispatch()` (next section).
 
 ## Design questions
 

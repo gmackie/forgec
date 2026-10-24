@@ -91,7 +91,12 @@ for (const [symbol, impl] of [${exts.join(", ")}]) {
   if (typeof impl !== "function") throw new Error("linker: module for " + symbol + " does not export an ExternalBinding");
   externals[symbol] = impl;
 }
-const worker = createWorker(app, { functions, externals });
+// FORG-29's hand-off option: no child sweeps the outbox in-process. A narrowed child's model has
+// only its closure's subscribers, and the dispatcher marks a row done after the subscribers it
+// knows, so an in-process sweep would drop other closures' deliveries. The host hands each
+// post-commit nudge to the dispatch child's dispatch() instead (fetch gets no ctx either, so this
+// holds twice over).
+const worker = createWorker(app, { functions, externals, postCommit: async () => undefined });
 
 // D1Like over the host's D1 gate: every statement crosses to the host, which checks its tables.
 function d1(gate) {
@@ -130,13 +135,13 @@ function hostEnv(env) {
 }
 
 export default {
-  // No ctx: the runtime's post-commit dispatch nudge is the host's job (it runs in the sweep child).
+  // No ctx: post-commit dispatch and first-sight schedule tracking are the host's job (dispatch child).
   fetch: (request, env) => worker.fetch(request, hostEnv(env)),
 };
 
 export class Forge extends WorkerEntrypoint {
   advance(tenant, id) { return worker.advance(hostEnv(this.env), tenant, id); }
-  sweepTenant(tenant) { return worker.sweepTenant(hostEnv(this.env), tenant); }
+  dispatch(tenant, o) { return worker.dispatch(hostEnv(this.env), tenant, o); }
   async scheduled(event) {
     const pending = [];
     await worker.scheduled(event, hostEnv(this.env), { waitUntil: (p) => pending.push(p) });

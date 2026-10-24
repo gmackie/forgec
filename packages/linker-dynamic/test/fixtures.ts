@@ -13,7 +13,7 @@ export const h = harness as {
   acme: string;
   unitsOut: string;
   prepare(o?: { force?: boolean }): void;
-  startWorker(o: { kind?: "host" | "whole-app"; port: number; vars?: Record<string, string>; log?: (s: string) => void }): Promise<{ base: string; output(): string; stop(): Promise<void> }>;
+  startWorker(o: { kind?: "host" | "whole-app"; port: number; vars?: Record<string, string>; log?: (s: string) => void }): Promise<{ base: string; state: string; output(): string; stop(): Promise<void> }>;
   seedKit(base: string): Promise<{ libraries: Record<string, string>; apps: Record<string, string> }>;
   linkManifest(base: string, o?: { manifestText?: string; modulesDir?: string | null; skipModules?: string[] }): Promise<{ status: number; body: Record<string, unknown> }>;
   stats(base: string): Promise<{ manifestHash: string; closures: Array<{ id: string; closureHash: string; label: string; cold: number; warm: number; buildMs: number[] }>; denials: string[]; fallbacks: string[]; refused: string[] }>;

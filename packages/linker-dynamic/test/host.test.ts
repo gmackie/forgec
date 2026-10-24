@@ -2,8 +2,9 @@
 // Tests run in order against one host: each links the manifest it needs.
 import { createServer, request, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ClosureManifest } from "../src/manifest.ts";
 import { acmeManifest, acmeManifestText, entry, h, hostileAdapter, rehash, sealVariant, stableJson } from "./fixtures.ts";
@@ -175,6 +176,43 @@ describe("Linker B host on local workerd", () => {
     expect(r.json.code).toBe("StorageUnavailable");
     expect((await call("GET", `/v1/orders/${order}`)).json.status).toBe("Draft");
     expect((await h.stats(host.base)).denials.some((d) => d.includes(`http-route:${SUBMIT} has no capability to write order_`))).toBe(true);
+  });
+
+  it("dispatch: a narrowed child never marks another closure's delivery done; the dispatch child delivers it", async () => {
+    // POST /v1/orders runs in a child whose model lacks the CustomerOrderSummary projection that
+    // consumes Order.changes. Had that child swept the outbox in-process, the row would be marked
+    // delivered with no subscriber (packages/runtime/test/host-dispatch.test.ts, "why"), and it would
+    // never reach the projection. The host hands the nudge to the runtime's dispatch() in the
+    // whole-app dispatch child instead, so the row ends delivered *to the projection*.
+    expect((await link(acmeManifestText())).status).toBe(200);
+    const m = acmeManifest();
+    expect(entry(m, "POST /v1/orders").closure.some((u) => m.units[u]!.symbol.includes("CustomerOrderSummary"))).toBe(false);
+    await h.resetStats(host.base);
+    const t = `d-${Math.random().toString(36).slice(2, 8)}`;
+    const post = async (path: string, body: unknown) => (await fetch(`${host.base}${path}`, { method: "POST", headers: { ...H, "x-forge-tenant": t }, body: JSON.stringify(body) })).json() as Promise<{ id: string }>;
+    const c = await post("/v1/customers", { code: "DSP1", name: "Dispatch" });
+    const s = await post("/v1/sites", { customer: c.id, code: "hq", name: "HQ", timezone: "UTC" });
+    const o = await fetch(`${host.base}/v1/orders`, { method: "POST", headers: { ...H, "x-forge-tenant": t }, body: JSON.stringify({ customer: c.id, site: s.id, subtotal: "10.00", tax: "1.00", requestedOn: "2026-09-20" }) });
+    expect(o.status).toBe(201);
+    expect(o.headers.get("x-forge-linker")).toBeNull(); // served by the narrowed child, not a fallback
+    const d1Dir = join(host.state, "v3", "d1", "miniflare-D1DatabaseObject");
+    const file = readdirSync(d1Dir).find((f) => f.endsWith(".sqlite"))!;
+    const rows = () => {
+      const db = new DatabaseSync(join(d1Dir, file), { readOnly: true });
+      try {
+        return db.prepare("SELECT status, delivered, attempts FROM forge_outbox WHERE tenant = ? AND channel = '@acme/commerce/_/Order.changes'").all(t) as Array<{ status: string; delivered: string | null; attempts: number }>;
+      } finally {
+        db.close();
+      }
+    };
+    const until = Date.now() + 30_000;
+    while (rows()[0]?.status !== "delivered" && Date.now() < until) await new Promise((r) => setTimeout(r, 250));
+    const [row] = rows();
+    expect(row?.status).toBe("delivered");
+    expect((JSON.parse(row!.delivered ?? "[]") as string[]).some((sub) => sub.includes("CustomerOrderSummary"))).toBe(true);
+    // Claimed once, by the dispatch child; the request children never tried a delivery they cannot make.
+    expect(row!.attempts).toBe(1);
+    expect((await h.stats(host.base)).denials).toEqual([]);
   });
 
   it("a manifest swap re-links only the closures whose implementation changed", async () => {

@@ -1,6 +1,6 @@
 // Resolution, policy derivation and the SQL gate, in Node against the sealed acme manifest.
 import { beforeAll, describe, expect, it } from "vitest";
-import { childSource, type LinkerKit } from "../src/child.ts";
+import { childMain, childSource, type LinkerKit } from "../src/child.ts";
 import { LinkError, matchRoute, resolveManifest, type ClosureManifest } from "../src/manifest.ts";
 import { derivePolicy, privilegedPolicy } from "../src/policy.ts";
 import { checkSql, tableAccess } from "../src/sql-gate.ts";
@@ -124,6 +124,19 @@ describe("derivePolicy", () => {
     for (const e of m.entryPoints) expect(derivePolicy(m, e, schema()).privileged).toBe(e.runtimeService === "outbox-and-workflow-sweep");
     const all = privilegedPolicy(m, schema(), "x");
     expect(all.tables.write).toEqual(expect.arrayContaining(["customer", "order_", "forge_outbox"]));
+  });
+
+  it("child code never sweeps the outbox in-process and exposes the runtime's dispatch() (FORG-29 hand-off)", () => {
+    const m = acmeManifest();
+    const kit: LinkerKit = { libraries: { "@forgegraph/runtime@0.5.0": "sha256:r", "effect@4.0.3": "sha256:e" }, apps: { [m.buildHash]: "sha256:a" } };
+    for (const p of [derivePolicy(m, entry(m, "POST /v1/orders"), schema()), privilegedPolicy(m, schema(), "runtime:dispatch")]) {
+      const main = childMain(childSource(m, p, kit), p, []);
+      // postCommit replaces the in-process nudge, and fetch passes no ctx: the host owns dispatch.
+      expect(main).toMatch(/createWorker\(app, \{ functions, externals, postCommit: async \(\) => undefined \}\)/);
+      expect(main).toContain("fetch: (request, env) => worker.fetch(request, hostEnv(env)),");
+      expect(main).toContain("dispatch(tenant, o) { return worker.dispatch(hostEnv(this.env), tenant, o); }");
+      expect(main).not.toContain("sweepTenant");
+    }
   });
 
   it("fails closed when the kit lacks a library the closure needs", () => {

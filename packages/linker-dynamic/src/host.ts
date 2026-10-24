@@ -220,6 +220,9 @@ async function admin(request: Request, env: HostEnv, url: URL): Promise<Response
 }
 
 // ---------------------------------------------------------------------------------- the Worker
+/** Tenants whose schedule-index record this isolate has handed to dispatch() (once per isolate, like the runtime). */
+const seenTenants = new Set<string>();
+
 export default {
   async fetch(request: Request, env: HostEnv, ctx: { waitUntil(p: Promise<unknown>): void; exports: Record<string, (o: { props: unknown }) => unknown> }): Promise<Response> {
     const url = new URL(request.url);
@@ -259,13 +262,20 @@ export default {
       out.headers.set("x-forge-isolate", cold ? "cold" : "warm");
       out.headers.set("x-forge-link-ms", (performance.now() - t0).toFixed(2));
       if (policy.privileged) out.headers.set("x-forge-linker", "fallback-whole-app");
-      // The post-commit dispatch nudge runs where every subscription's transport is bound.
+      // The runtime's dispatch() (FORG-29) runs in the dispatch child, which holds the whole app and
+      // every subscription's transport: the post-commit outbox sweep after a committed write, and the
+      // first-sight schedule-index record a whole-app Worker makes for every tenant it serves.
       const tenant = request.headers.get("x-forge-tenant");
-      if (tenant && request.method !== "GET" && res.status < 300) {
+      const sweep = request.method !== "GET" && res.status < 300;
+      if (tenant && (sweep || !seenTenants.has(tenant))) {
+        seenTenants.add(tenant);
         ctx.waitUntil(
-          privilegedChild(env, ctx, l, "runtime:dispatch-nudge")
-            .then((c) => c.stub.getEntrypoint("Forge")["sweepTenant"]!(tenant))
-            .catch((e: unknown) => console.warn("linker: nudge failed", String(e))),
+          privilegedChild(env, ctx, l, "runtime:dispatch")
+            .then((c) => c.stub.getEntrypoint("Forge")["dispatch"]!(tenant, { sweep }))
+            .catch((e: unknown) => {
+              if (!sweep) seenTenants.delete(tenant);
+              console.warn("linker: dispatch failed", String(e));
+            }),
         );
       }
       return out;
