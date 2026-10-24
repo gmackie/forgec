@@ -13,6 +13,7 @@ pub mod schedules;
 pub mod sql;
 pub mod ui;
 pub mod units;
+pub mod wit;
 pub mod workflows;
 
 use forgegraph_semantic::DomainIR;

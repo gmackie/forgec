@@ -25,4 +25,20 @@ Findings are a text scan of each unit's own sources for authority that bypasses 
 handles (raw `env`, `fetch`, platform modules, randomness, clocks). They are evidence for
 review, not a sandbox.
 
-Results for the reference app: `research/composable-units/t2-units/`.
+## WASM components (FORG-31)
+
+A function unit can be bound to a WebAssembly component instead of its `impl/` module:
+
+```sh
+forgec wit examples/pricing --unit QuoteOrder   # the WIT world generated from DomainIR
+node packages/units/src/cli.ts examples/pricing --component @acme/pricing/_/QuoteOrder=impl/quote-order.wasm
+```
+
+The sealer checks that the component's world is the one forgec generated for the unit and refuses
+it otherwise. It stores the component and the unit's WIT lowering as blobs and marks the unit
+`kind: wasm-component`. The interface hash does not change; the implementation and unit hashes do.
+`src/harness.ts` stands in for a linker. It transpiles the component with jco to core module(s)
+plus glue, and `src/wit-lowering.ts` adapts the glue to wire values, so callers cannot tell which
+kind they are calling.
+
+Results: `research/composable-units/t2-units/` (acme) and `research/composable-units/t5-wasm-unit/`.

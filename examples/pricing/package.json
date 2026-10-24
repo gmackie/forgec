@@ -1,0 +1,22 @@
+{
+  "name": "@acme/pricing-deploy",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "cargo run -q -p forgegraph-cli -- build .",
+    "wit": "cargo run -q -p forgegraph-cli -- wit . --unit QuoteOrder > impl/quote-order-rs/wit/unit.wit",
+    "component:build": "node build-component.mjs",
+    "component:check": "node build-component.mjs --check",
+    "units:build": "cargo run -q -p forgegraph-cli -- build . --units && node ../../packages/units/src/cli.ts .",
+    "units:build:wasm": "cargo run -q -p forgegraph-cli -- build . --units && node ../../packages/units/src/cli.ts . --component @acme/pricing/_/QuoteOrder=impl/quote-order.wasm",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@forgegraph/runtime": "workspace:*",
+    "effect": "4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
