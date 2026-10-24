@@ -55,6 +55,15 @@ export interface WorkerOptions extends EngineOptions {
   endpoints?: HttpEndpoint[] | ((env: WorkerEnv) => HttpEndpoint[]);
   /** Explicit signed webhook POST bindings; never authenticates normal API routes. */
   webhooks?: Record<string, SignedWebhook> | ((env: WorkerEnv) => Record<string, SignedWebhook>);
+  /**
+   * Replaces the in-process post-commit outbox nudge. The local dispatcher delivers each outbox row to
+   * the subscriptions *this* model knows and then marks the row done, so a Worker running a slice of
+   * the app (FORG-29 packed linker) must hand the nudge to a Worker that holds the whole subscription
+   * table instead of sweeping itself. Unset: sweep locally, as a whole-app Worker always has.
+   */
+  postCommit?: (env: WorkerEnv, tenant: string) => Promise<unknown>;
+  /** Which sweeps a cron invocation runs (default: all three). A Worker that owns only a schedule runs only `schedules`. */
+  sweeps?: { outbox?: boolean; schedules?: boolean; workflows?: boolean };
 }
 
 function nativeId(tenant: string, id: string): string {
@@ -245,10 +254,23 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       // FORG-3: the schedule index, not the outbox, decides which tenants are due (idle and global ones included).
       const ev = (event ?? {}) as { cron?: string; scheduledTime?: number };
       const now = new Date(ev.scheduledTime ?? Date.now()).toISOString();
-      ctx.waitUntil(Effect.runPromise(engine.schedules.sweep(now, tenants)));
-      ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(dispatcher.sweep(t, { now: Date.now() })))));
+      const sweeps = { outbox: true, schedules: true, workflows: true, ...options.sweeps };
+      if (sweeps.schedules) ctx.waitUntil(Effect.runPromise(engine.schedules.sweep(now, tenants)));
+      if (sweeps.outbox) ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(dispatcher.sweep(t, { now: Date.now() })))));
       // Crashed `running` instances resume here; native drivers own timers.
-      ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(engine.workflows.sweep(t)))));
+      if (sweeps.workflows) ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(engine.workflows.sweep(t)))));
+    },
+    /**
+     * What a whole-app Worker does after a request, run on behalf of a Worker that holds only a slice:
+     * record the tenant in the schedule index and, for a committed write, sweep the tenant's outbox.
+     */
+    async dispatch(env: WorkerEnv, tenant: string, o: { sweep: boolean }): Promise<void> {
+      const { engine, dispatcher } = build(env, "https://dispatch.invalid");
+      if (engine.schedules.active && !tracked.has(tenant)) {
+        tracked.add(tenant);
+        await Effect.runPromise(engine.schedules.track(tenant));
+      }
+      if (o.sweep) await Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }));
     },
     /** Queue consumer: every message is a forge envelope for exactly one subscription (the queue's). */
     async queue(batch: { queue: string; messages: { body: unknown; ack(): void; retry(): void }[] }, env: WorkerEnv): Promise<void> {
@@ -303,7 +325,7 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       // Prompt post-commit nudge for this tenant; the cron sweep is the guarantee.
       if (ctx && !signedWebhook && request.method !== "GET" && res.status < 300) {
         const tenant = request.headers.get("x-forge-tenant");
-        if (tenant) ctx.waitUntil(Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() })).catch(() => undefined));
+        if (tenant) ctx.waitUntil((options.postCommit ? options.postCommit(env, tenant) : Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }))).catch(() => undefined));
       }
       return res;
     },

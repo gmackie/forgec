@@ -1,0 +1,58 @@
+{
+  "audit": "forgegraph-syntax, -semantic, -planner, -codegen (library crates; forgegraph-cli is the native host). Searched for std::fs, std::env, std::process, std::thread, rayon, Instant/SystemTime, canonicalize, and checked dependencies (logos, rowan, toml, serde/serde_json, indexmap, sha2, hex): all pure Rust.",
+  "compilesForWasm32Before": "yes: forgegraph-editor already builds syntax+semantic+codegen(+planner) for wasm32-unknown-unknown. Nothing failed to compile; the blockers are runtime behaviour on the check/build path, where wasm32-unknown-unknown's std::fs and std::env return Unsupported.",
+  "moduleImports": "the resulting forgegraph_wasm.wasm imports nothing (no WASI, no JS glue)",
+  "blockers": [
+    {
+      "where": "forgegraph-semantic::package::load_package",
+      "what": "std::fs::read_to_string for forge.toml, sources and dependency manifests; std::fs::read_dir + Path::is_dir to collect .forge files",
+      "handled": "SourceTree trait (read, read_to_string, read_dir, canonicalize) with OsTree (std::fs) and MemoryTree (path -> bytes map, lexical . and .. folding). load_package(root) = load_package_in(&OsTree, root); signature unchanged for the CLI and LSP."
+    },
+    {
+      "where": "forgegraph-cli main.rs load_tree (dependency resolution)",
+      "what": "Path::canonicalize on the root and every path dependency for cycle detection and sharing",
+      "handled": "moved to forgegraph-codegen::pipeline::load_tree over SourceTree::canonicalize. MemoryTree canonicalizes lexically, so symlinked packages are not unified as the OS would; acme has none."
+    },
+    {
+      "where": "forgegraph-cli verify_lock / verify_extensions",
+      "what": "std::fs reads of forge.lock and pinned extension manifests; std::process::exit(1) on a stale lock",
+      "handled": "pipeline::lock_status returns Current/Missing/Stale and pipeline::verify_extensions reads through SourceTree; the CLI keeps its messages and exit codes, the wasm host reports them in JSON"
+    },
+    {
+      "where": "forgegraph-cli Build",
+      "what": "std::fs::create_dir_all / std::fs::write for every artifact",
+      "handled": "pipeline::artifacts returns (relative path, contents) in the CLI's write order plus warnings; the CLI writes them, the Worker returns them"
+    },
+    {
+      "where": "forgegraph-cli Build",
+      "what": "std::env::var(\"FORGE_SOURCE_REVISION\") for the source map",
+      "handled": "passed in as a parameter (sourceRevision in the wasm request)"
+    },
+    {
+      "where": "forgegraph-cli load_tree",
+      "what": "eprint! of a failing dependency's diagnostics as a side effect",
+      "handled": "pipeline::Error carries them (rendered()); the CLI prints them before the error, the wasm host returns them"
+    },
+    {
+      "where": "forgegraph-codegen::openapi_import (pins)",
+      "what": "std::fs::read of --pin files",
+      "handled": "not handled: not on the check/build path. Under wasm it would return an Unsupported error, not crash. forgegraph-editor already calls the importer without pins."
+    },
+    {
+      "where": "forgegraph-semantic::taxonomy",
+      "what": "std::fs::read_to_string",
+      "handled": "none needed: #[cfg(test)] only"
+    },
+    {
+      "where": "panics",
+      "what": "wasm32-unknown-unknown has no unwinding; a compiler panic traps and the Worker request throws",
+      "handled": "not handled in this spike (no panic hook, no catch); acme does not panic"
+    },
+    {
+      "where": "measurement, not compilation",
+      "what": "deployed Workers only advance Date.now()/performance.now() across I/O, and local workerd does not report per-request CPU time",
+      "handled": "recorded in-isolate elapsed time (local workerd did advance its clock), client wall time, and Node V8 process CPU as a separately labelled proxy; workerd CPU ms recorded as missing"
+    }
+  ],
+  "notFound": "no threads, rayon, Instant/SystemTime, std::process or std::env in the library crates; no native-only dependencies"
+}

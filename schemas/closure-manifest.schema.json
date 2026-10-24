@@ -24,7 +24,8 @@
       "properties": {
         "forgec": { "type": "string" },
         "bundler": { "type": "string", "description": "e.g. esbuild@0.27.7. Byte-identical modules are only claimed for an identical toolchain." },
-        "units": { "type": "string", "description": "Version of the tool that bundled and sealed the manifest." }
+        "units": { "type": "string", "description": "Version of the tool that bundled and sealed the manifest." },
+        "transpiler": { "type": "string", "description": "Present when the manifest has wasm-component units: the component-to-core transpiler (e.g. @bytecodealliance/jco@1.39.0) the sealer checked worlds with. A linker uses the same version to reproduce the glue byte for byte." }
       }
     },
     "units": {
@@ -35,7 +36,7 @@
     },
     "modules": {
       "type": "object",
-      "description": "JavaScript module blobs keyed by sha256 of their bytes. Several units may share one blob.",
+      "description": "Implementation blobs keyed by sha256 of their bytes: JavaScript modules, WebAssembly components, and the WIT lowerings linkers adapt components with. Several units may share one blob.",
       "propertyNames": { "$ref": "#/$defs/digest" },
       "additionalProperties": { "$ref": "#/$defs/module" }
     },
@@ -136,6 +137,18 @@
             },
             {
               "type": "object",
+              "description": "wasm-component: a WebAssembly component implementing the unit's WIT world, which forgec generates from the interface. Workers have no component model, so the linker transpiles it to core module(s) plus JS glue and adapts the glue to wire values with the lowering.",
+              "required": ["component", "world", "lowering", "abi"],
+              "additionalProperties": false,
+              "properties": {
+                "component": { "$ref": "#/$defs/digest", "description": "Blob of the component bytes." },
+                "world": { "$ref": "#/$defs/digest", "description": "sha256 of the generated WIT text the sealer checked the component's world against." },
+                "lowering": { "$ref": "#/$defs/digest", "description": "Blob of the forge-wit-lowering/1 JSON: wire value <-> WIT value per type." },
+                "abi": { "const": "forge-wit/1" }
+              }
+            },
+            {
+              "type": "object",
               "description": "forge-native: the runtime executes the declaration itself.",
               "required": ["declaration", "executor"],
               "additionalProperties": false,
@@ -157,9 +170,9 @@
       "required": ["path", "bytes", "sources"],
       "additionalProperties": false,
       "properties": {
-        "path": { "type": "string", "pattern": "^modules/[0-9a-f]{64}\\.js$" },
+        "path": { "type": "string", "pattern": "^modules/[0-9a-f]{64}\\.(js|wasm|json)$" },
         "bytes": { "type": "integer", "minimum": 0 },
-        "sources": { "type": "array", "items": { "type": "string" }, "description": "App-relative files bundled into the module." }
+        "sources": { "type": "array", "items": { "type": "string" }, "description": "App-relative files bundled into the module, or the component file; empty for generated lowerings." }
       }
     },
     "entryPoint": {

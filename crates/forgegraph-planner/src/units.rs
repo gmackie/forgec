@@ -63,6 +63,10 @@ pub struct PlannedUnit {
     pub dependencies: Vec<String>,
     pub imports: Vec<CapabilityImport>,
     pub bindings: Vec<Binding>,
+    /// Implemented function units: the WIT world generated from the interface (FORG-31), or why
+    /// it cannot be generated. A WASM component can implement the unit only when this is `ok`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wit: Option<crate::wit::UnitWit>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -139,18 +143,18 @@ pub fn digest(domain: &str, v: &Value) -> String {
 }
 
 /// Declarations visible to the deployment: the package first, then its dependencies.
-struct Scope<'a> {
-    irs: Vec<&'a DomainIR>,
+pub(crate) struct Scope<'a> {
+    pub(crate) irs: Vec<&'a DomainIR>,
 }
 
 impl<'a> Scope<'a> {
-    fn function(&self, id: &str) -> Option<&'a Function> {
+    pub(crate) fn function(&self, id: &str) -> Option<&'a Function> {
         self.irs.iter().find_map(|ir| ir.find_function(id))
     }
-    fn resource(&self, id: &str) -> Option<&'a Resource> {
+    pub(crate) fn resource(&self, id: &str) -> Option<&'a Resource> {
         self.irs.iter().find_map(|ir| ir.find_resource(id))
     }
-    fn channel(&self, id: &str) -> Option<&'a Channel> {
+    pub(crate) fn channel(&self, id: &str) -> Option<&'a Channel> {
         self.irs.iter().find_map(|ir| ir.find_channel(id))
     }
 
@@ -559,6 +563,8 @@ fn function_unit(
         "purpose": f.purpose,
         "types": scope.types(&roots),
     });
+    let imports = sorted(imports);
+    let wit = (!f.generated).then(|| crate::wit::function_world(scope, f, &imports));
     let (kind, implementation) = if f.generated {
         (
             "forge-native",
@@ -578,8 +584,9 @@ fn function_unit(
         interface,
         implementation,
         dependencies: sorted(dependencies),
-        imports: sorted(imports),
+        imports,
         bindings: sorted(bindings),
+        wit,
     }
 }
 
@@ -661,6 +668,7 @@ fn operation_unit(
             provider: runtime("resource-store"),
         }],
         bindings: sorted(bindings),
+        wit: None,
     }
 }
 
@@ -782,5 +790,6 @@ fn workflow_unit(scope: &Scope, w: &Workflow, cf_binding: Option<&str>) -> Plann
         dependencies: sorted(calls.into_iter().map(|(_, t)| t)),
         imports: sorted(imports),
         bindings: sorted(bindings),
+        wit: None,
     }
 }
