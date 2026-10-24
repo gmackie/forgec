@@ -8,6 +8,109 @@ on:
 
 # labnuc's act runner provides ubuntu-latest. The console build needs the wasm32 target.
 jobs:
+  # FORG-35: the whole compiler workspace, as the GitHub `compiler` job ran it before the move to
+  # Forgejo (aefd744), plus forgegraph-wasm linted for the target it ships to.
+  compiler:
+    name: compiler
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - name: Ensure a C toolchain for Rust build scripts
+        run: |
+          if ! command -v cc >/dev/null 2>&1 && ! command -v gcc >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential pkg-config curl ca-certificates
+          fi
+      - uses: https://github.com/dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.97.1"
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Lint forgegraph-wasm for wasm32-unknown-unknown
+        run: cargo clippy -p forgegraph-wasm --target wasm32-unknown-unknown --locked -- -D warnings
+      - run: cargo test --workspace --locked
+
+  # FORG-35: composable units (FORG-28..31) and the full runtime suite.
+  # - The unit and linker tests run the real debug `forgec` (target/debug/forgec) and local workerd
+  #   (Miniflare for linker-packed, `wrangler dev --local` for linker-dynamic). workerd comes from
+  #   the @cloudflare/workerd-linux-* optional dependency, so it needs no install step.
+  # - wasm.test.ts runs the committed impl/quote-order.wasm, and also rebuilds it byte for byte when
+  #   rustc 1.97.1 (wasm32) and wasm-tools 1.262.0 are present, skipping that check otherwise. The
+  #   toolchain is installed and asserted below so the reproduction check cannot skip in CI.
+  # - linker-packed's differential.test.ts (6 tests) stays opt-in (T3_DIFFERENTIAL=1, after
+  #   research/composable-units/t3-linker-packed/run.sh), as documented in that test.
+  units:
+    name: composable units and runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: "2"
+      CARGO_PROFILE_DEV_DEBUG: "0"
+      WASM_TOOLS_VERSION: "1.262.0"
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - name: Ensure a C toolchain for Rust build scripts
+        run: |
+          if ! command -v cc >/dev/null 2>&1 && ! command -v gcc >/dev/null 2>&1; then
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential pkg-config curl ca-certificates
+          fi
+      - uses: https://github.com/pnpm/action-setup@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: "24"
+      # Matches examples/pricing/impl/quote-order-rs/rust-toolchain.toml.
+      - uses: https://github.com/dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.97.1"
+          targets: wasm32-unknown-unknown
+          components: rustfmt, clippy
+      - name: Install wasm-tools (pinned by examples/pricing/build-component.mjs)
+        run: |
+          case "$(uname -m)" in
+            x86_64) arch=x86_64; sha=655b8df67d54c3ef9b52fc237c4e94bbfbb5f5f43825245cb0940a7002a9ed65 ;;
+            aarch64) arch=aarch64; sha=729dc47a114305ed60873ce6199d403eed1da89c3aa2367eef292da358b1e8d3 ;;
+            *) echo "::error::no wasm-tools build for $(uname -m)"; exit 1 ;;
+          esac
+          name="wasm-tools-${WASM_TOOLS_VERSION}-${arch}-linux"
+          curl -fsSL -o /tmp/wasm-tools.tar.gz "https://github.com/bytecodealliance/wasm-tools/releases/download/v${WASM_TOOLS_VERSION}/${name}.tar.gz"
+          echo "${sha}  /tmp/wasm-tools.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/wasm-tools.tar.gz -C /tmp
+          mkdir -p "$HOME/.local/bin"
+          install -m 0755 "/tmp/${name}/wasm-tools" "$HOME/.local/bin/wasm-tools"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Require the component toolchain so the reproduction test runs
+        run: |
+          wasm-tools --version | grep -F "$WASM_TOOLS_VERSION"
+          (cd examples/pricing/impl/quote-order-rs && rustc --version | grep -F 1.97.1)
+      - name: Build the debug forgec the tests drive
+        run: cargo build --locked -p forgegraph-cli
+      - run: pnpm install --frozen-lockfile
+      - name: Build the packages the unit packages import (runtime, capability-manifest)
+        run: pnpm --filter '@forgegraph/units^...' --filter '@forgegraph/linker-packed^...' --filter '@forgegraph/linker-dynamic^...' run build
+      - name: Typecheck the unit packages
+        run: pnpm --filter @forgegraph/units --filter @forgegraph/linker-packed --filter @forgegraph/linker-dynamic run typecheck
+      # One package per step: the linker tests both build examples/acme/generated and start workerd.
+      - run: pnpm --filter @forgegraph/units test
+      - run: pnpm --filter @forgegraph/linker-packed test
+      - run: pnpm --filter @forgegraph/linker-dynamic test
+      # The whole runtime suite. Its config defaults testTimeout to 5 s, and six suites
+      # (artifact-workspace-workers-incremental, foundation-subscription,
+      # foundation-collections-dunning, foundation-asset-lifecycle, foundation-billing,
+      # foundation-scheduling) exceed that even on a fast Mac. CI raises the per-test budget to
+      # 60 s instead of skipping them. Provider-gated suites (FORGE_PG_URL, FORGE_FOUNDATION_PG_URL,
+      # AWS_REGION, FORGE_DYNAMO_*, FORGE_D1_HARNESS) skip here: they run in
+      # provider-certification.yml. The MQTT live suites run in the console job with Mosquitto.
+      - name: Run the full runtime suite with a CI test timeout
+        run: pnpm --filter @forgegraph/runtime exec vitest run --testTimeout=60000
+
   console:
     name: console
     runs-on: ubuntu-latest
@@ -122,7 +225,8 @@ jobs:
   # ForgeGraph's deploy gate waits for this report; without it every deploy needs --break-glass.
   report:
     name: report to ForgeGraph
-    needs: [console, acceptance]
+    # Every job listed here gates the deploy: the report is success only when all succeed.
+    needs: [compiler, units, console, acceptance]
     if: always()
     runs-on: ubuntu-latest
     # Report needs only shell/curl, not a host-local forgegraph-act image.
@@ -132,6 +236,8 @@ jobs:
       - name: Report CI result to ForgeGraph
         env:
           FG_CI_TOKEN: ${{ secrets.FORGEGRAPH_TOKEN }}
+          COMPILER: ${{ needs.compiler.result }}
+          UNITS: ${{ needs.units.result }}
           CONSOLE: ${{ needs.console.result }}
           ACCEPTANCE: ${{ needs.acceptance.result }}
         run: |
@@ -139,8 +245,14 @@ jobs:
             echo "::warning::FORGEGRAPH_TOKEN is not set; run forge ci provision"
             exit 0
           fi
-          if [ "$CONSOLE" = success ] && [ "$ACCEPTANCE" = success ]; then STATUS=success
-          elif [ "$CONSOLE" = cancelled ] || [ "$ACCEPTANCE" = cancelled ]; then STATUS=cancelled
+          RESULTS="$COMPILER $UNITS $CONSOLE $ACCEPTANCE"
+          echo "compiler=$COMPILER units=$UNITS console=$CONSOLE acceptance=$ACCEPTANCE"
+          case " $RESULTS " in
+            *" cancelled "*) ANY_CANCELLED=1 ;;
+            *) ANY_CANCELLED=0 ;;
+          esac
+          if [ "$RESULTS" = "success success success success" ]; then STATUS=success
+          elif [ "$ANY_CANCELLED" = 1 ]; then STATUS=cancelled
           else STATUS=failure; fi
           REPO_FULL="${{ github.repository }}"
           curl -sf -X POST "https://forgegraf.com/api/fg/ci/report" \
