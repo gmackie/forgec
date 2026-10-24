@@ -1033,6 +1033,84 @@ fn import_iface(g: &mut Gen, cap: &str, path: &str) -> Option<ImportIface> {
     )
 }
 
+fn spec(base: TypeBase) -> TypeSpec {
+    TypeSpec {
+        base,
+        optional: false,
+        normalizers: vec![],
+        constraints: vec![],
+        purpose: None,
+        data_class: None,
+    }
+}
+
+/// What a unit's capabilities present to its implementation, for its interface hash (FORG-36).
+/// It follows `import_iface`: a resource handle answers with the resource's record, a transition
+/// takes its input fields and answers with the record, a callee has its input, output and
+/// errors, and a send carries the message. The same types reach the WIT world's imports, so a
+/// change that changes the world changes the interface hash too. Returns the per-capability
+/// signatures and the type roots they reach, which go into the interface's `types` with the
+/// unit's own input and output. It covers every resource capability, including those WIT does not
+/// lower yet (`write`): a JS implementation reaches the record through them all the same.
+pub(crate) fn capability_surface(
+    scope: &Scope,
+    imports: &[CapabilityImport],
+) -> (BTreeMap<String, Value>, Vec<TypeSpec>) {
+    let mut surface = BTreeMap::new();
+    let mut roots = Vec::new();
+    let record = |resource: &str| {
+        spec(TypeBase::Record {
+            resource: resource.into(),
+        })
+    };
+    for imp in imports {
+        let cap = imp.capability.as_str();
+        let entry = if let Some((resource, _)) = cap
+            .strip_prefix("resource:")
+            .and_then(|r| r.split_once('#'))
+        {
+            roots.push(record(resource));
+            json!({ "record": format!("{resource}.Record") })
+        } else if let Some((resource, action)) = cap
+            .strip_prefix("transition:")
+            .and_then(|op| op.split_once(".status."))
+        {
+            let input: Vec<Field> = scope
+                .resource(resource)
+                .and_then(|r| r.lifecycle.as_ref())
+                .and_then(|l| l.transitions.iter().find(|t| t.action == action))
+                .map(|t| t.input.clone())
+                .unwrap_or_default();
+            roots.push(record(resource));
+            roots.extend(input.iter().map(|f| f.ty.clone()));
+            json!({ "record": format!("{resource}.Record"), "input": input })
+        } else if let Some(id) = cap.strip_prefix("function:") {
+            match scope.function(id) {
+                Some(callee) => {
+                    roots.extend(callee.input.iter().chain(callee.output.iter()).cloned());
+                    let mut errors = callee.errors.clone();
+                    errors.sort();
+                    errors.dedup();
+                    json!({ "input": callee.input, "output": callee.output, "errors": errors })
+                }
+                None => json!({ "unresolved": true }),
+            }
+        } else if let Some((channel, message)) =
+            cap.strip_prefix("send:").and_then(|s| s.split_once('#'))
+        {
+            roots.push(spec(TypeBase::Message {
+                channel: channel.into(),
+                message: message.into(),
+            }));
+            json!({ "payload": format!("{channel}#{message}") })
+        } else {
+            continue;
+        };
+        surface.insert(cap.to_string(), entry);
+    }
+    (surface, roots)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

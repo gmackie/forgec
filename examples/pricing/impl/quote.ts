@@ -30,21 +30,21 @@ const LIMIT = 10_000_000_000n;
 const I128_MAX = (1n << 127n) - 1n;
 const DISCOUNT_BPS: Record<CustomerTier, bigint> = { standard: 0n, gold: 500n, enterprise: 1_000n };
 
-class Overflow extends Error {}
-const checked = (v: bigint) => {
+export class Overflow extends Error {}
+export const checked = (v: bigint) => {
   if (v > I128_MAX || v < -I128_MAX - 1n) throw new Overflow();
   return v;
 };
 const halfUp = (scaled: bigint) => (scaled + 5_000n) / 10_000n;
 
 /** `"12"`, `"12.5"`, `"12.50"` -> 1250n. Decoded input never violates this, so a violation is a host bug. */
-function cents(s: string): bigint {
+export function cents(s: string): bigint {
   const [whole = "", frac = "", ...rest] = s.split(".");
   if (rest.length || whole === "" || whole.length > 30 || frac.length > 2 || !/^\d+$/.test(whole + frac + "0")) throw new Error(`malformed amount ${s}`);
   return BigInt(whole + frac.padEnd(2, "0"));
 }
 
-function money(c: bigint): string {
+export function money(c: bigint): string {
   const r = c % 100n;
   return `${c / 100n}.${r < 10n ? "0" : ""}${r}`;
 }

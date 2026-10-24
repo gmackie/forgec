@@ -149,8 +149,10 @@ describe("QuoteOrder as a js-module and as a wasm-component", async () => {
       expect(validate.errors ?? []).toEqual([]);
       expect(ok).toBe(true);
     }
-    const blobs = Object.values(wasm.manifest.modules).map((m) => m.path.split(".").pop()).sort();
-    expect(blobs).toEqual(["json", "wasm"]);
+    // The component and its lowering are blobs of their own (other units of the package stay js).
+    const u = unitOf(wasm);
+    const blobs = [u.implementation["component"], u.implementation["lowering"]].map((d) => wasm.manifest.modules[d as string]!.path.split(".").pop());
+    expect(blobs).toEqual(["wasm", "json"]);
   });
 
   it("seals byte-identically twice", async () => {
@@ -181,7 +183,7 @@ describe("QuoteOrder as a js-module and as a wasm-component", async () => {
       const caller = (b: BoundUnit) => b.modules.find((m) => m.path === "caller.js")!.contents;
       expect(Buffer.compare(caller(boundJs), caller(boundWasm))).toBe(0);
       expect(new TextDecoder().decode(caller(boundJs))).toBe(CALLER);
-      expect(boundWasm.modules.map((m) => `${m.type} ${m.path}`)).toEqual(["ESModule caller.js", "ESModule bound.js", "ESModule unit.js", "CompiledWasm unit.core.wasm"]);
+      expect(boundWasm.modules.map((m) => `${m.type} ${m.path}`)).toEqual(["ESModule caller.js", "ESModule bound.js", "ESModule host.js", "ESModule unit.js", "CompiledWasm unit.core.wasm"]);
     });
 
     it("gives identical outputs on every input (differential)", async () => {

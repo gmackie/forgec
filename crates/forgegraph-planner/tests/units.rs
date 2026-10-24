@@ -391,3 +391,193 @@ fn source_spans_locate_declarations_and_never_enter_a_hash() {
         }
     }
 }
+/// A function whose input and output reach none of its capabilities' types: a resource read, a
+/// transition with input, a callee and a send. Only the capabilities reach `Site`, `Lookup`'s
+/// signature, `Ticket.reopen`'s input and the `Checked` message.
+const REACHED: &str = r#"
+resource Site @crud("/v1/sites") {
+  id : id
+  name : text length 1..200
+  enabled : boolean = true
+}
+
+resource Ticket @crud("/v1/tickets") {
+  id : id
+  title : text length 1..200
+  lifecycle status {
+    initial Open
+    terminal Archived
+    close: Open -> Closed
+    reopen: Closed -> Open
+      input { reason : text length 1..100 }
+    archive: Closed -> Archived
+  }
+}
+
+shape LookupInput {
+  code : text length 1..20
+}
+
+shape LookupOutput {
+  found : boolean
+}
+
+function Lookup {
+  input LookupInput
+  output LookupOutput
+  errors {
+    Missing
+  }
+}
+
+channel Checks {
+  distribution broadcast
+  delivery at-least-once
+
+  message Checked {
+    site : id
+    revision : integer >= 1
+  }
+}
+
+shape CheckInput {
+  site : id
+}
+
+shape CheckOutput {
+  ok : boolean
+}
+
+/// Checks a site.
+function CheckSite
+  @http(POST, "/v1/check")
+{
+  input CheckInput
+  output CheckOutput
+  uses {
+    Site read
+    Ticket.status.reopen
+    Lookup
+  }
+  sends {
+    Checked to Checks
+  }
+  errors {
+    Disabled
+  }
+}
+"#;
+
+fn world_digest(u: &units::PlannedUnit) -> Option<String> {
+    match u.wit.as_ref()? {
+        forgegraph_planner::wit::UnitWit::Ok { digest, .. } => Some(digest.clone()),
+        forgegraph_planner::wit::UnitWit::Unsupported { .. } => None,
+    }
+}
+
+#[test]
+fn interface_hash_covers_types_reached_through_capabilities() {
+    // FORG-36: the WIT world imports these types, so the interface must cover them too. Each
+    // edit changes only what a capability reaches, and moves the interface hash and the world.
+    let base = unit_plan(REACHED);
+    let b = unit(&base, "CheckSite");
+    assert!(world_digest(b).is_some(), "CheckSite should lower to WIT");
+    let cases = [
+        // a read resource gains a field
+        (
+            "resource field added",
+            REACHED.replace(
+                "  enabled : boolean = true\n",
+                "  enabled : boolean = true\n  region : text?\n",
+            ),
+        ),
+        // a read resource's field changes type
+        (
+            "resource field type",
+            REACHED.replace("  name : text length 1..200\n", "  name : integer\n"),
+        ),
+        // a transition's input changes
+        (
+            "transition input",
+            REACHED.replace(
+                "input { reason : text length 1..100 }",
+                "input { reason : text length 1..100\n urgent : boolean }",
+            ),
+        ),
+        // a callee's input shape, output shape and errors
+        (
+            "callee input",
+            REACHED.replace("  code : text length 1..20\n", "  code : integer\n"),
+        ),
+        (
+            "callee output",
+            REACHED.replace(
+                "  found : boolean\n",
+                "  found : boolean\n  score : integer\n",
+            ),
+        ),
+        (
+            "callee errors",
+            REACHED.replace("    Missing\n", "    Missing\n    Ambiguous\n"),
+        ),
+        // a sent message's payload
+        (
+            "message payload",
+            REACHED.replace(
+                "    revision : integer >= 1\n",
+                "    revision : integer >= 1\n    note : text?\n",
+            ),
+        ),
+    ];
+    for (what, src) in &cases {
+        let edited = unit_plan(src);
+        let e = unit(&edited, "CheckSite");
+        assert_ne!(b.interface_hash, e.interface_hash, "{what}: interface hash");
+        assert_ne!(world_digest(b), world_digest(e), "{what}: WIT world");
+    }
+    // Documentation and routes reached through a capability are still not the signature.
+    let doc = unit_plan(&REACHED.replace(
+        "resource Site @crud(\"/v1/sites\") {",
+        "/// A site.\nresource Site @crud(\"/v1/places\") {",
+    ));
+    assert_eq!(b.interface_hash, unit(&doc, "CheckSite").interface_hash);
+    // The interface records each capability's signature next to the types it reaches.
+    let sigs = b.interface["capabilitySignatures"].as_object().unwrap();
+    let keys: Vec<&str> = sigs.keys().map(String::as_str).collect();
+    assert_eq!(
+        keys,
+        [
+            "function:@t/units/_/Lookup",
+            "resource:@t/units/_/Site#read",
+            "send:@t/units/_/Checks#Checked",
+            "transition:@t/units/_/Ticket.status.reopen",
+        ]
+    );
+    let types = b.interface["types"].as_object().unwrap();
+    for t in [
+        "@t/units/_/Site.Record",
+        "@t/units/_/Ticket.Record",
+        "@t/units/_/LookupInput",
+        "@t/units/_/LookupOutput",
+        "@t/units/_/Checks#Checked",
+    ] {
+        assert!(types.contains_key(t), "types lacks {t}: {:?}", types.keys());
+    }
+}
+
+#[test]
+fn a_pure_unit_has_no_capability_signatures() {
+    // Without capabilities the interface is what it was before FORG-36, hash included.
+    let p = unit_plan(REACHED);
+    let lookup = unit(&p, "Lookup");
+    assert!(lookup.imports.is_empty());
+    assert!(lookup.interface.get("capabilitySignatures").is_none());
+    let edited = unit_plan(&REACHED.replace(
+        "  enabled : boolean = true\n",
+        "  enabled : boolean = true\n  region : text?\n",
+    ));
+    assert_eq!(
+        lookup.interface_hash,
+        unit(&edited, "Lookup").interface_hash
+    );
+}

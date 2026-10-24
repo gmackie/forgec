@@ -48,5 +48,12 @@ it otherwise. It stores the component and the unit's WIT lowering as blobs and m
 plus glue, and `src/wit-lowering.ts` adapts the glue to wire values, so callers cannot tell which
 kind they are calling.
 
-Results: `research/composable-units/t2-units/` (acme), `research/composable-units/t5-wasm-unit/` and
-`research/composable-units/r2-coverage/` (coverage and source spans).
+A component may import capabilities (FORG-36): `examples/pricing`'s `PriceCart` reads a `Product`
+per item. The harness transpiles such a component in jco's JSPI mode, so its synchronous import
+call suspends while the host's handle awaits (D1 and the like). The handles come from a `host.js`
+module (`bindUnit(..., { host })`; `D1_RESOURCE_HOST` reads a D1 table), and the js-module binding
+uses the same handles. A unit's interface hash covers the types its capabilities reach.
+
+Results: `research/composable-units/t2-units/` (acme), `research/composable-units/t5-wasm-unit/`,
+`research/composable-units/r2-coverage/` (coverage and source spans) and
+`research/composable-units/r2-wasm-async/`.
