@@ -1,0 +1,26 @@
+# PriceCart as a WASM component (FORG-36). Built against wit/unit.wit, which is
+# `forgec wit examples/pricing --unit PriceCart` checked in (a planner test fails on drift).
+# Build with `node ../../build-component.mjs`, which pins the toolchain and paths.
+[package]
+name = "price-cart"
+version = "0.1.0"
+edition = "2024"
+publish = false
+license = "Apache-2.0"
+
+# Not a member of the forgec workspace: its own root, its own lockfile.
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen = { version = "=0.63.0", default-features = false, features = ["macros", "realloc"] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+debug = false

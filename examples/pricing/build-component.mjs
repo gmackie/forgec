@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-// Builds impl/quote-order.wasm, the QuoteOrder WASM component (FORG-31), from impl/quote-order-rs.
+// Builds the WASM components of @acme/pricing from their Rust crates:
+//   impl/quote-order.wasm  QuoteOrder (FORG-31), pure, from impl/quote-order-rs
+//   impl/price-cart.wasm   PriceCart (FORG-36), imports `Product read`, from impl/price-cart-rs
 //
-//   node examples/pricing/build-component.mjs           # rebuild and write impl/quote-order.wasm
-//   node examples/pricing/build-component.mjs --check   # rebuild elsewhere, compare with the committed bytes
+//   node examples/pricing/build-component.mjs [name]           # rebuild and write impl/<name>.wasm (default: all)
+//   node examples/pricing/build-component.mjs --check [name]   # rebuild elsewhere, compare with the committed bytes
 //
 // Pinned toolchain: Rust 1.97.1 (rust-toolchain.toml, target wasm32-unknown-unknown), wit-bindgen
 // 0.63.0 (Cargo.lock), wasm-tools 1.262.0 (`cargo install --locked wasm-tools@1.262.0`).
@@ -17,8 +19,9 @@ import { join, resolve } from "node:path";
 export const TOOLCHAIN = { rustc: "1.97.1", "wit-bindgen": "0.63.0", "wasm-tools": "1.262.0" };
 
 const here = import.meta.dirname;
-const crate = join(here, "impl/quote-order-rs");
-const committed = join(here, "impl/quote-order.wasm");
+export const COMPONENTS = ["quote-order", "price-cart"];
+const crateOf = (name) => join(here, `impl/${name}-rs`);
+const committedOf = (name) => join(here, `impl/${name}.wasm`);
 
 function run(cmd, args, opts = {}) {
   return execFileSync(cmd, args, { encoding: "utf8", stdio: ["ignore", "pipe", "inherit"], ...opts }).trim();
@@ -28,20 +31,20 @@ function requireVersion(name, actual, expected) {
   if (!actual.includes(expected)) throw new Error(`${name} ${expected} required, found: ${actual}`);
 }
 
-export function buildComponent(src = crate) {
+export function buildComponent(name, src = crateOf(name)) {
   requireVersion("rustc", run("rustc", ["--version"], { cwd: src }), TOOLCHAIN.rustc);
   requireVersion("wasm-tools", run("wasm-tools", ["--version"]), TOOLCHAIN["wasm-tools"]);
-  const target = mkdtempSync(join(tmpdir(), "quote-order-target-"));
+  const target = mkdtempSync(join(tmpdir(), `${name}-target-`));
   try {
     const cargoHome = process.env.CARGO_HOME ?? join(homedir(), ".cargo");
     const sysroot = run("rustc", ["--print", "sysroot"], { cwd: src });
-    const remap = [`${resolve(src)}=quote-order-rs`, `${cargoHome}=cargo`, `${sysroot}=rust`, `${target}=target`];
+    const remap = [`${resolve(src)}=${name}-rs`, `${cargoHome}=cargo`, `${sysroot}=rust`, `${target}=target`];
     run("cargo", ["build", "--locked", "--release", "--target", "wasm32-unknown-unknown", "--target-dir", target], {
       cwd: src,
       env: { ...process.env, RUSTFLAGS: remap.map((r) => `--remap-path-prefix=${r}`).join(" ") },
     });
-    const core = join(target, "wasm32-unknown-unknown/release/quote_order.wasm");
-    const out = join(target, "quote-order.wasm");
+    const core = join(target, `wasm32-unknown-unknown/release/${name.replaceAll("-", "_")}.wasm`);
+    const out = join(target, `${name}.wasm`);
     run("wasm-tools", ["component", "new", core, "-o", out]);
     run("wasm-tools", ["validate", "--features", "component-model", out]);
     return readFileSync(out);
@@ -53,24 +56,33 @@ export function buildComponent(src = crate) {
 const sha = (b) => `sha256:${createHash("sha256").update(b).digest("hex")}`;
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  if (process.argv.includes("--check")) {
-    // Build from a copy in another directory: the bytes must not depend on the checkout path.
-    const dir = mkdtempSync(join(tmpdir(), "quote-order-src-"));
-    try {
-      cpSync(crate, dir, { recursive: true });
-      const fresh = buildComponent(dir);
-      const want = readFileSync(committed);
-      if (Buffer.compare(fresh, want) !== 0) {
-        console.error(`impl/quote-order.wasm is stale: committed ${sha(want)}, rebuilt ${sha(fresh)}`);
-        process.exit(1);
+  const args = process.argv.slice(2);
+  const check = args.includes("--check");
+  const names = args.filter((a) => a !== "--check");
+  for (const n of names) if (!COMPONENTS.includes(n)) throw new Error(`unknown component ${n}; expected one of ${COMPONENTS.join(", ")}`);
+  let stale = false;
+  for (const name of names.length ? names : COMPONENTS) {
+    if (check) {
+      // Build from a copy in another directory: the bytes must not depend on the checkout path.
+      const dir = mkdtempSync(join(tmpdir(), `${name}-src-`));
+      try {
+        cpSync(crateOf(name), dir, { recursive: true });
+        const fresh = buildComponent(name, dir);
+        const want = readFileSync(committedOf(name));
+        if (Buffer.compare(fresh, want) !== 0) {
+          console.error(`impl/${name}.wasm is stale: committed ${sha(want)}, rebuilt ${sha(fresh)}`);
+          stale = true;
+        } else {
+          console.log(`impl/${name}.wasm reproduces: ${sha(want)} (${want.byteLength} bytes)`);
+        }
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
       }
-      console.log(`impl/quote-order.wasm reproduces: ${sha(want)} (${want.byteLength} bytes)`);
-    } finally {
-      rmSync(dir, { recursive: true, force: true });
+    } else {
+      const bytes = buildComponent(name);
+      writeFileSync(committedOf(name), bytes);
+      console.log(`wrote impl/${name}.wasm ${sha(bytes)} (${bytes.byteLength} bytes)`);
     }
-  } else {
-    const bytes = buildComponent();
-    writeFileSync(committed, bytes);
-    console.log(`wrote impl/quote-order.wasm ${sha(bytes)} (${bytes.byteLength} bytes)`);
   }
+  if (stale) process.exit(1);
 }

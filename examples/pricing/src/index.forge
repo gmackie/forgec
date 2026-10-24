@@ -43,3 +43,53 @@ export function QuoteOrder
     QuoteTooLarge
   }
 }
+
+/// A catalog entry. Carts are priced from it (FORG-36).
+export resource Product
+  @crud("/v1/products")
+{
+  id : id
+  sku : text trim length 1..64
+  unitPrice : money<USD> >= 0
+  active : boolean = true
+}
+
+export shape CartItem {
+  product : id
+  quantity : integer >= 1
+}
+
+export shape PriceCartInput {
+  items : list<CartItem> length <= 100
+}
+
+export shape CartLine {
+  sku : text
+  quantity : integer
+  amount : money<USD>
+}
+
+export shape CartPrice {
+  lines : list<CartLine> length <= 100
+  subtotal : money<USD>
+}
+
+/// Prices a cart from the catalog: one `Product read` per item, so the unit makes as many
+/// capability calls as the cart has items. The reference unit for capability calls from WASM
+/// (FORG-36): a Rust component and a JS module behind one interface.
+export function PriceCart
+  @http(POST, "/v1/carts/price")
+{
+  input PriceCartInput
+  output CartPrice
+
+  uses {
+    Product read
+  }
+
+  errors {
+    CartTooLarge
+    EmptyCart
+    InactiveProduct
+  }
+}

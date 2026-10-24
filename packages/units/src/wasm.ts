@@ -3,6 +3,11 @@
 // WebAssembly but not the component model, so a component becomes core module(s) plus JS glue
 // (jco). The glue is instantiated with precompiled modules: a Worker cannot compile WASM bytes at
 // runtime, so the linker ships the core modules as module imports.
+//
+// A world with capability imports is transpiled in jco's JSPI mode (FORG-36): every import is a
+// `WebAssembly.Suspending` host function and `run` is `WebAssembly.promising`, so the component's
+// synchronous call into an asynchronous handle suspends its stack instead of blocking. workerd has
+// JSPI without a compatibility flag; Node 24 needs `--experimental-wasm-jspi`.
 import { componentEmbed, componentNew, componentWit, transpile } from "@bytecodealliance/jco";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -61,6 +66,11 @@ export interface TranspileOptions {
   minify?: boolean;
   /** Run wasm-opt over the core module(s) (default false). */
   optimize?: boolean;
+  /**
+   * Imported functions the host implements asynchronously, as `<interface>#<function>`
+   * (`asyncImports(lowering)`). Non-empty selects JSPI and makes the `run` export async.
+   */
+  asyncImports?: string[];
 }
 
 export interface Transpiled {
@@ -80,6 +90,7 @@ export async function transpileComponent(component: Uint8Array, options: Transpi
     quiet: true,
     minify: options.minify ?? true,
     optimize: options.optimize ?? false,
+    ...(options.asyncImports?.length ? { asyncMode: "jspi" as const, asyncImports: options.asyncImports, asyncExports: ["run"] } : {}),
   });
   const glue = out.files["unit.js"];
   if (!glue) throw new Error("jco produced no unit.js");
