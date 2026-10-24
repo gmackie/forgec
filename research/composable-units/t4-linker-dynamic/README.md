@@ -142,7 +142,8 @@ Tested in `packages/linker-dynamic/test/host.test.ts`. A hostile `AuthorizePayme
 | unknown entry point (route, changesets, …) | request | 404 `UnknownEntryPoint` | `host.test.ts` |
 | websocket upgrade (realtime DO not linked) | request | 501 `UnlinkedEntryPoint` | `host.test.ts` |
 | queue with no consumer entry point | queue | every message retried, never acked unseen | not tested (local queues would redeliver to the DLQ) |
-| undeclared capability (`Order#write` removed from the submit route) | request | the gate refuses `UPDATE order_`. The runtime answers 503 `StorageUnavailable`, the order stays `Draft`, and the denial is recorded. | `host.test.ts` |
+| undeclared capability (`Order#write` removed from the submit route) | request | the gate refuses `UPDATE order_`. The runtime answers 403 `CapabilityDenied` with `capability: resource:@acme/commerce/_/Order#write` and `entryPoint: http-route:POST /v1/orders/{order}/submit`, not retried (FORG-34; it was 503 `StorageUnavailable`). The order stays `Draft`, and the denial is recorded. | `host.test.ts` |
+| handle another entry point declares (`BLOBS` removed from the finalize route) | request | the child's runtime holds a refusing stub, not nothing: 403 `CapabilityDenied` `binding:r2:BLOBS`. Before FORG-34 it silently used an in-memory object store and answered 422. The child's raw env is unchanged (`env.BLOBS` is still `undefined`). | `host.test.ts` |
 
 ## Conformance differential
 
@@ -203,7 +204,7 @@ Tests:
    - Reference guards and restrict-delete read tables that no import names. The linker derives them from the schema's foreign keys. A consequence: dropping `Site#read` from the submit route changes nothing, because the guard on `Order` writes already reads `site`.
    - Outbox, receipts, audit and documents are runtime tables, so they are not narrowed per capability. For example, `send:` should govern `forge_outbox` writes.
 3. **SQL is the wrong layer for the storage capability.** The gate is a scanner over the SQL the runtime generates (tested on its patterns, CTEs and literals), not a parser. A typed storage capability (the `StorageAdapter` methods over RPC, keyed by resource) would narrow by resource and operation instead of by table name. It would also replace one RPC per statement with one per operation.
-4. **A refused capability surfaces as `503 StorageUnavailable`.** The D1 adapter treats the gate's error as a storage failure and retries it. The runtime needs a distinct, non-retried `CapabilityDenied`.
+4. **A refused capability surfaced as `503 StorageUnavailable`.** The D1 adapter treated the gate's error as a storage failure and retried it. Fixed in FORG-34: the gate throws the runtime's `capabilityDeniedError`, and the runtime answers a distinct, non-retried 403 `CapabilityDenied` (`specs/portable-profile/errors.md`). The egress gateway's 403 now has the same body (`capability: egress:<origin>`).
 5. **`closureHash` is not the whole isolate identity.**
    - It pins unit implementations and library *versions*. It does not pin the linker-built library *bytes*, the app bundle, or the capability policy. Imports are not in `closureHash` at all, and trigger bindings differ between entry points that share a closure.
    - The child id therefore adds a digest of those. Entry points that share a closure share a child when their policies match: 6 groups in acme, such as the process route, the signal route and the workflow class.

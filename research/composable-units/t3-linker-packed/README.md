@@ -194,7 +194,10 @@ The last two matter because the runtime itself fails open there. Without `BLOBS`
 in-memory object store. Without the workflow binding it silently falls back to the cron timer.
 
 At request time, each script's env holds only its declared bindings, plus `FORGE_DISPATCH` for
-sliced scripts. A script refuses routes that are not its own (`404 NotRouted`), and the residual
+sliced scripts. The runtime inside also gets a refusing stub for each handle (`r2`, queue producer,
+workflow) the manifest declares for other scripts (`withheld` in `link.json`). If a request reaches
+one anyway, it fails with 403 `CapabilityDenied` (`binding:<type>:<name>`) instead of the silent
+fallbacks above (FORG-34, `packages/linker-packed/test/host.test.ts`). A script refuses routes that are not its own (`404 NotRouted`), and the residual
 refuses manifest routes. The workerd smoke test checks both.
 
 ## Findings

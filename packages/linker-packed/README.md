@@ -21,7 +21,8 @@ Each script carries only:
   against their digests;
 - a slice of `app.json` with the declarations those closures reach (`src/slice.ts`). Groups the
   manifest cannot describe get the whole `app.json`, marked `fallback` with the reason;
-- a thin host (`src/host.ts`) that passes the runtime only the bindings the manifest declares,
+- a thin host (`src/host.ts`) that passes the runtime only the bindings the manifest declares
+  (handles declared for other scripts become stubs that refuse with 403 `CapabilityDenied`),
   answers only its own routes, and forwards outbox dispatch to the dispatch owner when its model is a
   slice.
 

@@ -24,6 +24,26 @@ The cloud suites need credentials and are not required to contribute. They run
 in CI and during certification; everything else runs locally against the
 reference model, SQLite and PostgreSQL.
 
+## What CI requires
+
+`.forgejo/workflows/ci.yml` runs on every pull request and push to `main`. The
+ForgeGraph report, and so the deploy gate, passes only when all four jobs pass:
+
+- **compiler**: `cargo fmt --all --check`, workspace clippy with `-D warnings`,
+  clippy for `forgegraph-wasm` on `wasm32-unknown-unknown`, and
+  `cargo test --workspace --locked`.
+- **composable units and runtime**: typecheck and tests for
+  `@forgegraph/units`, `@forgegraph/linker-packed` and
+  `@forgegraph/linker-dynamic` against the debug `forgec` and local workerd,
+  including the byte-for-byte rebuild of `examples/pricing/impl/quote-order.wasm`
+  (Rust 1.97.1 and wasm-tools 1.262.0). It then runs the whole runtime suite
+  with `--testTimeout=60000`, because several Workers and Foundation suites
+  exceed the config's 5 s default on shared runners. Provider-gated suites skip
+  there and run in `provider-certification.yml`.
+- **console** and **console acceptance**: the console build, selected runtime
+  and adapter boundaries with a real Mosquitto broker, and the browser suite
+  against a real OCI registry.
+
 ## The rules that matter
 
 **Every behaviour change starts with a failing test.** A Rust test, a runtime

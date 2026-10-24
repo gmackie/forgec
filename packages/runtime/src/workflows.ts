@@ -20,7 +20,7 @@ import { Cause, Effect } from "effect";
 import { decodeValue, type Wire } from "./decode.js";
 import type { Envelope, Transport } from "./dispatch.js";
 import type { CallContext, Engine } from "./engine.js";
-import { err, ForgeError } from "./errors.js";
+import { deniedOr, err, ForgeError } from "./errors.js";
 import type { Expr, WorkflowDecl, WorkflowStep, WorkflowTerminal } from "./model.js";
 import { durationMs } from "./readmodels.js";
 import { Clock, IdGen, Storage, type RuntimeServices } from "./services.js";
@@ -235,7 +235,7 @@ export class Workflows {
       yield* self.listMutate(REGISTRY_TENANT, "tenants", (ids) => (ids.includes(ctx.tenant) ? ids : [...ids, ctx.tenant]));
       const state = yield* self.advance(ctx.tenant, id, wf);
       if (self.driver && ["running", "waiting", "sleeping"].includes(state["status"] as string)) {
-        yield* Effect.tryPromise({ try: () => self.driver!.started(ctx.tenant, wf, id), catch: (e) => err("Internal", `workflow driver failed to start: ${String(e)}`) });
+        yield* Effect.tryPromise({ try: () => self.driver!.started(ctx.tenant, wf, id), catch: (e) => deniedOr(e, () => err("Internal", `workflow driver failed to start: ${String(e)}`)) });
       }
       return state;
     });

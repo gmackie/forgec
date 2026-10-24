@@ -5,7 +5,7 @@
  */
 import { Effect } from "effect";
 import { absenceWriteConflict } from "../atomic-guards.js";
-import { err, type ForgeError } from "../errors.js";
+import { asCapabilityDenied, deniedOr, err, type ForgeError } from "../errors.js";
 import type { Model, Resource, Unique } from "../model.js";
 import { RESOURCE_REVISION } from "../services.js";
 import type { ResourceReadGuard, AtomicAbsenceGuard, DocumentWrite, CommitPlan, IntervalGuard, ListQuery, OutboxRow, Receipt, StorageAdapter, StoredRecord } from "../services.js";
@@ -53,7 +53,7 @@ export class D1Storage implements StorageAdapter {
   }
 
   private wrap<A>(f: () => Promise<A>): Effect.Effect<A, ForgeError> {
-    return Effect.tryPromise({ try: f, catch: (e) => err("StorageUnavailable", String((e as Error).message ?? e)) });
+    return Effect.tryPromise({ try: f, catch: (e) => deniedOr(e, () => err("StorageUnavailable", String((e as Error).message ?? e))) });
   }
 
   get(tenant: string, r: Resource, id: string): Effect.Effect<StoredRecord | null, ForgeError> {
@@ -289,7 +289,7 @@ export class D1Storage implements StorageAdapter {
         : st("UPDATE forge_document SET version = version + 1, body = ? WHERE tenant = ? AND kind = ? AND id = ? AND version = ?",JSON.stringify(rest),tenant,w.kind,w.id,w.expectedVersion));
     }
     statements.push(st("DELETE FROM _forge_assert WHERE op_id = ?",op));
-    return Effect.tryPromise({try:async()=>{await this.db.batch(statements);},catch:(e)=> /forge_precondition|UNIQUE constraint failed|database is locked/.test(String(e)) ? err("VersionConflict","document batch changed concurrently") : err("StorageUnavailable",String(e))});
+    return Effect.tryPromise({try:async()=>{await this.db.batch(statements);},catch:(e)=> asCapabilityDenied(e) ?? (/forge_precondition|UNIQUE constraint failed|database is locked/.test(String(e)) ? err("VersionConflict","document batch changed concurrently") : err("StorageUnavailable",String(e)))});
   }
 
   putDocument(tenant: string, kind: string, id: string, doc: Record<string, unknown>, expectedVersion: number | null): Effect.Effect<void, ForgeError> {
@@ -363,6 +363,9 @@ export class D1Storage implements StorageAdapter {
         await this.db.batch(stmts);
         return "ok" as const;
       } catch (e) {
+        // A capability gate refused a statement: nothing ran, and no diagnosis or retry changes that.
+        const denied = asCapabilityDenied(e);
+        if (denied) return denied;
         for (const guard of reads) {
           const revision = await this.db.first<{version: number}>(st("SELECT version FROM forge_document WHERE tenant = ? AND kind = ? AND id = ?", guard.tenant, RESOURCE_REVISION, guard.resource.id));
           if ((revision?.version ?? null) !== guard.revision) return err("VersionConflict", "Transaction read set changed");
