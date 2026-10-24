@@ -240,6 +240,13 @@ jobs:
           UNITS: ${{ needs.units.result }}
           CONSOLE: ${{ needs.console.result }}
           ACCEPTANCE: ${{ needs.acceptance.result }}
+          # Untrusted (a PR branch name is chosen by its author): only ever read from the
+          # environment and serialised by node, never expanded into the script (FORG-39).
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          REPO_FULL: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          SERVER_URL: ${{ github.server_url }}
         run: |
           if [ -z "${FG_CI_TOKEN:-}" ]; then
             echo "::warning::FORGEGRAPH_TOKEN is not set; run forge ci provision"
@@ -254,17 +261,16 @@ jobs:
           if [ "$RESULTS" = "success success success success" ]; then STATUS=success
           elif [ "$ANY_CANCELLED" = 1 ]; then STATUS=cancelled
           else STATUS=failure; fi
-          REPO_FULL="${{ github.repository }}"
+          export STATUS
+          BODY="$(node -e '
+            const e = process.env;
+            const [owner, ...rest] = e.REPO_FULL.split("/");
+            process.stdout.write(JSON.stringify({
+              owner, repo: rest.join("/"), sha: e.SHA, branch: e.BRANCH, status: e.STATUS, runId: e.RUN_ID,
+              runUrl: `${e.SERVER_URL}/${e.REPO_FULL}/actions/runs/${e.RUN_ID}`, workflowName: "CI",
+            }));
+          ')"
           curl -sf -X POST "https://forgegraf.com/api/fg/ci/report" \
             -H "Authorization: Bearer ${FG_CI_TOKEN}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"owner\": \"${REPO_FULL%%/*}\",
-              \"repo\": \"${REPO_FULL##*/}\",
-              \"sha\": \"${{ github.sha }}\",
-              \"branch\": \"${{ github.head_ref || github.ref_name }}\",
-              \"status\": \"${STATUS}\",
-              \"runId\": \"${{ github.run_id }}\",
-              \"runUrl\": \"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\",
-              \"workflowName\": \"CI\"
-            }" || echo "::warning::Failed to report CI result to ForgeGraph"
+            --data-binary "$BODY" || echo "::warning::Failed to report CI result to ForgeGraph"
