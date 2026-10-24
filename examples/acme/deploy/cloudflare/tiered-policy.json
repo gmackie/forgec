@@ -1,0 +1,13 @@
+{
+  "version": "tiered-policy/1",
+  "dynamic": {
+    "entryPoints": [
+      "POST /v1/orders",
+      "POST /v1/orders/**",
+      "PATCH /v1/orders/{id}",
+      "DELETE /v1/orders/{id}",
+      "@acme/commerce/_/ProcessOrder",
+      "POST /v1/workflows/process-order/signals/{message}"
+    ]
+  }
+}
