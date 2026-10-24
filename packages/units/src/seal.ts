@@ -1,13 +1,16 @@
 // Seals a forgec unit plan (`forgec build --units`) into a Closure Manifest
-// (schemas/closure-manifest.schema.json): bundles every js-module unit, hashes implementations,
+// (schemas/closure-manifest.schema.json): bundles every js-module unit, binds the units the caller
+// maps to WASM components (after checking each implements its generated WIT world), hashes implementations,
 // derives unit hashes, resolves each entry point's closure and pins it with a closure hash, and
 // content-addresses the result. Missing implementations and dependencies fail here, at resolve
 // time, never when a request arrives.
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { BUNDLER, bundleUnit, libraryVersion, type Finding } from "./bundle.ts";
 import { CLOSURE_DOMAIN, digest, IMPLEMENTATION_DOMAIN, MANIFEST_DOMAIN, sha256, stableJson, UNIT_DOMAIN } from "./hash.ts";
 import { locateImpl, type LocateOptions } from "./locate.ts";
+import { TRANSPILER, verifyComponent } from "./wasm.ts";
+import type { Lowering } from "./wit-lowering.ts";
 import pkg from "../package.json" with { type: "json" };
 
 export interface Binding {
@@ -16,6 +19,11 @@ export interface Binding {
 }
 type PlanProvider = { kind: "unit"; symbol: string } | { kind: "runtime"; service: string };
 type Provider = { kind: "unit"; unit: string } | { kind: "runtime"; service: string };
+
+/** The WIT world forgec generated for an implemented function unit (FORG-31), or why there is none. */
+export type PlannedWit =
+  | { status: "ok"; abi: "forge-wit/1"; digest: string; world: string; lowering: Lowering }
+  | { status: "unsupported"; diagnostics: Array<{ code: string; path: string; message: string }> };
 
 export interface PlannedUnit {
   symbol: string;
@@ -27,6 +35,7 @@ export interface PlannedUnit {
   dependencies: string[];
   imports: Array<{ capability: string; provider: PlanProvider }>;
   bindings: Binding[];
+  wit?: PlannedWit;
 }
 
 export interface UnitPlan {
@@ -44,7 +53,7 @@ export interface UnitPlan {
 export interface SealedUnit {
   symbol: string;
   role: PlannedUnit["role"];
-  kind: PlannedUnit["kind"];
+  kind: PlannedUnit["kind"] | "wasm-component";
   interfaceHash: string;
   implementationHash: string;
   implementation: Record<string, unknown>;
@@ -61,7 +70,7 @@ export interface ClosureManifest {
   package: { name: string; version: string };
   target: string;
   buildHash: string;
-  toolchain: { forgec: string; bundler: string; units: string };
+  toolchain: { forgec: string; bundler: string; units: string; transpiler?: string };
   units: Record<string, SealedUnit>;
   modules: Record<string, { path: string; bytes: number; sources: string[] }>;
   entryPoints: Array<{
@@ -81,7 +90,7 @@ export interface ClosureManifest {
 
 export interface Sealed {
   manifest: ClosureManifest;
-  /** Module bytes by blob digest. */
+  /** Module and component bytes by blob digest. */
   modules: Map<string, Uint8Array>;
   /** Unit hash by symbol, for callers that think in declarations. */
   bySymbol: Map<string, string>;
@@ -89,10 +98,30 @@ export interface Sealed {
 
 const sortBindings = (bs: Binding[]) => [...new Map(bs.map((b) => [`${b.type}\0${b.name}`, b])).values()].sort((a, b) => (`${a.type}\0${a.name}` < `${b.type}\0${b.name}` ? -1 : 1));
 
-export async function seal(plan: UnitPlan, appRoot: string, options: LocateOptions & { executor?: string } = {}): Promise<Sealed> {
+export interface SealOptions extends LocateOptions {
+  executor?: string;
+  /**
+   * Units to bind to a WASM component instead of their impl/ module: symbol -> app-relative
+   * path of the component. The component must implement the unit's generated WIT world. This is
+   * the swap: the interface, and so every caller, stays the same.
+   */
+  components?: Record<string, string>;
+}
+
+export async function seal(plan: UnitPlan, appRoot: string, options: SealOptions = {}): Promise<Sealed> {
   if (plan.version !== "unit-plan/1") throw new Error(`unsupported unit plan ${plan.version}`);
   const sites = locateImpl(appRoot, options);
   const planned = new Map(plan.units.map((u) => [u.symbol, u]));
+  const components = new Map(Object.entries(options.components ?? {}));
+  for (const [symbol, file] of components) {
+    const u = planned.get(symbol);
+    if (!u || u.kind !== "js-module") throw new Error(`component ${file} is bound to ${symbol}, which the unit plan has no implemented function unit for`);
+    if (u.wit?.status !== "ok") {
+      const why = u.wit?.status === "unsupported" ? u.wit.diagnostics.map((d) => `error[${d.code}]: ${d.path}: ${d.message}`).join("; ") : "the plan has no WIT for it";
+      throw new Error(`${symbol} cannot be a wasm-component: its interface has no WIT world (${why})`);
+    }
+    if (!existsSync(resolve(appRoot, file))) throw new Error(`component ${file} for ${symbol} does not exist`);
+  }
   for (const [symbol, site] of sites) {
     const u = planned.get(symbol);
     if (!u || u.kind !== "js-module") throw new Error(`${site.file}#${site.exportName} implements ${symbol}, which the unit plan has no js-module unit for`);
@@ -103,9 +132,28 @@ export async function seal(plan: UnitPlan, appRoot: string, options: LocateOptio
   const modules = new Map<string, Uint8Array>();
   const moduleInfo: ClosureManifest["modules"] = {};
   const impl = new Map<string, { implementation: Record<string, unknown>; findings: Finding[] }>();
+  const kinds = new Map<string, SealedUnit["kind"]>(plan.units.map((u) => [u.symbol, u.kind]));
   for (const u of plan.units) {
     if (u.kind === "forge-native") {
       impl.set(u.symbol, { implementation: { declaration: (u.implementation as { declaration: string }).declaration, executor }, findings: [] });
+      continue;
+    }
+    const component = components.get(u.symbol);
+    if (component) {
+      const wit = u.wit as Extract<PlannedWit, { status: "ok" }>;
+      const bytes = new Uint8Array(readFileSync(resolve(appRoot, component)));
+      await verifyComponent(bytes, wit.world, `${component} (${u.symbol})`);
+      const blob = sha256(bytes);
+      modules.set(blob, bytes);
+      moduleInfo[blob] = { path: `modules/${blob.slice("sha256:".length)}.wasm`, bytes: bytes.byteLength, sources: [component.split("\\").join("/")] };
+      // The linker adapts the glue to wire values with the lowering, so it ships as a blob too.
+      const lowering = new TextEncoder().encode(stableJson(wit.lowering));
+      const lowered = sha256(lowering);
+      modules.set(lowered, lowering);
+      moduleInfo[lowered] = { path: `modules/${lowered.slice("sha256:".length)}.json`, bytes: lowering.byteLength, sources: [] };
+      // The world digest pins the WIT the component was checked against; the bytes pin the body.
+      impl.set(u.symbol, { implementation: { component: blob, world: wit.digest, lowering: lowered, abi: wit.abi }, findings: [] });
+      kinds.set(u.symbol, "wasm-component");
       continue;
     }
     const site = sites.get(u.symbol);
@@ -141,7 +189,7 @@ export async function seal(plan: UnitPlan, appRoot: string, options: LocateOptio
     units[bySymbol.get(u.symbol)!] = {
       symbol: u.symbol,
       role: u.role,
-      kind: u.kind,
+      kind: kinds.get(u.symbol)!,
       interfaceHash: u.interfaceHash,
       implementationHash: digest(IMPLEMENTATION_DOMAIN, implementation),
       implementation,
@@ -187,7 +235,7 @@ export async function seal(plan: UnitPlan, appRoot: string, options: LocateOptio
     package: plan.package,
     target: plan.target,
     buildHash: plan.buildHash,
-    toolchain: { forgec: plan.compiler, bundler: BUNDLER, units: `${pkg.name}@${pkg.version}` },
+    toolchain: { forgec: plan.compiler, bundler: BUNDLER, units: `${pkg.name}@${pkg.version}`, ...(components.size ? { transpiler: TRANSPILER } : {}) },
     units,
     modules: moduleInfo,
     entryPoints,
@@ -198,7 +246,7 @@ export async function seal(plan: UnitPlan, appRoot: string, options: LocateOptio
   return { manifest, modules, bySymbol };
 }
 
-/** Writes `manifest.json` and `modules/<sha256>.js`, replacing any previous modules. */
+/** Writes `manifest.json` and `modules/<sha256>.{js,wasm}`, replacing any previous modules. */
 export function writeSealed(sealed: Sealed, outDir: string): void {
   rmSync(join(outDir, "modules"), { recursive: true, force: true });
   mkdirSync(join(outDir, "modules"), { recursive: true });
