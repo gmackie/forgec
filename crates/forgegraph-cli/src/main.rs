@@ -80,6 +80,10 @@ enum Cmd {
         /// ForgeGraph app slug for `contract.json` (default: the unscoped package name).
         #[arg(long)]
         service_id: Option<String>,
+        /// Also write `units/plan.json`, the composable-unit plan that `@forgegraph/units`
+        /// bundles and seals into a Closure Manifest (research, FORG-28).
+        #[arg(long)]
+        units: bool,
     },
     /// Write `forge.lock`, pinning dependency contracts and the compiler version.
     Lock {
@@ -361,6 +365,7 @@ fn main() -> Result<()> {
             path,
             out,
             service_id,
+            units,
         } => {
             if let Some(id) = &service_id
                 && !forgegraph_codegen::contract_ir::emit::is_identifier(id)
@@ -391,7 +396,11 @@ fn main() -> Result<()> {
                 service_id,
                 std::env::var("FORGE_SOURCE_REVISION").ok().as_deref(),
             );
-            for (rel, content) in &artifacts.files {
+            let mut files = artifacts.files;
+            if units {
+                files.push(pipeline::units_plan(&loaded, ir, &plans));
+            }
+            for (rel, content) in &files {
                 let target = out_dir.join(rel);
                 if let Some(parent) = target.parent() {
                     std::fs::create_dir_all(parent)?;

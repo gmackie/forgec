@@ -405,3 +405,17 @@ pub fn artifacts(
     ));
     Artifacts { files, warnings }
 }
+
+/// `units/plan.json`: the composable-unit plan that `@forgegraph/units` bundles
+/// and seals into a Closure Manifest (research, FORG-28). Written by
+/// `forgec build --units`.
+pub fn units_plan(loaded: &Loaded, ir: &DomainIR, plans: &Plans) -> (String, String) {
+    let deps: Vec<&DomainIR> = loaded.deps.iter().map(|(_, d)| d).collect();
+    let mut plan = serde_json::to_value(forgegraph_planner::units::plan(ir, &deps, plans))
+        .expect("unit plan serializes");
+    // Ties the sealed manifest to the app bundle it was planned from.
+    plan["compiler"] = COMPILER_VERSION.into();
+    plan["buildHash"] = build_hash(ir, &loaded.deps, &loaded.selected).into();
+    let text = serde_json::to_string_pretty(&plan).expect("JSON value serializes") + "\n";
+    ("units/plan.json".into(), text)
+}
