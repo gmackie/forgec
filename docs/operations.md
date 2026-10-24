@@ -7,7 +7,10 @@ workflows, schedules) emits one unsampled event: operation id, kind, resource,
 outcome, status, code, duration, request id, trace context, per-process
 sequence. Outcomes follow the compiled policy in `bundle.observability`:
 `good` (< 400), `excluded` (client errors), `bad` (5xx, transient conflicts),
-`business` (declared domain errors). Dimensions are only
+`business` (declared domain errors). A linker capability gate's refusal is
+`403 CapabilityDenied` (`specs/portable-profile/errors.md`): excluded like
+other policy refusals, with `decision: "deny"` and its own `code`, so link
+defects can be alerted on without counting as an outage. Dimensions are only
 `forge.operation`, `forge.kind`, `forge.resource`, `forge.outcome`,
 `forge.target` — never tenants, ids or inputs.
 

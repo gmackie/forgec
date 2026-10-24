@@ -66,7 +66,7 @@ export const EFFECT_SURFACE = ["Cause", "Context", "Data", "Effect", "Layer"];
 await emit("effect", version("effect"), { stdin: { contents: `export { ${EFFECT_SURFACE.join(", ")} } from "effect";\n`, resolveDir: here, sourcefile: "effect-lib.js", loader: "js" } });
 await emit("@forgegraph/runtime", version("@forgegraph/runtime"), {
   stdin: {
-    contents: `export { defineFunction } from "@forgegraph/runtime";\nexport { createWorker } from "@forgegraph/runtime/cloudflare";\n`,
+    contents: `export { capabilityDeniedError, defineFunction } from "@forgegraph/runtime";\nexport { createWorker } from "@forgegraph/runtime/cloudflare";\n`,
     resolveDir: here,
     sourcefile: "runtime-lib.js",
     loader: "js",

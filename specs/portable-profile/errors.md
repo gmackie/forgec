@@ -10,6 +10,7 @@ never invent new ones.
 | `MalformedRequest` | 400 | no | body is not canonical JSON, wrong content type, bad framing, over size limit |
 | `Unauthenticated` | 401 | no | no trusted principal |
 | `Forbidden` | 403 | no | principal lacks the operation or tenant |
+| `CapabilityDenied` | 403 | no | a capability gate refused what the code reached for: the linked closure does not hold that capability (see below) |
 | `NotFound` | 404 | no | record absent in this tenant (never reveals other tenants) |
 | `MethodNotAllowed` | 405 | no | |
 | `ValidationFailed` | 422 | no | field/row/relationship rule violation; `fields[]` populated |
@@ -36,12 +37,45 @@ Declared function errors (`errors { SiteDisabled PaymentDeclined }`) are
 **domain** errors: code = `<function stable id>.<name>`, HTTP 409 unless the
 declaration maps otherwise, `retryable: false`.
 
+## `CapabilityDenied`
+
+A composable-units linker runs each entry point's closure with only the
+capabilities its Closure Manifest declares. When the code reaches for one the
+closure was not linked with, the gate refuses it and the request fails with
+`CapabilityDenied`. It is a policy decision about the deployment, not about the
+principal (that is `Forbidden` / `NotPermitted`), and not an outage: the same
+request fails the same way until the manifest grants the capability or the code
+stops reaching for it, so it is never retried and never reported as
+`StorageUnavailable`.
+
+The problem body carries the refusal in three extensions:
+
+| member | always | value |
+| --- | --- | --- |
+| `capability` | yes | what was refused: `resource:<resource id>#read` or `#write` (a table the schema maps to a resource), `table:<name>#<mode>` (runtime or system tables), `sql:unclassified` (a statement the gate cannot classify), `binding:<type>:<name>` (a handle declared for other entry points, e.g. `binding:r2:BLOBS`), `egress:<origin>` |
+| `entryPoint` | when the gate knows it | the entry point whose closure was refused, as `<kind>:<id>` (dynamic linker) or the packed script name |
+| `unit` | when the gate knows it | the unit that reached |
+
+```json
+{ "type": "https://forge.dev/errors/capability-denied", "title": "Capability denied", "status": 403,
+  "code": "CapabilityDenied", "detail": "http-route:POST /v1/orders/{order}/submit has no capability to write order_",
+  "requestId": "…", "retryable": false,
+  "capability": "resource:@acme/commerce/_/Order#write", "entryPoint": "http-route:POST /v1/orders/{order}/submit" }
+```
+
+Gates throw `capabilityDeniedError(denial)` (`@forgegraph/runtime/errors`).
+The denial is encoded in the error message, which is all a Workers RPC hop
+keeps, and the runtime's storage, object-store and HTTP layers recover it with
+`asCapabilityDenied` before any provider-failure mapping.
+
 ## Classification rules for SLIs
 
 - `MalformedRequest`, `ValidationFailed`, `UnknownField`, `Unauthenticated`,
-  `Forbidden`, `NotFound`, `PreconditionRequired`, `VersionConflict`,
+  `Forbidden`, `CapabilityDenied`, `NotFound`, `PreconditionRequired`, `VersionConflict`,
   `UniqueConflict`, `InvalidTransition`, domain errors: **excluded** from the
   availability denominator's failures (the request was correctly rejected).
+  `NotPermitted` and `CapabilityDenied` events also record `decision: "deny"`,
+  and `code` tells a capability refusal apart for alerting on link defects.
 - `TransientConflict`, `StorageUnavailable`, `DependencyUnavailable`,
   `Internal`, timeouts, exhausted retries: **failures**.
 - `RateLimited`: counted separately as admission failures.

@@ -4,7 +4,7 @@
  */
 import { Cause, Effect } from "effect";
 import type { Engine, CallContext } from "./engine.js";
-import { err, ForgeError } from "./errors.js";
+import { asCapabilityDenied, err, ForgeError } from "./errors.js";
 import { spanFromTraceparent, traceparent } from "./telemetry.js";
 import type { Model, OperationRef } from "./model.js";
 import {validateApiPublication, serveApiPublication, resourceMetadataChallenge, type ApiPublicationProfile} from "./api-publication.js";
@@ -323,7 +323,7 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         headers.set("x-request-id", requestId);
         return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
       } catch (e) {
-        return problem(e instanceof ForgeError ? e : e instanceof URIError ? err("MalformedRequest", "invalid endpoint path encoding") : err("Internal", "HTTP endpoint failed"), requestId);
+        return problem(e instanceof ForgeError ? e : asCapabilityDenied(e) ?? (e instanceof URIError ? err("MalformedRequest", "invalid endpoint path encoding") : err("Internal", "HTTP endpoint failed")), requestId);
       }
     }
     const mount = options.mounts?.[url.pathname];
@@ -526,6 +526,8 @@ export function createHttpHandler(model: Model, engine: Engine, options: HttpOpt
         }
         return response;
       }
+      const denied = asCapabilityDenied(e);
+      if (denied) return problem(denied, requestId);
       console.error("forge: unhandled failure", requestId, e);
       return problem(err("Internal", "unexpected failure"), requestId);
     }
