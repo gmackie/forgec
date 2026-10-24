@@ -4,6 +4,7 @@ pub mod client;
 pub mod contract_ir;
 pub mod openapi;
 pub mod openapi_import;
+pub mod pipeline;
 
 pub use client::client_ts;
 pub use openapi::{openapi, smithy};
