@@ -12,6 +12,7 @@ pub mod realtime;
 pub mod schedules;
 pub mod sql;
 pub mod ui;
+pub mod units;
 pub mod workflows;
 
 use forgegraph_semantic::DomainIR;
