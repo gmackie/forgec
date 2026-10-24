@@ -7,7 +7,7 @@
 import { Cause, Effect } from "effect";
 import type { Wire } from "./decode.js";
 import type { CallContext, Engine } from "./engine.js";
-import { stableJson } from "./engine.js";
+import { stableJson } from "./hashing.js";
 import { err, ForgeError } from "./errors.js";
 import { IdGen, Storage, type CommitPlan, type RuntimeServices } from "./services.js";
 

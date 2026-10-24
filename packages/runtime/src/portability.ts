@@ -11,7 +11,8 @@
  */
 import { Effect } from "effect";
 import type { Wire } from "./decode.js";
-import { sha256, stableJson, type CallContext, type Engine } from "./engine.js";
+import type { CallContext, Engine } from "./engine.js";
+import { sha256, stableJson } from "./hashing.js";
 import { err, type ForgeError } from "./errors.js";
 import type { Resource } from "./model.js";
 import { Clock, IdGen, Storage, type CommitPlan, type RuntimeServices, type StoredRecord } from "./services.js";
@@ -37,6 +38,17 @@ async function hashRecords(records: StoredRecord[]): Promise<string> {
   return sha256(stableJson(sorted));
 }
 
+/**
+ * Whether writes are fenced for a data migration. Every writer checks this, so it stands apart from the
+ * admin surface: an engine linked without the `portability` feature still honours a fence.
+ */
+export function writesFenced(tenant: string): Effect.Effect<boolean, ForgeError, RuntimeServices> {
+  return Effect.gen(function* () {
+    const doc = yield* (yield* Storage).getDocument(tenant, KIND, "fence");
+    return Boolean(doc?.["on"]);
+  });
+}
+
 export class Portability {
   constructor(private readonly engine: Engine) {}
 
@@ -56,10 +68,7 @@ export class Portability {
 
   /** Every writer checks the fence before committing (plan §22: stop or fence writes during a first migration). */
   isFenced(tenant: string): Effect.Effect<boolean, ForgeError, RuntimeServices> {
-    return Effect.gen(function* () {
-      const doc = yield* (yield* Storage).getDocument(tenant, KIND, "fence");
-      return Boolean(doc?.["on"]);
-    });
+    return writesFenced(tenant);
   }
 
   private fence(on: boolean, ctx: CallContext): Effect.Effect<Wire, ForgeError, RuntimeServices> {
@@ -98,7 +107,8 @@ export class Portability {
       }
       const b = self.engine.model.bundle;
       // Native workflow history is never translated: instances are counted so the operator drains them, not moved.
-      const instances = yield* self.engine.workflows.countInstances(ctx.tenant);
+      const workflows = self.engine.feature("workflows");
+      const instances = workflows ? yield* workflows.countInstances(ctx.tenant) : 0;
       const snap: Snapshot = {
         version: EXPORT_VERSION,
         package: b.ir.package.name,

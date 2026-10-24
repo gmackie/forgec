@@ -7,7 +7,8 @@
 import { Effect } from "effect";
 import type { Wire } from "./decode.js";
 import { canonicalize } from "./decode.js";
-import { sha256, stableJson, type CallContext, type Engine } from "./engine.js";
+import type { CallContext, Engine } from "./engine.js";
+import { sha256, stableJson } from "./hashing.js";
 import { err, ForgeError } from "./errors.js";
 import type { FunctionDecl, Resource } from "./model.js";
 import { Clock, IdGen, Storage, type CommitPlan, type OutboxEntry, type RuntimeServices } from "./services.js";

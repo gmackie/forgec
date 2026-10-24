@@ -2,20 +2,20 @@
 import { Effect, Layer } from "effect";
 import { D1Storage, type D1Like } from "../adapters/d1.js";
 import { R2ObjectStore, type R2Like } from "../adapters/r2.js";
-import { Engine } from "../engine.js";
+import { EngineCore } from "../engine.js";
 import { createHttpHandler, devHeaderAuth, type AuthHost, type SignedWebhook, type HttpEndpoint } from "../http.js";
 import { Model, type AppBundle } from "../model.js";
-import { Dispatcher } from "../dispatch.js";
-import { internalSubscriptions, withProjections } from "../readmodels.js";
 import type { Instance, WorkflowDriver } from "../workflows.js";
 import { SessionProtocol, upgradeAuthRequest, type EventFrame, type RealtimeHub } from "../realtime.js";
 import { workersLogLine } from "../telemetry.js";
 import type { WorkflowDecl } from "../model.js";
 import { cloudflareQueuesTransport, decodeEnvelope, type QueueLike } from "../transports.js";
 import type { EngineOptions } from "../engine.js";
-import { Clock, CursorSecret, IdGen, Objects, Storage } from "../services.js";
+import { Clock, CursorSecret, IdGen, Objects, Storage, type ObjectStoreAdapter } from "../services.js";
 import { productionIds } from "./ids.js";
 import { MemoryObjectStore } from "../adapters/memory-objects.js";
+import { allFeatures, checkFeatures, type Feature } from "../features.js";
+import { err } from "../errors.js";
 
 /** Cloudflare Workflows binding surface used by the driver. */
 export interface WorkflowBindingLike {
@@ -64,7 +64,36 @@ export interface WorkerOptions extends EngineOptions {
   postCommit?: (env: WorkerEnv, tenant: string) => Promise<unknown>;
   /** Which sweeps a cron invocation runs (default: all three). A Worker that owns only a schedule runs only `schedules`. */
   sweeps?: { outbox?: boolean; schedules?: boolean; workflows?: boolean };
+  /** Blob storage (default for `createWorker`: `cloudflareObjects`). */
+  objects?: WorkerObjects;
 }
+
+/** A Worker's blob storage: the store behind `Objects` and, when the Worker serves bytes itself, the `/_forge/objects` route. */
+export type WorkerObjects = (env: WorkerEnv, baseUrl: string) => { store: ObjectStoreAdapter; serve?: (request: Request, token: string) => Promise<Response> };
+
+/** R2 when `BLOBS` is bound (bytes served by the Worker), otherwise in memory: the whole-app Worker's blob storage. */
+export const cloudflareObjects: WorkerObjects = (env, baseUrl) => {
+  if (!env.BLOBS) return { store: new MemoryObjectStore() };
+  const r2 = new R2ObjectStore(env.BLOBS, { baseUrl, secret: env.CURSOR_SECRET });
+  return { store: r2, serve: (request, token) => r2.serve(request, token) };
+};
+
+/**
+ * Options for a Worker built from named features (FORG-37): exactly `features` are linked, so the
+ * bundle carries only their code. `objects` is required when `blobs` is linked; without it the
+ * `Objects` service refuses every call.
+ */
+export interface FeatureWorkerOptions extends WorkerOptions {
+  features: readonly Feature[];
+}
+
+const unlinkedObjects: ObjectStoreAdapter = (() => {
+  const refuse = () => Effect.fail(err("MethodNotAllowed", "blob storage is not linked into this Worker"));
+  return { name: "unlinked", presignUpload: refuse, head: refuse, digest: refuse, seal: refuse, presignDownload: refuse, delete: refuse };
+})();
+
+/** What `createWorker` and friends link: every feature and the whole-app blob storage. */
+const whole = <O extends WorkerOptions>(options: O): O & FeatureWorkerOptions => ({ ...options, features: options.features ?? allFeatures, objects: options.objects ?? cloudflareObjects });
 
 function nativeId(tenant: string, id: string): string {
   return `${tenant}-${id}`.replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 100);
@@ -113,18 +142,24 @@ function cloudflareRealtimeHub(env: WorkerEnv): RealtimeHub | null {
  * state lives in the socket attachment, and the session protocol is the shared one.
  */
 export function createRealtimeObject<B extends abstract new (...args: any[]) => any>(Base: B, bundle: AppBundle, options: WorkerOptions = {}) {
+  return createRealtimeObjectWith(Base, bundle, whole({ objects: () => ({ store: new MemoryObjectStore() }), ...options }));
+}
+
+/** `createRealtimeObject` with exactly `options.features` linked (FORG-37). */
+export function createRealtimeObjectWith<B extends abstract new (...args: any[]) => any>(Base: B, bundle: AppBundle, options: FeatureWorkerOptions) {
   const model = new Model(bundle);
+  checkFeatures(model, options.features);
   abstract class ForgeRealtimeObject extends Base {
-    engineFor(env: WorkerEnv): Engine {
+    engineFor(env: WorkerEnv): EngineCore {
       const storage = new D1Storage(env.DB, model);
       const layer = Layer.mergeAll(
         Layer.succeed(Clock)({ now: () => new Date().toISOString() }),
         Layer.succeed(IdGen)(productionIds()),
         Layer.succeed(Storage)(storage),
         Layer.succeed(CursorSecret)({ key: env.CURSOR_SECRET }),
-        Layer.succeed(Objects)(new MemoryObjectStore()),
+        Layer.succeed(Objects)(options.objects?.(env, "https://realtime.invalid").store ?? unlinkedObjects),
       );
-      return new Engine(model, layer, options);
+      return new EngineCore(model, layer, options);
     }
     async fetch(request: Request): Promise<Response> {
       const self = this as unknown as { ctx: { acceptWebSocket(ws: WebSocket, tags?: string[]): void; getWebSockets(tag?: string): WebSocket[] }; env: WorkerEnv };
@@ -173,7 +208,12 @@ export function createRealtimeObject<B extends abstract new (...args: any[]) => 
  * module stays importable outside the Workers runtime.
  */
 export function createWorkflowEntrypoint<B extends abstract new (...args: any[]) => any>(Base: B, bundle: AppBundle, options: WorkerOptions = {}) {
-  const worker = createWorker(bundle, options);
+  return createWorkflowEntrypointWith(Base, bundle, whole(options));
+}
+
+/** `createWorkflowEntrypoint` with exactly `options.features` linked (FORG-37); `workflows` must be one. */
+export function createWorkflowEntrypointWith<B extends abstract new (...args: any[]) => any>(Base: B, bundle: AppBundle, options: FeatureWorkerOptions) {
+  const worker = createWorkerWith(bundle, options);
   abstract class ForgeWorkflowEntrypoint extends Base {
     async run(event: { payload: { tenant: string; id: string } }, step: { do<T>(name: string, fn: () => Promise<T>): Promise<T>; sleep(name: string, ms: number): Promise<void>; waitForEvent(name: string, opts: { type: string; timeout?: string | number }): Promise<unknown> }) {
       const env = (this as unknown as { env: WorkerEnv }).env;
@@ -202,31 +242,51 @@ export function createWorkflowEntrypoint<B extends abstract new (...args: any[])
   return ForgeWorkflowEntrypoint;
 }
 
+/** The whole-app Worker: every feature linked, R2 (or memory) blob storage. */
 export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
+  return createWorkerWith(bundle, whole(options));
+}
+
+/**
+ * A Worker with exactly `options.features` linked (FORG-37): what a packed script running a slice of
+ * the app uses, so it bundles only the features its slice needs. A Worker without the `dispatch`
+ * feature cannot sweep its outbox, so it must hand post-commit work elsewhere (`postCommit`) and not
+ * run the outbox sweep. Throws when the model needs a feature that is not linked.
+ */
+export function createWorkerWith(bundle: AppBundle, options: FeatureWorkerOptions) {
   const model = new Model(bundle);
-  const subscriptions: Record<string, string[]> = {};
-  for (const s of model.bundle.messaging?.subscriptions ?? []) (subscriptions[s.channel] ??= []).push(s.name);
+  checkFeatures(model, options.features);
+  const sweeps = { outbox: true, schedules: true, workflows: true, ...options.sweeps };
+  const names = new Set(options.features.map((f) => f.name));
+  if (!names.has("dispatch") && (!options.postCommit || sweeps.outbox)) throw new Error("forge: a Worker without the dispatch feature needs postCommit and sweeps.outbox: false");
+  if (names.has("blobs") && !options.objects) throw new Error("forge: a Worker with the blobs feature needs objects (blob storage)");
   // Tenants already recorded in the schedule index by this isolate (FORG-3); a miss costs one point read.
   const tracked = new Set<string>();
 
   const build = (env: WorkerEnv, baseUrl: string) => {
-    const objects = env.BLOBS ? new R2ObjectStore(env.BLOBS, { baseUrl, secret: env.CURSOR_SECRET }) : null;
+    const objects = options.objects?.(env, baseUrl) ?? null;
     const storage = new D1Storage(env.DB, model);
     const layer = Layer.mergeAll(
       Layer.succeed(Clock)({ now: () => new Date().toISOString() }),
       Layer.succeed(IdGen)(productionIds()),
       Layer.succeed(Storage)(storage),
       Layer.succeed(CursorSecret)({ key: env.CURSOR_SECRET }),
-      Layer.succeed(Objects)(objects ?? new MemoryObjectStore()),
+      Layer.succeed(Objects)(objects?.store ?? unlinkedObjects),
     );
-    const engine = new Engine(model, layer, options);
-    engine.workflows.driver = cloudflareWorkflowDriver(model, env);
-    engine.realtime.hub = cloudflareRealtimeHub(env);
+    const engine = new EngineCore(model, layer, options);
+    const workflows = engine.feature("workflows");
+    if (workflows) workflows.driver = cloudflareWorkflowDriver(model, env);
+    const realtime = engine.feature("realtime");
+    if (realtime) realtime.hub = cloudflareRealtimeHub(env);
     // Workers Logs: structured JSON per operation event (plan §20; metrics are derived downstream).
     engine.telemetry.target = "cloudflare-d1";
     engine.telemetry.sink = { write: (e) => console.log(workersLogLine(e)) };
-    const dispatcher = new Dispatcher(model, storage, withProjections(engine, cloudflareQueuesTransport(queueBindings(model, env))), { subscriptions: internalSubscriptions(engine, subscriptions), leaseMs: 30_000, maxAttempts: 8 });
+    const dispatcher = engine.feature("dispatch")?.dispatcher(storage, cloudflareQueuesTransport(queueBindings(model, env)), { leaseMs: 30_000, maxAttempts: 8 }) ?? null;
     return { engine, storage, objects, dispatcher };
+  };
+  const needDispatcher = <T>(d: T | null): T => {
+    if (!d) throw new Error("forge: the dispatch feature is not linked into this Worker");
+    return d;
   };
 
   return {
@@ -245,11 +305,13 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       // FORG-3: the schedule index, not the outbox, decides which tenants are due (idle and global ones included).
       const ev = (event ?? {}) as { cron?: string; scheduledTime?: number };
       const now = new Date(ev.scheduledTime ?? Date.now()).toISOString();
-      const sweeps = { outbox: true, schedules: true, workflows: true, ...options.sweeps };
-      if (sweeps.schedules) ctx.waitUntil(Effect.runPromise(engine.schedules.sweep(now, tenants)));
-      if (sweeps.outbox) ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(dispatcher.sweep(t, { now: Date.now() })))));
+      // A feature that is not linked has nothing to sweep: the model does not use it (EngineCore checks).
+      const schedules = engine.feature("schedules");
+      const workflows = engine.feature("workflows");
+      if (sweeps.schedules && schedules) ctx.waitUntil(Effect.runPromise(schedules.sweep(now, tenants)));
+      if (sweeps.outbox) ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(needDispatcher(dispatcher).sweep(t, { now: Date.now() })))));
       // Crashed `running` instances resume here; native drivers own timers.
-      if (sweeps.workflows) ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(engine.workflows.sweep(t)))));
+      if (sweeps.workflows && workflows) ctx.waitUntil(Promise.all(tenants.map((t: string) => Effect.runPromise(workflows.sweep(t)))));
     },
     /**
      * What a whole-app Worker does after a request, run on behalf of a Worker that holds only a slice:
@@ -257,11 +319,12 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
      */
     async dispatch(env: WorkerEnv, tenant: string, o: { sweep: boolean }): Promise<void> {
       const { engine, dispatcher } = build(env, "https://dispatch.invalid");
-      if (engine.schedules.active && !tracked.has(tenant)) {
+      const schedules = engine.feature("schedules");
+      if (schedules?.active && !tracked.has(tenant)) {
         tracked.add(tenant);
-        await Effect.runPromise(engine.schedules.track(tenant));
+        await Effect.runPromise(schedules.track(tenant));
       }
-      if (o.sweep) await Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }));
+      if (o.sweep) await Effect.runPromise(needDispatcher(dispatcher).sweep(tenant, { now: Date.now() }));
     },
     /** Queue consumer: every message is a forge envelope for exactly one subscription (the queue's). */
     async queue(batch: { queue: string; messages: { body: unknown; ack(): void; retry(): void }[] }, env: WorkerEnv): Promise<void> {
@@ -289,7 +352,7 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       const { engine, objects, dispatcher } = build(env, `${url.protocol}//${url.host}`);
       // Realtime upgrade: authenticate (query-string headers for browsers), then hand the socket to the stream's object.
       if (request.headers.get("upgrade")?.toLowerCase() === "websocket") {
-        const stream = engine.realtime.streamByPath(url.pathname);
+        const stream = engine.feature("realtime")?.streamByPath(url.pathname);
         if (!stream || !env.REALTIME) return new Response("no such stream", { status: 404 });
         const principal = await auth.authenticate(upgradeAuthRequest(url, request.headers));
         if (!("tenant" in principal)) return new Response(JSON.stringify(principal.problem(crypto.randomUUID())), { status: 401, headers: { "content-type": "application/problem+json" } });
@@ -301,11 +364,12 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       }
       // Object bytes: the Worker-served equivalent of presigned URLs (bearer token, one key, one method).
       const m = /^\/_forge\/objects\/([^/]+)$/.exec(url.pathname);
-      if (m && objects) return objects.serve(request, m[1]!);
+      if (m && objects?.serve) return objects.serve(request, m[1]!);
+      const schedules = engine.feature("schedules");
       const observeTenant = (tenant: string) => {
-        if (tracked.has(tenant) || !engine.schedules.active) return;
+        if (tracked.has(tenant) || !schedules?.active) return;
         tracked.add(tenant);
-        const p = Effect.runPromise(engine.schedules.track(tenant));
+        const p = Effect.runPromise(schedules.track(tenant));
         if (ctx) ctx.waitUntil(p);
       };
       const webhooks = typeof options.webhooks === "function" ? options.webhooks(env) : options.webhooks;
@@ -316,7 +380,7 @@ export function createWorker(bundle: AppBundle, options: WorkerOptions = {}) {
       // Prompt post-commit nudge for this tenant; the cron sweep is the guarantee.
       if (ctx && !signedWebhook && request.method !== "GET" && res.status < 300) {
         const tenant = request.headers.get("x-forge-tenant");
-        if (tenant) ctx.waitUntil((options.postCommit ? options.postCommit(env, tenant) : Effect.runPromise(dispatcher.sweep(tenant, { now: Date.now() }))).catch(() => undefined));
+        if (tenant) ctx.waitUntil((options.postCommit ? options.postCommit(env, tenant) : Effect.runPromise(needDispatcher(dispatcher).sweep(tenant, { now: Date.now() }))).catch(() => undefined));
       }
       return res;
     },

@@ -30,8 +30,9 @@ interface CacheEntry extends Doc { value: Wire; freshUntil: string; loadedAt: st
  */
 export function withProjections(engine: Engine, fallback: Transport): Transport {
   const local = engine.projectionTransport();
-  const workflows = engine.workflows.transport();
-  const realtime = engine.realtime.transport();
+  // An engine linked without workflows or realtime (FORG-37) has no such subscriptions to route.
+  const workflows = engine.feature("workflows")?.transport() ?? fallback;
+  const realtime = engine.feature("realtime")?.transport() ?? fallback;
   return {
     name: `${fallback.name}+internal`,
     send: (d) => (d.subscription.startsWith("projection:") ? local.send(d) : d.subscription.startsWith("workflow:") ? workflows.send(d) : d.subscription.startsWith("realtime:") ? realtime.send(d) : fallback.send(d)),
@@ -39,7 +40,8 @@ export function withProjections(engine: Engine, fallback: Transport): Transport 
 }
 /** Every in-process consumer's subscriptions (projections and workflow waits) merged over the host's. */
 export function internalSubscriptions(engine: Engine, base: Record<string, string[]> = {}): Record<string, string[]> {
-  return engine.realtime.subscriptions(engine.workflows.subscriptions(engine.projectionSubscriptions(base)));
+  const withWaits = engine.feature("workflows")?.subscriptions(engine.projectionSubscriptions(base)) ?? engine.projectionSubscriptions(base);
+  return engine.feature("realtime")?.subscriptions(withWaits) ?? withWaits;
 }
 
 export class ReadModels {
