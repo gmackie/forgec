@@ -36,6 +36,16 @@ jobs:
       - name: Lint forgegraph-wasm for wasm32-unknown-unknown
         run: cargo clippy -p forgegraph-wasm --target wasm32-unknown-unknown --locked -- -D warnings
       - run: cargo test --workspace --locked
+      # FORG-40: committed conformance fixtures must be what this commit's compiler produces.
+      - name: Check conformance fixtures are fresh
+        run: |
+          ./scripts/refresh-fixtures.sh
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            git --no-pager diff --stat
+            echo "::error::Fixtures are stale: run ./scripts/refresh-fixtures.sh and commit the result"
+            exit 1
+          fi
 
   # FORG-35: composable units (FORG-28..31) and the full runtime suite.
   # - The unit and linker tests run the real debug `forgec` (target/debug/forgec) and local workerd
