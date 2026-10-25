@@ -2,7 +2,7 @@
 // `forge-units`. Writes results/<name>.json (default results/local.json).
 // usage: node measure.mjs <url> <native-generated-dir> <runs> [results-name]
 // env: COMMIT (the Artifacts commit to build), ARTIFACTS_NAMESPACE/ARTIFACTS_REPO, WORKERD_PID (local RSS/CPU),
-//      BUILD_TOKEN (deployed), HOST (label), FAKE_ARTIFACTS (url of fake-artifacts.mjs, for its request count)
+//      BUILD_SERVICE_TOKEN (deployed), HOST (label), FAKE_ARTIFACTS (url of fake-artifacts.mjs, for its request count)
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -15,7 +15,7 @@ if (!url || !nativeDir) throw new Error("usage: node measure.mjs <url> <native-g
 const runs = Number(runsArg ?? 10);
 const here = import.meta.dirname;
 const env = process.env;
-const auth = env.BUILD_TOKEN ? { authorization: `Bearer ${env.BUILD_TOKEN}` } : {};
+const auth = env.BUILD_SERVICE_TOKEN ? { authorization: `Bearer ${env.BUILD_SERVICE_TOKEN}` } : {};
 const sha = (b) => `sha256:${createHash("sha256").update(b).digest("hex")}`;
 const stats = (xs) => {
   const s = [...xs].filter((x) => typeof x === "number").sort((a, b) => a - b);

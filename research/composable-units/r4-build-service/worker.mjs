@@ -330,7 +330,7 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     if (url.pathname === "/healthz") return json({ ok: true, api: API });
-    if (env.BUILD_TOKEN && req.headers.get("authorization") !== `Bearer ${env.BUILD_TOKEN}`) return json({ ok: false, code: "unauthorized" }, 401);
+    if (env.BUILD_SERVICE_TOKEN && req.headers.get("authorization") !== `Bearer ${env.BUILD_SERVICE_TOKEN}`) return json({ ok: false, code: "unauthorized" }, 401);
     const blob = /^\/v1\/blobs\/(sha256:[0-9a-f]{64})$/.exec(url.pathname);
     if (blob && req.method === "GET") {
       const object = await env.BLOBS?.get(blob[1]);
