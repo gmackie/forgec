@@ -5,6 +5,113 @@ stages:
   - name: production
     url: https://forge.gmac.io
     sortOrder: 20
+  # FORG-38 lab (temporary; removed again after the measurement): the deployed run of linkers B and C,
+  # the invocation-limit and loader probes and JSPI, research/composable-units/r4-deployed/README.md.
+  # sortOrder 90 keeps it above production (20), so it never becomes the auto-deploy stage. ForgeGraph
+  # accepts only development/staging/beta/production as stage names; development scopes secrets per
+  # developer, so the lab is `staging`. Deploy with `forge deploy create staging --ref FORG-38-paid-measurement`.
+  # Every Worker is lab-scoped (forge-lab-*), built by r4-deployed/build.mjs on hetzner-master (it has
+  # Rust; forgec is compiled once into a cache outside the clone).
+  - name: staging
+    sortOrder: 90
+    targets:
+      - name: rpc-callee
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-rpc-callee
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs rpc-callee
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/rpc-callee/wrangler.jsonc
+          healthCheckUrl: ""
+      - name: c-sweep
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-c-sweep
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs c-sweep
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/c-sweep/wrangler.jsonc
+          healthCheckUrl: ""
+          syncSecrets: true
+          syncSecretsInclude: [CURSOR_SECRET]
+      - name: c-get-customers
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-c-get-customers
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs c-get-customers
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/c-get-customers/wrangler.jsonc
+          healthCheckUrl: ""
+          syncSecrets: true
+          syncSecretsInclude: [CURSOR_SECRET]
+      - name: c-post-orders
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-c-post-orders
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs c-post-orders
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/c-post-orders/wrangler.jsonc
+          healthCheckUrl: ""
+          syncSecrets: true
+          syncSecretsInclude: [CURSOR_SECRET]
+      - name: c-submit
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-c-submit
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs c-submit
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/c-submit/wrangler.jsonc
+          healthCheckUrl: ""
+          syncSecrets: true
+          syncSecretsInclude: [CURSOR_SECRET]
+      - name: c-dynamic
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-c-dynamic
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs c-dynamic
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/c-dynamic/wrangler.jsonc
+          healthCheckUrl: "https://forge-lab-c-dynamic.gmac.workers.dev/_lab/health"
+          syncSecrets: true
+          syncSecretsInclude: [LAB_TOKEN, LINKER_ADMIN_TOKEN, CURSOR_SECRET]
+      - name: c-router
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-c-router
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs c-router
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/c-router/wrangler.jsonc
+          healthCheckUrl: "https://forge-lab-c-router.gmac.workers.dev/_lab/health"
+          syncSecrets: true
+          syncSecretsInclude: [LAB_TOKEN, TIER_STATS_TOKEN]
+      - name: linker-b
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-linker-b
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs linker-b
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/linker-b/wrangler.jsonc
+          healthCheckUrl: "https://forge-lab-linker-b.gmac.workers.dev/_lab/health"
+          syncSecrets: true
+          syncSecretsInclude: [LAB_TOKEN, LINKER_ADMIN_TOKEN, CURSOR_SECRET]
+      - name: probe
+        platform: cloudflare-workers
+        nodeId: e147e01c-158c-4162-aeb1-646ab00bda17 # hetzner-master
+        config:
+          workerName: forge-lab-probe
+          appDir: research/composable-units/r4-deployed
+          buildCommand: PATH=$HOME/.cargo/bin:$PATH CARGO_TARGET_DIR=/mnt/master-apps/cache/forg38-lab-cargo node build.mjs probe
+          deployCommand: ../../../packages/linker-dynamic/node_modules/.bin/wrangler deploy --config dist/probe/wrangler.jsonc
+          healthCheckUrl: "https://forge-lab-probe.gmac.workers.dev/_lab/health"
+          syncSecrets: true
+          syncSecretsInclude: [LAB_TOKEN]
 
 # The deployable in this repository is packages/console (@forgegraph/console): the management
 # UI and signed package registry served at forge.gmac.io. The compiler crates and the
