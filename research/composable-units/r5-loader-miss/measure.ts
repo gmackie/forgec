@@ -4,7 +4,7 @@
 //
 //   FORG48_SECRETS=/path/secrets.json node research/composable-units/r5-loader-miss/measure.ts <section>...
 //
-// Sections: rtt seed cache r2 miss fresh d1 placement. Each writes results/<section>.json (RUN=<tag> keeps
+// Sections: rtt seed cache r2 miss floor fresh d1 placement. Each writes results/<section>.json (RUN=<tag> keeps
 // repeats side by side). The secrets file holds MISS_LAB_TOKEN and MISS_LINKER_ADMIN_TOKEN; it is never
 // committed. MEASURED=local labels a local run. Host times are wall time measured inside the Worker; on
 // deployed Workers timers advance only across I/O, so they are time spent waiting, not CPU.
@@ -142,39 +142,66 @@ const sections: Record<string, () => Promise<void>> = {
   async miss() {
     const N = Number(process.env["N"] ?? 10);
     const kinds: Array<[string, string]> = [["memory", "code"], ["cache", "code,memory"], ["store", "code,memory,cache"]];
-    const out: Record<string, unknown> = {};
+    const paths = (process.env["PATHS"] ?? "GET /v1/customers,POST /v1/customers,GET /forge/discovery").split(",").map((x) => x.split(" ") as [string, string]);
     const tenant = `m-${Date.now().toString(36)}`;
-    for (const t of TARGETS) {
-      // first sight of the tenant, outside the samples
-      await call(BASES[t]!, "POST", "/v1/customers", JSON.stringify({ code: `S${Date.now().toString(36).slice(-6).toUpperCase()}`, name: "Seed" }), { "x-forge-tenant": tenant, "x-forge-actor": "forg48" });
-      const byKind: Record<string, unknown> = {};
-      for (const [kind, layers] of t === "miss-base" ? [["store-serial", "code,memory,cache"] as [string, string]] : kinds) {
-        for (const [method, path] of [["GET", "/v1/customers"], ["POST", "/v1/customers"]] as const) {
-          const samples: any[] = [];
-          for (let i = 0; i < N; i++) {
+    // first sight of the tenant, outside the samples
+    for (const t of TARGETS) await call(BASES[t]!, "POST", "/v1/customers", JSON.stringify({ code: `S${Date.now().toString(36).slice(-6).toUpperCase()}`, name: "Seed" }), { "x-forge-tenant": tenant, "x-forge-actor": "forg48" });
+    // Samples are interleaved across Workers (one per Worker in turn), so each comparison is paired in time.
+    // miss-base runs every kind too; with LINKER_UNIT_CACHE=off each is the same serial store read.
+    const raw: Record<string, Record<string, any[]>> = Object.fromEntries(TARGETS.map((t) => [t, {}]));
+    for (const [kind, layers] of kinds) {
+      for (const [method, path] of paths) {
+        for (let i = 0; i < N; i++) {
+          for (const t of TARGETS) {
             const r = await call(BASES[t]!, "POST", `/_lab/miss?layers=${layers}&method=${method}&path=${encodeURIComponent(path)}&tenant=${tenant}`);
             if (r.status !== 200) throw new Error(`${t} ${kind}: ${r.status} ${JSON.stringify(r.json).slice(0, 400)}`);
-            samples.push({ clientMs: r.ms, ...host(r.h), ...r.json });
-            await sleep(200);
+            (raw[t]![`${kind} ${method} ${path}`] ??= []).push({ clientMs: r.ms, ...host(r.h), ...r.json });
           }
-          const ok = samples.filter((s) => s.miss.isolate === "cold" && s.miss.status < 300);
-          byKind[`${kind} ${method} ${path}`] = {
-            cold: `${ok.length}/${samples.length}`,
-            missLinkMs: summary(ok.map((s) => s.miss.linkMs)),
-            missBuildMs: summary(ok.map((s) => s.miss.breakdown.build)),
-            missChildMs: summary(ok.map((s) => s.miss.breakdown.child)),
-            warmLinkMs: summary(ok.map((s) => s.warm.linkMs)),
-            warmChildMs: summary(ok.map((s) => s.warm.breakdown.child)),
-            layers: ok.map((s) => `m${s.miss.breakdown.memory}/c${s.miss.breakdown.cache}/s${s.miss.breakdown.store}`),
-            hostIsolates: [...new Set(samples.map((s) => s.isolate))],
-            placement: [...new Set(samples.map((s) => s.placement))],
-            samples,
-          };
+          await sleep(200);
         }
       }
-      out[t] = byKind;
     }
-    save("miss", { tenant, workers: out });
+    const out: Record<string, unknown> = {};
+    for (const t of TARGETS) {
+      out[t] = Object.fromEntries(
+        Object.entries(raw[t]!).map(([k, samples]) => {
+          const ok = samples.filter((s) => s.miss.isolate === "cold" && s.miss.status < 300);
+          return [
+            k,
+            {
+              cold: `${ok.length}/${samples.length}`,
+              missLinkMs: summary(ok.map((s) => s.miss.linkMs)),
+              missOverWarmMs: summary(ok.map((s) => s.miss.linkMs - s.warm.linkMs)),
+              missBuildMs: summary(ok.map((s) => s.miss.breakdown.build)),
+              missChildMs: summary(ok.map((s) => s.miss.breakdown.child)),
+              missResolveMs: summary(ok.map((s) => s.miss.breakdown.resolve)),
+              warmLinkMs: summary(ok.map((s) => s.warm.linkMs)),
+              layers: ok.map((s) => `m${s.miss.breakdown.memory}/c${s.miss.breakdown.cache}/s${s.miss.breakdown.store}`),
+              hostIsolates: [...new Set(samples.map((s) => s.isolate))],
+              placement: [...new Set(samples.map((s) => s.placement))],
+              samples,
+            },
+          ];
+        }),
+      );
+    }
+    save("miss", { tenant, interleaved: TARGETS, workers: out });
+  },
+
+  /** The child cold start split by what it loads (/_lab/floor), in a warm host isolate. */
+  async floor() {
+    const t = TARGETS.includes("miss-b") ? "miss-b" : TARGETS[0]!;
+    const runs: any[] = [];
+    for (let i = 0; i < Number(process.env["N"] ?? 4); i++) {
+      const r = await call(BASES[t]!, "GET", "/_lab/floor?n=5");
+      runs.push({ ...host(r.h), ...r.json });
+      await sleep(500);
+    }
+    // the first run may land on a fresh host isolate; keep runs on an isolate that had served before
+    const warmHost = runs.filter((r) => (r.requests ?? 0) > 1);
+    const names = Object.keys(runs[0].variants);
+    const by = (xs: any[]) => Object.fromEntries(names.map((n) => [n, { coldMs: summary(xs.flatMap((r) => r.variants[n].cold.map((c: any) => c.ms))), warmMs: summary(xs.flatMap((r) => r.variants[n].warm)) }]));
+    save("floor", { worker: t, bytes: runs[0].bytes, warmHost: by(warmHost), all: by(runs), runs });
   },
 
   /** The first request on a fresh host isolate: idle long enough that the next request starts one. */

@@ -4,7 +4,7 @@
 // --frozen-lockfile` at the repository root; the deployCommand uploads dist/<target>/wrangler.jsonc with the
 // pinned wrangler under the target's workerName. Same shape as ../r4-deployed/build.mjs's linker-b target.
 //
-//   node build.mjs <miss-base|miss-b|miss-smart>
+//   node build.mjs <miss-base|miss-b|miss-smart>        LAB_PLACEMENT='{"mode":"smart","hint":"enam"}' for miss-smart
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
@@ -49,7 +49,8 @@ const config = {
   compatibility_date: "2026-09-25",
   workers_dev: true,
   worker_loaders: [{ binding: "LOADER" }],
-  ...(target === "miss-smart" ? { placement: { mode: "smart" } } : {}),
+  // miss-smart's placement: LAB_PLACEMENT (JSON, set in the target's buildCommand), default Smart Placement.
+  ...(target === "miss-smart" ? { placement: JSON.parse(process.env.LAB_PLACEMENT ?? '{"mode":"smart"}') } : {}),
   r2_buckets: [{ binding: "UNITS", bucket_name: R2[target] }],
   d1_databases: [{ binding: "DB", database_name: D1.acme }],
   vars,
