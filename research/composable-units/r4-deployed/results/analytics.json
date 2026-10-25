@@ -1,0 +1,327 @@
+{
+  "cost": {
+    "atOverageRatesUsd": 0.4497,
+    "cpuMs": 23221,
+    "distinctDynamicWorkerDays": 223,
+    "rates": {
+      "includedCpuMsPerMonth": 30000000,
+      "includedDynamicWorkersPerMonth": 1000,
+      "includedRequestsPerMonth": 10000000,
+      "perDynamicWorkerDay": 0.002,
+      "perMillionCpuMs": 0.02,
+      "perMillionRequests": 0.3
+    },
+    "requests": 10673,
+    "shareOfIncluded": {
+      "cpuMs": 0.0007740258000000001,
+      "dynamicWorkers": 0.223,
+      "requests": 0.0010673
+    }
+  },
+  "d1": [
+    {
+      "dimensions": {
+        "databaseId": "fe9b54dd-9243-41a9-8a86-aa36e28cfde6"
+      },
+      "sum": {
+        "readQueries": 2420,
+        "rowsRead": 2421,
+        "rowsWritten": 203,
+        "writeQueries": 101
+      }
+    },
+    {
+      "dimensions": {
+        "databaseId": "01a45cda-830a-4814-a3dd-554f8bdd9692"
+      },
+      "sum": {
+        "readQueries": 2781,
+        "rowsRead": 7135,
+        "rowsWritten": 7563,
+        "writeQueries": 3650
+      }
+    }
+  ],
+  "d1Databases": {
+    "acme": "forge-lab-acme",
+    "pricing": "forge-lab-pricing"
+  },
+  "dynamicWorkers": {
+    "byDay": [
+      {
+        "dimensions": {
+          "date": "2026-10-25"
+        },
+        "sum": {
+          "cpuTimeUs": 7312542,
+          "requests": 1209
+        },
+        "uniq": {
+          "distinctDynamicWorkerCount": 223
+        }
+      }
+    ],
+    "note": "account-wide: no other Worker on the account used the loader before this run (0 rows for 2026-10-01..25 before the lab deployed)",
+    "total": {
+      "cpuMs": 7312.542,
+      "distinctDynamicWorkerDays": 223,
+      "requests": 1209
+    }
+  },
+  "issue": "FORG-38",
+  "measured": "deployed",
+  "section": "analytics",
+  "total": {
+    "cpuMs": 15908.232,
+    "errors": 126,
+    "requests": 9464,
+    "subrequests": 3031
+  },
+  "version": "r4-deployed/1",
+  "window": {
+    "from": "2026-10-25T15:40:00Z",
+    "to": "2026-10-25T17:31:00Z"
+  },
+  "workers": [
+    {
+      "cpuMs": 744.51,
+      "cpuTimeUs": 744510,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 1408,
+        "cpuTimeP99": 48835,
+        "wallTimeP50": 42393,
+        "wallTimeP99": 3163267
+      },
+      "requests": 253,
+      "script": "forge-lab-c-dynamic",
+      "status": "success",
+      "subrequests": 142,
+      "wallTime": 71192015
+    },
+    {
+      "cpuMs": 192.342,
+      "cpuTimeUs": 192342,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 3594,
+        "cpuTimeP99": 22107,
+        "wallTimeP50": 25059,
+        "wallTimeP99": 151832
+      },
+      "requests": 41,
+      "script": "forge-lab-c-get-customers",
+      "status": "success",
+      "subrequests": 2,
+      "wallTime": 1358215
+    },
+    {
+      "cpuMs": 131.764,
+      "cpuTimeUs": 131764,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 7837,
+        "cpuTimeP99": 35186,
+        "wallTimeP50": 312114,
+        "wallTimeP99": 521226
+      },
+      "requests": 10,
+      "script": "forge-lab-c-post-orders",
+      "status": "success",
+      "subrequests": 12,
+      "wallTime": 3377389
+    },
+    {
+      "cpuMs": 68.877,
+      "cpuTimeUs": 68877,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 1562,
+        "cpuTimeP99": 4402,
+        "wallTimeP50": 176363,
+        "wallTimeP99": 3044596
+      },
+      "requests": 43,
+      "script": "forge-lab-c-router",
+      "status": "clientDisconnected",
+      "subrequests": 43,
+      "wallTime": 16686504
+    },
+    {
+      "cpuMs": 2.425,
+      "cpuTimeUs": 2425,
+      "errors": 2,
+      "quantilesUs": {
+        "cpuTimeP50": 952,
+        "cpuTimeP99": 1473,
+        "wallTimeP50": 1479,
+        "wallTimeP99": 2172
+      },
+      "requests": 2,
+      "script": "forge-lab-c-router",
+      "status": "scriptThrewException",
+      "subrequests": 0,
+      "wallTime": 3651
+    },
+    {
+      "cpuMs": 122.775,
+      "cpuTimeUs": 122775,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 1237,
+        "cpuTimeP99": 5903,
+        "wallTimeP50": 33688,
+        "wallTimeP99": 2727102
+      },
+      "requests": 94,
+      "script": "forge-lab-c-router",
+      "status": "success",
+      "subrequests": 84,
+      "wallTime": 10898581
+    },
+    {
+      "cpuMs": 84.172,
+      "cpuTimeUs": 84172,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 6285,
+        "cpuTimeP99": 20092,
+        "wallTimeP50": 606165,
+        "wallTimeP99": 785253
+      },
+      "requests": 11,
+      "script": "forge-lab-c-submit",
+      "status": "success",
+      "subrequests": 12,
+      "wallTime": 6655219
+    },
+    {
+      "cpuMs": 600.813,
+      "cpuTimeUs": 600813,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 9232,
+        "cpuTimeP99": 23492,
+        "wallTimeP50": 229123,
+        "wallTimeP99": 1412059
+      },
+      "requests": 67,
+      "script": "forge-lab-c-sweep",
+      "status": "success",
+      "subrequests": 0,
+      "wallTime": 22636554
+    },
+    {
+      "cpuMs": 14.243,
+      "cpuTimeUs": 14243,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 1660,
+        "cpuTimeP99": 2665,
+        "wallTimeP50": 66478,
+        "wallTimeP99": 859562
+      },
+      "requests": 8,
+      "script": "forge-lab-linker-b",
+      "status": "clientDisconnected",
+      "subrequests": 8,
+      "wallTime": 2768289
+    },
+    {
+      "cpuMs": 6657.605,
+      "cpuTimeUs": 6657605,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 705,
+        "cpuTimeP99": 26233,
+        "wallTimeP50": 35847,
+        "wallTimeP99": 2437408
+      },
+      "requests": 4223,
+      "script": "forge-lab-linker-b",
+      "status": "success",
+      "subrequests": 692,
+      "wallTime": 596454094
+    },
+    {
+      "cpuMs": 4.184,
+      "cpuTimeUs": 4184,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 4184,
+        "cpuTimeP99": 4184,
+        "wallTimeP50": 301219400,
+        "wallTimeP99": 301219400
+      },
+      "requests": 1,
+      "script": "forge-lab-probe",
+      "status": "clientDisconnected",
+      "subrequests": 5,
+      "wallTime": 301219379
+    },
+    {
+      "cpuMs": 30.226,
+      "cpuTimeUs": 30226,
+      "errors": 124,
+      "quantilesUs": {
+        "cpuTimeP50": 204,
+        "cpuTimeP99": 678,
+        "wallTimeP50": 10116,
+        "wallTimeP99": 31858
+      },
+      "requests": 124,
+      "script": "forge-lab-probe",
+      "status": "scriptThrewException",
+      "subrequests": 124,
+      "wallTime": 1386456
+    },
+    {
+      "cpuMs": 3692.24,
+      "cpuTimeUs": 3692240,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 508,
+        "cpuTimeP99": 61338,
+        "wallTimeP50": 18059,
+        "wallTimeP99": 2469941
+      },
+      "requests": 1577,
+      "script": "forge-lab-probe",
+      "status": "success",
+      "subrequests": 1907,
+      "wallTime": 322028674
+    },
+    {
+      "cpuMs": 168.132,
+      "cpuTimeUs": 168132,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 437,
+        "cpuTimeP99": 986,
+        "wallTimeP50": 118803,
+        "wallTimeP99": 531079
+      },
+      "requests": 380,
+      "script": "forge-lab-rpc-callee",
+      "status": "clientDisconnected",
+      "subrequests": 0,
+      "wallTime": 53465914
+    },
+    {
+      "cpuMs": 3393.924,
+      "cpuTimeUs": 3393924,
+      "errors": 0,
+      "quantilesUs": {
+        "cpuTimeP50": 179,
+        "cpuTimeP99": 11346,
+        "wallTimeP50": 2863,
+        "wallTimeP99": 120306
+      },
+      "requests": 2630,
+      "script": "forge-lab-rpc-callee",
+      "status": "success",
+      "subrequests": 0,
+      "wallTime": 40656260
+    }
+  ]
+}

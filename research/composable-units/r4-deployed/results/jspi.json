@@ -1,0 +1,1503 @@
+{
+  "at": "2026-10-25T16:35:00.696Z",
+  "bench": {
+    "ms": 3533,
+    "ok": true
+  },
+  "issue": "FORG-38",
+  "measured": "deployed",
+  "probe": {
+    "Suspending": "function",
+    "promising": "function",
+    "result": 41,
+    "runtimeCompile": "CompileError: WebAssembly.compile(): Wasm code generation disallowed by embedder",
+    "works": true
+  },
+  "run": null,
+  "runs": {
+    "dynamic price-cart 1 item": {
+      "children": [
+        "cold",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm"
+      ],
+      "clientMs": {
+        "max": 140.58,
+        "median": 80.9,
+        "min": 60.09,
+        "n": 9,
+        "p95": 140.58
+      },
+      "first": {
+        "child": "cold",
+        "childMs": 55,
+        "clientMs": 112.29,
+        "hostMs": 55,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "lines": [
+              {
+                "amount": "0.00",
+                "quantity": 1,
+                "sku": "SKU-0000"
+              }
+            ],
+            "subtotal": "0.00"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 29,
+        "median": 20,
+        "min": 18,
+        "n": 9,
+        "p95": 29
+      },
+      "ok": true
+    },
+    "dynamic price-cart 10 items": {
+      "children": [
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm"
+      ],
+      "clientMs": {
+        "max": 272.45,
+        "median": 239.88,
+        "min": 218.03,
+        "n": 9,
+        "p95": 272.45
+      },
+      "first": {
+        "child": "warm",
+        "childMs": 218,
+        "clientMs": 270.21,
+        "hostMs": 218,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "lines": [
+              {
+                "amount": "0.00",
+                "quantity": 1,
+                "sku": "SKU-0000"
+              },
+              {
+                "amount": "74.26",
+                "quantity": 2,
+                "sku": "SKU-0001"
+              },
+              {
+                "amount": "222.78",
+                "quantity": 3,
+                "sku": "SKU-0002"
+              },
+              {
+                "amount": "445.56",
+                "quantity": 4,
+                "sku": "SKU-0003"
+              },
+              {
+                "amount": "742.60",
+                "quantity": 5,
+                "sku": "SKU-0004"
+              },
+              {
+                "amount": "1113.90",
+                "quantity": 6,
+                "sku": "SKU-0005"
+              },
+              {
+                "amount": "1559.46",
+                "quantity": 7,
+                "sku": "SKU-0006"
+              },
+              {
+                "amount": "2079.28",
+                "quantity": 8,
+                "sku": "SKU-0007"
+              },
+              {
+                "amount": "2664.36",
+                "quantity": 9,
+                "sku": "SKU-0008"
+              },
+              {
+                "amount": "333.17",
+                "quantity": 1,
+                "sku": "SKU-0009"
+              }
+            ],
+            "subtotal": "9235.37"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 226,
+        "median": 191,
+        "min": 171,
+        "n": 9,
+        "p95": 226
+      },
+      "ok": true
+    },
+    "dynamic price-cart 100 items": {
+      "children": [
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm"
+      ],
+      "clientMs": {
+        "max": 2289.08,
+        "median": 2109.84,
+        "min": 1927.73,
+        "n": 9,
+        "p95": 2289.08
+      },
+      "first": {
+        "child": "warm",
+        "childMs": 1794,
+        "clientMs": 1880.07,
+        "hostMs": 1794,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "lines": [
+              {
+                "amount": "0.00",
+                "quantity": 1,
+                "sku": "SKU-0000"
+              },
+              {
+                "amount": "74.26",
+                "quantity": 2,
+                "sku": "SKU-0001"
+              },
+              {
+                "amount": "222.78",
+                "quantity": 3,
+                "sku": "SKU-0002"
+              },
+              {
+                "amount": "445.56",
+                "quantity": 4,
+                "sku": "SKU-0003"
+              },
+              {
+                "amount": "742.60",
+                "quantity": 5,
+                "sku": "SKU-0004"
+              },
+              {
+                "amount": "1113.90",
+                "quantity": 6,
+                "sku": "SKU-0005"
+              },
+              {
+                "amount": "1559.46",
+                "quantity": 7,
+                "sku": "SKU-0006"
+              },
+              {
+                "amount": "2079.28",
+                "quantity": 8,
+                "sku": "SKU-0007"
+              },
+              {
+                "amount": "2664.36",
+                "quantity": 9,
+                "sku": "SKU-0008"
+              },
+              {
+                "amount": "333.17",
+                "quantity": 1,
+                "sku": "SKU-0009"
+              },
+              {
+                "amount": "740.60",
+                "quantity": 2,
+                "sku": "SKU-0010"
+              },
+              {
+                "amount": "1222.29",
+                "quantity": 3,
+                "sku": "SKU-0011"
+              },
+              {
+                "amount": "1778.24",
+                "quantity": 4,
+                "sku": "SKU-0012"
+              },
+              {
+                "amount": "2408.45",
+                "quantity": 5,
+                "sku": "SKU-0013"
+              },
+              {
+                "amount": "112.92",
+                "quantity": 6,
+                "sku": "SKU-0014"
+              },
+              {
+                "amount": "391.65",
+                "quantity": 7,
+                "sku": "SKU-0015"
+              },
+              {
+                "amount": "736.64",
+                "quantity": 8,
+                "sku": "SKU-0016"
+              },
+              {
+                "amount": "1162.89",
+                "quantity": 9,
+                "sku": "SKU-0017"
+              },
+              {
+                "amount": "166.34",
+                "quantity": 1,
+                "sku": "SKU-0018"
+              },
+              {
+                "amount": "406.94",
+                "quantity": 2,
+                "sku": "SKU-0019"
+              },
+              {
+                "amount": "721.80",
+                "quantity": 3,
+                "sku": "SKU-0020"
+              },
+              {
+                "amount": "1110.92",
+                "quantity": 4,
+                "sku": "SKU-0021"
+              },
+              {
+                "amount": "1574.30",
+                "quantity": 5,
+                "sku": "SKU-0022"
+              },
+              {
+                "amount": "2111.94",
+                "quantity": 6,
+                "sku": "SKU-0023"
+              },
+              {
+                "amount": "2716.84",
+                "quantity": 7,
+                "sku": "SKU-0024"
+              },
+              {
+                "amount": "3402.00",
+                "quantity": 8,
+                "sku": "SKU-0025"
+              },
+              {
+                "amount": "4161.42",
+                "quantity": 9,
+                "sku": "SKU-0026"
+              },
+              {
+                "amount": "499.51",
+                "quantity": 1,
+                "sku": "SKU-0027"
+              },
+              {
+                "amount": "73.28",
+                "quantity": 2,
+                "sku": "SKU-0028"
+              },
+              {
+                "amount": "221.31",
+                "quantity": 3,
+                "sku": "SKU-0029"
+              },
+              {
+                "amount": "443.60",
+                "quantity": 4,
+                "sku": "SKU-0030"
+              },
+              {
+                "amount": "735.15",
+                "quantity": 5,
+                "sku": "SKU-0031"
+              },
+              {
+                "amount": "1104.96",
+                "quantity": 6,
+                "sku": "SKU-0032"
+              },
+              {
+                "amount": "1549.03",
+                "quantity": 7,
+                "sku": "SKU-0033"
+              },
+              {
+                "amount": "2067.36",
+                "quantity": 8,
+                "sku": "SKU-0034"
+              },
+              {
+                "amount": "2659.95",
+                "quantity": 9,
+                "sku": "SKU-0035"
+              },
+              {
+                "amount": "332.68",
+                "quantity": 1,
+                "sku": "SKU-0036"
+              },
+              {
+                "amount": "739.62",
+                "quantity": 2,
+                "sku": "SKU-0037"
+              },
+              {
+                "amount": "1220.82",
+                "quantity": 3,
+                "sku": "SKU-0038"
+              },
+              {
+                "amount": "1772.28",
+                "quantity": 4,
+                "sku": "SKU-0039"
+              },
+              {
+                "amount": "2401.00",
+                "quantity": 5,
+                "sku": "SKU-0040"
+              },
+              {
+                "amount": "103.98",
+                "quantity": 6,
+                "sku": "SKU-0041"
+              },
+              {
+                "amount": "381.22",
+                "quantity": 7,
+                "sku": "SKU-0042"
+              },
+              {
+                "amount": "732.72",
+                "quantity": 8,
+                "sku": "SKU-0043"
+              },
+              {
+                "amount": "1158.48",
+                "quantity": 9,
+                "sku": "SKU-0044"
+              },
+              {
+                "amount": "165.85",
+                "quantity": 1,
+                "sku": "SKU-0045"
+              },
+              {
+                "amount": "405.96",
+                "quantity": 2,
+                "sku": "SKU-0046"
+              },
+              {
+                "amount": "717.33",
+                "quantity": 3,
+                "sku": "SKU-0047"
+              },
+              {
+                "amount": "1104.96",
+                "quantity": 4,
+                "sku": "SKU-0048"
+              },
+              {
+                "amount": "1566.85",
+                "quantity": 5,
+                "sku": "SKU-0049"
+              },
+              {
+                "amount": "2103.00",
+                "quantity": 6,
+                "sku": "SKU-0050"
+              },
+              {
+                "amount": "2713.41",
+                "quantity": 7,
+                "sku": "SKU-0051"
+              },
+              {
+                "amount": "3398.08",
+                "quantity": 8,
+                "sku": "SKU-0052"
+              },
+              {
+                "amount": "4157.01",
+                "quantity": 9,
+                "sku": "SKU-0053"
+              },
+              {
+                "amount": "498.02",
+                "quantity": 1,
+                "sku": "SKU-0054"
+              },
+              {
+                "amount": "70.30",
+                "quantity": 2,
+                "sku": "SKU-0055"
+              },
+              {
+                "amount": "216.84",
+                "quantity": 3,
+                "sku": "SKU-0056"
+              },
+              {
+                "amount": "437.64",
+                "quantity": 4,
+                "sku": "SKU-0057"
+              },
+              {
+                "amount": "732.70",
+                "quantity": 5,
+                "sku": "SKU-0058"
+              },
+              {
+                "amount": "1102.02",
+                "quantity": 6,
+                "sku": "SKU-0059"
+              },
+              {
+                "amount": "1545.60",
+                "quantity": 7,
+                "sku": "SKU-0060"
+              },
+              {
+                "amount": "2063.44",
+                "quantity": 8,
+                "sku": "SKU-0061"
+              },
+              {
+                "amount": "2646.54",
+                "quantity": 9,
+                "sku": "SKU-0062"
+              },
+              {
+                "amount": "331.19",
+                "quantity": 1,
+                "sku": "SKU-0063"
+              },
+              {
+                "amount": "736.64",
+                "quantity": 2,
+                "sku": "SKU-0064"
+              },
+              {
+                "amount": "1216.35",
+                "quantity": 3,
+                "sku": "SKU-0065"
+              },
+              {
+                "amount": "1770.32",
+                "quantity": 4,
+                "sku": "SKU-0066"
+              },
+              {
+                "amount": "2398.55",
+                "quantity": 5,
+                "sku": "SKU-0067"
+              },
+              {
+                "amount": "101.04",
+                "quantity": 6,
+                "sku": "SKU-0068"
+              },
+              {
+                "amount": "377.79",
+                "quantity": 7,
+                "sku": "SKU-0069"
+              },
+              {
+                "amount": "720.80",
+                "quantity": 8,
+                "sku": "SKU-0070"
+              },
+              {
+                "amount": "1145.07",
+                "quantity": 9,
+                "sku": "SKU-0071"
+              },
+              {
+                "amount": "164.36",
+                "quantity": 1,
+                "sku": "SKU-0072"
+              },
+              {
+                "amount": "402.98",
+                "quantity": 2,
+                "sku": "SKU-0073"
+              },
+              {
+                "amount": "715.86",
+                "quantity": 3,
+                "sku": "SKU-0074"
+              },
+              {
+                "amount": "1103.00",
+                "quantity": 4,
+                "sku": "SKU-0075"
+              },
+              {
+                "amount": "1564.40",
+                "quantity": 5,
+                "sku": "SKU-0076"
+              },
+              {
+                "amount": "2094.06",
+                "quantity": 6,
+                "sku": "SKU-0077"
+              },
+              {
+                "amount": "2702.98",
+                "quantity": 7,
+                "sku": "SKU-0078"
+              },
+              {
+                "amount": "3386.16",
+                "quantity": 8,
+                "sku": "SKU-0079"
+              },
+              {
+                "amount": "4143.60",
+                "quantity": 9,
+                "sku": "SKU-0080"
+              },
+              {
+                "amount": "497.53",
+                "quantity": 1,
+                "sku": "SKU-0081"
+              },
+              {
+                "amount": "69.32",
+                "quantity": 2,
+                "sku": "SKU-0082"
+              },
+              {
+                "amount": "215.37",
+                "quantity": 3,
+                "sku": "SKU-0083"
+              },
+              {
+                "amount": "435.68",
+                "quantity": 4,
+                "sku": "SKU-0084"
+              },
+              {
+                "amount": "725.25",
+                "quantity": 5,
+                "sku": "SKU-0085"
+              },
+              {
+                "amount": "1093.08",
+                "quantity": 6,
+                "sku": "SKU-0086"
+              },
+              {
+                "amount": "1535.17",
+                "quantity": 7,
+                "sku": "SKU-0087"
+              },
+              {
+                "amount": "2051.52",
+                "quantity": 8,
+                "sku": "SKU-0088"
+              },
+              {
+                "amount": "2642.13",
+                "quantity": 9,
+                "sku": "SKU-0089"
+              },
+              {
+                "amount": "330.70",
+                "quantity": 1,
+                "sku": "SKU-0090"
+              },
+              {
+                "amount": "735.66",
+                "quantity": 2,
+                "sku": "SKU-0091"
+              },
+              {
+                "amount": "1214.88",
+                "quantity": 3,
+                "sku": "SKU-0092"
+              },
+              {
+                "amount": "1764.36",
+                "quantity": 4,
+                "sku": "SKU-0093"
+              },
+              {
+                "amount": "2391.10",
+                "quantity": 5,
+                "sku": "SKU-0094"
+              },
+              {
+                "amount": "92.10",
+                "quantity": 6,
+                "sku": "SKU-0095"
+              },
+              {
+                "amount": "367.36",
+                "quantity": 7,
+                "sku": "SKU-0096"
+              },
+              {
+                "amount": "716.88",
+                "quantity": 8,
+                "sku": "SKU-0097"
+              },
+              {
+                "amount": "1140.66",
+                "quantity": 9,
+                "sku": "SKU-0098"
+              },
+              {
+                "amount": "163.87",
+                "quantity": 1,
+                "sku": "SKU-0099"
+              }
+            ],
+            "subtotal": "121261.82"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 2208,
+        "median": 2065,
+        "min": 1878,
+        "n": 9,
+        "p95": 2208
+      },
+      "ok": true
+    },
+    "dynamic quote-order quote": {
+      "children": [
+        "cold",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm",
+        "warm"
+      ],
+      "clientMs": {
+        "max": 127.03,
+        "median": 44.83,
+        "min": 35.14,
+        "n": 9,
+        "p95": 127.03
+      },
+      "first": {
+        "child": "cold",
+        "childMs": 35,
+        "clientMs": 92.35,
+        "hostMs": 35,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "discount": "9.00",
+            "lineCount": 2,
+            "shipping": "7.50",
+            "subtotal": "179.97",
+            "tax": "14.11",
+            "topSku": "B-2",
+            "total": "192.58"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 9,
+        "median": 5,
+        "min": 3,
+        "n": 9,
+        "p95": 9
+      },
+      "ok": true
+    },
+    "static price-cart 1 item": {
+      "children": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "clientMs": {
+        "max": 144.71,
+        "median": 63.3,
+        "min": 57.4,
+        "n": 9,
+        "p95": 144.71
+      },
+      "first": {
+        "child": null,
+        "childMs": null,
+        "clientMs": 280.03,
+        "hostMs": 16,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "lines": [
+              {
+                "amount": "0.00",
+                "quantity": 1,
+                "sku": "SKU-0000"
+              }
+            ],
+            "subtotal": "0.00"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 35,
+        "median": 14,
+        "min": 12,
+        "n": 9,
+        "p95": 35
+      },
+      "ok": true
+    },
+    "static price-cart 10 items": {
+      "children": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "clientMs": {
+        "max": 275.65,
+        "median": 236.36,
+        "min": 194.43,
+        "n": 9,
+        "p95": 275.65
+      },
+      "first": {
+        "child": null,
+        "childMs": null,
+        "clientMs": 218.27,
+        "hostMs": 153,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "lines": [
+              {
+                "amount": "0.00",
+                "quantity": 1,
+                "sku": "SKU-0000"
+              },
+              {
+                "amount": "74.26",
+                "quantity": 2,
+                "sku": "SKU-0001"
+              },
+              {
+                "amount": "222.78",
+                "quantity": 3,
+                "sku": "SKU-0002"
+              },
+              {
+                "amount": "445.56",
+                "quantity": 4,
+                "sku": "SKU-0003"
+              },
+              {
+                "amount": "742.60",
+                "quantity": 5,
+                "sku": "SKU-0004"
+              },
+              {
+                "amount": "1113.90",
+                "quantity": 6,
+                "sku": "SKU-0005"
+              },
+              {
+                "amount": "1559.46",
+                "quantity": 7,
+                "sku": "SKU-0006"
+              },
+              {
+                "amount": "2079.28",
+                "quantity": 8,
+                "sku": "SKU-0007"
+              },
+              {
+                "amount": "2664.36",
+                "quantity": 9,
+                "sku": "SKU-0008"
+              },
+              {
+                "amount": "333.17",
+                "quantity": 1,
+                "sku": "SKU-0009"
+              }
+            ],
+            "subtotal": "9235.37"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 186,
+        "median": 149,
+        "min": 133,
+        "n": 9,
+        "p95": 186
+      },
+      "ok": true
+    },
+    "static price-cart 100 items": {
+      "children": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "clientMs": {
+        "max": 2286.02,
+        "median": 1703.34,
+        "min": 1603.21,
+        "n": 9,
+        "p95": 2286.02
+      },
+      "first": {
+        "child": null,
+        "childMs": null,
+        "clientMs": 1794.49,
+        "hostMs": 1542,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "lines": [
+              {
+                "amount": "0.00",
+                "quantity": 1,
+                "sku": "SKU-0000"
+              },
+              {
+                "amount": "74.26",
+                "quantity": 2,
+                "sku": "SKU-0001"
+              },
+              {
+                "amount": "222.78",
+                "quantity": 3,
+                "sku": "SKU-0002"
+              },
+              {
+                "amount": "445.56",
+                "quantity": 4,
+                "sku": "SKU-0003"
+              },
+              {
+                "amount": "742.60",
+                "quantity": 5,
+                "sku": "SKU-0004"
+              },
+              {
+                "amount": "1113.90",
+                "quantity": 6,
+                "sku": "SKU-0005"
+              },
+              {
+                "amount": "1559.46",
+                "quantity": 7,
+                "sku": "SKU-0006"
+              },
+              {
+                "amount": "2079.28",
+                "quantity": 8,
+                "sku": "SKU-0007"
+              },
+              {
+                "amount": "2664.36",
+                "quantity": 9,
+                "sku": "SKU-0008"
+              },
+              {
+                "amount": "333.17",
+                "quantity": 1,
+                "sku": "SKU-0009"
+              },
+              {
+                "amount": "740.60",
+                "quantity": 2,
+                "sku": "SKU-0010"
+              },
+              {
+                "amount": "1222.29",
+                "quantity": 3,
+                "sku": "SKU-0011"
+              },
+              {
+                "amount": "1778.24",
+                "quantity": 4,
+                "sku": "SKU-0012"
+              },
+              {
+                "amount": "2408.45",
+                "quantity": 5,
+                "sku": "SKU-0013"
+              },
+              {
+                "amount": "112.92",
+                "quantity": 6,
+                "sku": "SKU-0014"
+              },
+              {
+                "amount": "391.65",
+                "quantity": 7,
+                "sku": "SKU-0015"
+              },
+              {
+                "amount": "736.64",
+                "quantity": 8,
+                "sku": "SKU-0016"
+              },
+              {
+                "amount": "1162.89",
+                "quantity": 9,
+                "sku": "SKU-0017"
+              },
+              {
+                "amount": "166.34",
+                "quantity": 1,
+                "sku": "SKU-0018"
+              },
+              {
+                "amount": "406.94",
+                "quantity": 2,
+                "sku": "SKU-0019"
+              },
+              {
+                "amount": "721.80",
+                "quantity": 3,
+                "sku": "SKU-0020"
+              },
+              {
+                "amount": "1110.92",
+                "quantity": 4,
+                "sku": "SKU-0021"
+              },
+              {
+                "amount": "1574.30",
+                "quantity": 5,
+                "sku": "SKU-0022"
+              },
+              {
+                "amount": "2111.94",
+                "quantity": 6,
+                "sku": "SKU-0023"
+              },
+              {
+                "amount": "2716.84",
+                "quantity": 7,
+                "sku": "SKU-0024"
+              },
+              {
+                "amount": "3402.00",
+                "quantity": 8,
+                "sku": "SKU-0025"
+              },
+              {
+                "amount": "4161.42",
+                "quantity": 9,
+                "sku": "SKU-0026"
+              },
+              {
+                "amount": "499.51",
+                "quantity": 1,
+                "sku": "SKU-0027"
+              },
+              {
+                "amount": "73.28",
+                "quantity": 2,
+                "sku": "SKU-0028"
+              },
+              {
+                "amount": "221.31",
+                "quantity": 3,
+                "sku": "SKU-0029"
+              },
+              {
+                "amount": "443.60",
+                "quantity": 4,
+                "sku": "SKU-0030"
+              },
+              {
+                "amount": "735.15",
+                "quantity": 5,
+                "sku": "SKU-0031"
+              },
+              {
+                "amount": "1104.96",
+                "quantity": 6,
+                "sku": "SKU-0032"
+              },
+              {
+                "amount": "1549.03",
+                "quantity": 7,
+                "sku": "SKU-0033"
+              },
+              {
+                "amount": "2067.36",
+                "quantity": 8,
+                "sku": "SKU-0034"
+              },
+              {
+                "amount": "2659.95",
+                "quantity": 9,
+                "sku": "SKU-0035"
+              },
+              {
+                "amount": "332.68",
+                "quantity": 1,
+                "sku": "SKU-0036"
+              },
+              {
+                "amount": "739.62",
+                "quantity": 2,
+                "sku": "SKU-0037"
+              },
+              {
+                "amount": "1220.82",
+                "quantity": 3,
+                "sku": "SKU-0038"
+              },
+              {
+                "amount": "1772.28",
+                "quantity": 4,
+                "sku": "SKU-0039"
+              },
+              {
+                "amount": "2401.00",
+                "quantity": 5,
+                "sku": "SKU-0040"
+              },
+              {
+                "amount": "103.98",
+                "quantity": 6,
+                "sku": "SKU-0041"
+              },
+              {
+                "amount": "381.22",
+                "quantity": 7,
+                "sku": "SKU-0042"
+              },
+              {
+                "amount": "732.72",
+                "quantity": 8,
+                "sku": "SKU-0043"
+              },
+              {
+                "amount": "1158.48",
+                "quantity": 9,
+                "sku": "SKU-0044"
+              },
+              {
+                "amount": "165.85",
+                "quantity": 1,
+                "sku": "SKU-0045"
+              },
+              {
+                "amount": "405.96",
+                "quantity": 2,
+                "sku": "SKU-0046"
+              },
+              {
+                "amount": "717.33",
+                "quantity": 3,
+                "sku": "SKU-0047"
+              },
+              {
+                "amount": "1104.96",
+                "quantity": 4,
+                "sku": "SKU-0048"
+              },
+              {
+                "amount": "1566.85",
+                "quantity": 5,
+                "sku": "SKU-0049"
+              },
+              {
+                "amount": "2103.00",
+                "quantity": 6,
+                "sku": "SKU-0050"
+              },
+              {
+                "amount": "2713.41",
+                "quantity": 7,
+                "sku": "SKU-0051"
+              },
+              {
+                "amount": "3398.08",
+                "quantity": 8,
+                "sku": "SKU-0052"
+              },
+              {
+                "amount": "4157.01",
+                "quantity": 9,
+                "sku": "SKU-0053"
+              },
+              {
+                "amount": "498.02",
+                "quantity": 1,
+                "sku": "SKU-0054"
+              },
+              {
+                "amount": "70.30",
+                "quantity": 2,
+                "sku": "SKU-0055"
+              },
+              {
+                "amount": "216.84",
+                "quantity": 3,
+                "sku": "SKU-0056"
+              },
+              {
+                "amount": "437.64",
+                "quantity": 4,
+                "sku": "SKU-0057"
+              },
+              {
+                "amount": "732.70",
+                "quantity": 5,
+                "sku": "SKU-0058"
+              },
+              {
+                "amount": "1102.02",
+                "quantity": 6,
+                "sku": "SKU-0059"
+              },
+              {
+                "amount": "1545.60",
+                "quantity": 7,
+                "sku": "SKU-0060"
+              },
+              {
+                "amount": "2063.44",
+                "quantity": 8,
+                "sku": "SKU-0061"
+              },
+              {
+                "amount": "2646.54",
+                "quantity": 9,
+                "sku": "SKU-0062"
+              },
+              {
+                "amount": "331.19",
+                "quantity": 1,
+                "sku": "SKU-0063"
+              },
+              {
+                "amount": "736.64",
+                "quantity": 2,
+                "sku": "SKU-0064"
+              },
+              {
+                "amount": "1216.35",
+                "quantity": 3,
+                "sku": "SKU-0065"
+              },
+              {
+                "amount": "1770.32",
+                "quantity": 4,
+                "sku": "SKU-0066"
+              },
+              {
+                "amount": "2398.55",
+                "quantity": 5,
+                "sku": "SKU-0067"
+              },
+              {
+                "amount": "101.04",
+                "quantity": 6,
+                "sku": "SKU-0068"
+              },
+              {
+                "amount": "377.79",
+                "quantity": 7,
+                "sku": "SKU-0069"
+              },
+              {
+                "amount": "720.80",
+                "quantity": 8,
+                "sku": "SKU-0070"
+              },
+              {
+                "amount": "1145.07",
+                "quantity": 9,
+                "sku": "SKU-0071"
+              },
+              {
+                "amount": "164.36",
+                "quantity": 1,
+                "sku": "SKU-0072"
+              },
+              {
+                "amount": "402.98",
+                "quantity": 2,
+                "sku": "SKU-0073"
+              },
+              {
+                "amount": "715.86",
+                "quantity": 3,
+                "sku": "SKU-0074"
+              },
+              {
+                "amount": "1103.00",
+                "quantity": 4,
+                "sku": "SKU-0075"
+              },
+              {
+                "amount": "1564.40",
+                "quantity": 5,
+                "sku": "SKU-0076"
+              },
+              {
+                "amount": "2094.06",
+                "quantity": 6,
+                "sku": "SKU-0077"
+              },
+              {
+                "amount": "2702.98",
+                "quantity": 7,
+                "sku": "SKU-0078"
+              },
+              {
+                "amount": "3386.16",
+                "quantity": 8,
+                "sku": "SKU-0079"
+              },
+              {
+                "amount": "4143.60",
+                "quantity": 9,
+                "sku": "SKU-0080"
+              },
+              {
+                "amount": "497.53",
+                "quantity": 1,
+                "sku": "SKU-0081"
+              },
+              {
+                "amount": "69.32",
+                "quantity": 2,
+                "sku": "SKU-0082"
+              },
+              {
+                "amount": "215.37",
+                "quantity": 3,
+                "sku": "SKU-0083"
+              },
+              {
+                "amount": "435.68",
+                "quantity": 4,
+                "sku": "SKU-0084"
+              },
+              {
+                "amount": "725.25",
+                "quantity": 5,
+                "sku": "SKU-0085"
+              },
+              {
+                "amount": "1093.08",
+                "quantity": 6,
+                "sku": "SKU-0086"
+              },
+              {
+                "amount": "1535.17",
+                "quantity": 7,
+                "sku": "SKU-0087"
+              },
+              {
+                "amount": "2051.52",
+                "quantity": 8,
+                "sku": "SKU-0088"
+              },
+              {
+                "amount": "2642.13",
+                "quantity": 9,
+                "sku": "SKU-0089"
+              },
+              {
+                "amount": "330.70",
+                "quantity": 1,
+                "sku": "SKU-0090"
+              },
+              {
+                "amount": "735.66",
+                "quantity": 2,
+                "sku": "SKU-0091"
+              },
+              {
+                "amount": "1214.88",
+                "quantity": 3,
+                "sku": "SKU-0092"
+              },
+              {
+                "amount": "1764.36",
+                "quantity": 4,
+                "sku": "SKU-0093"
+              },
+              {
+                "amount": "2391.10",
+                "quantity": 5,
+                "sku": "SKU-0094"
+              },
+              {
+                "amount": "92.10",
+                "quantity": 6,
+                "sku": "SKU-0095"
+              },
+              {
+                "amount": "367.36",
+                "quantity": 7,
+                "sku": "SKU-0096"
+              },
+              {
+                "amount": "716.88",
+                "quantity": 8,
+                "sku": "SKU-0097"
+              },
+              {
+                "amount": "1140.66",
+                "quantity": 9,
+                "sku": "SKU-0098"
+              },
+              {
+                "amount": "163.87",
+                "quantity": 1,
+                "sku": "SKU-0099"
+              }
+            ],
+            "subtotal": "121261.82"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 1613,
+        "median": 1513,
+        "min": 1332,
+        "n": 9,
+        "p95": 1613
+      },
+      "ok": true
+    },
+    "static quote-order quote": {
+      "children": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "clientMs": {
+        "max": 135.85,
+        "median": 61.91,
+        "min": 33.56,
+        "n": 9,
+        "p95": 135.85
+      },
+      "first": {
+        "child": null,
+        "childMs": null,
+        "clientMs": 47.7,
+        "hostMs": 0,
+        "ok": true,
+        "status": 200,
+        "value": {
+          "ok": true,
+          "value": {
+            "discount": "9.00",
+            "lineCount": 2,
+            "shipping": "7.50",
+            "subtotal": "179.97",
+            "tax": "14.11",
+            "topSku": "B-2",
+            "total": "192.58"
+          }
+        }
+      },
+      "hostMs": {
+        "max": 0,
+        "median": 0,
+        "min": 0,
+        "n": 9,
+        "p95": 0
+      },
+      "ok": true
+    }
+  },
+  "section": "jspi",
+  "setup": {
+    "ok": true,
+    "products": 100
+  },
+  "version": "r4-deployed/1"
+}

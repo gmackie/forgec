@@ -430,7 +430,7 @@ const sections: Record<string, () => Promise<void>> = {
 
   /** Child eviction with the parent alive: one request holds the probe isolate while a child idles. */
   async "eviction-hold"() {
-    const gaps = process.env["GAPS"] ?? "0,10,30,60,120,300";
+    const gaps = process.env["GAPS"] ?? "0,10,30,60,120"; // under undici's 300 s header timeout
     const r = await call(PROBE, "GET", `/loader/hold?id=hold-${Date.now().toString(36)}&pad=100000&gaps=${gaps}`);
     save("eviction-hold", { status: r.status, clientMs: r.ms, probeIsolate: r.h["x-lab-isolate"], ...r.json });
   },

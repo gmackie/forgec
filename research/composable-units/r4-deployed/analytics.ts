@@ -1,6 +1,6 @@
 // FORG-38: what the lab cost and how much CPU each Worker used, from Cloudflare's GraphQL analytics.
 //
-//   CLOUDFLARE_API_TOKEN=$(npx wrangler auth token | tail -1) ACCOUNT=<id> FROM=<iso> TO=<iso> \
+//   CLOUDFLARE_API_TOKEN=$(npx wrangler auth token | tail -1) ACCOUNT=<id> FROM=<iso> TO=<iso> D1_IDS=<id,id> \
 //     node research/composable-units/r4-deployed/analytics.ts
 //
 // Writes results/analytics.json: per lab Worker and status, requests, subrequests, errors, CPU and wall
@@ -27,15 +27,20 @@ async function gql(query: string, variables: Record<string, unknown>) {
 }
 
 const scripts = Object.values(WORKERS) as string[];
-const workers = await gql(
-  `query($a: String!, $s: Time!, $e: Time!, $names: [String!]) { viewer { accounts(filter: {accountTag: $a}) {
-    workersInvocationsAdaptive(limit: 200, filter: {datetime_geq: $s, datetime_leq: $e, scriptName_in: $names}) {
-      dimensions { scriptName status }
-      sum { requests subrequests errors cpuTimeUs wallTime }
-      quantiles { cpuTimeP50 cpuTimeP99 wallTimeP50 wallTimeP99 }
-    } } } }`,
-  { a: account, s: from, e: to, names: scripts },
-);
+// One query per script: with `scriptName_in`, analytics group new scripts under "__unknown__".
+const rows: Array<{ dimensions: { scriptName: string; status: string }; sum: any; quantiles: any }> = [];
+for (const name of scripts) {
+  const r = await gql(
+    `query($a: String!, $s: Time!, $e: Time!, $n: String!) { viewer { accounts(filter: {accountTag: $a}) {
+      workersInvocationsAdaptive(limit: 50, filter: {datetime_geq: $s, datetime_leq: $e, scriptName: $n}) {
+        dimensions { scriptName status }
+        sum { requests subrequests errors cpuTimeUs wallTime }
+        quantiles { cpuTimeP50 cpuTimeP99 wallTimeP50 wallTimeP99 }
+      } } } }`,
+    { a: account, s: from, e: to, n: name },
+  );
+  rows.push(...r.workersInvocationsAdaptive);
+}
 const day = (iso: string) => iso.slice(0, 10);
 const dynamic = await gql(
   `query($a: String!, $s: Date!, $e: Date!) { viewer { accounts(filter: {accountTag: $a}) {
@@ -57,7 +62,6 @@ try {
   d1 = { error: String(e).slice(0, 300) };
 }
 
-const rows = workers.workersInvocationsAdaptive as Array<{ dimensions: { scriptName: string; status: string }; sum: any; quantiles: any }>;
 const total = rows.reduce((t, r) => ({ requests: t.requests + r.sum.requests, subrequests: t.subrequests + r.sum.subrequests, errors: t.errors + r.sum.errors, cpuMs: t.cpuMs + r.sum.cpuTimeUs / 1000 }), { requests: 0, subrequests: 0, errors: 0, cpuMs: 0 });
 const dyn = dynamic.workersInvocationsByOwnerAndScriptGroups as Array<{ dimensions: { date: string }; sum: { requests: number; cpuTimeUs: number }; uniq: { distinctDynamicWorkerCount: number } }>;
 const dynTotal = { requests: dyn.reduce((n, d) => n + d.sum.requests, 0), cpuMs: dyn.reduce((n, d) => n + d.sum.cpuTimeUs / 1000, 0), distinctDynamicWorkerDays: dyn.reduce((n, d) => n + d.uniq.distinctDynamicWorkerCount, 0) };
@@ -88,7 +92,7 @@ writeFileSync(
     workers: rows.map((r) => ({ script: r.dimensions.scriptName, status: r.dimensions.status, ...r.sum, cpuMs: r.sum.cpuTimeUs / 1000, quantilesUs: r.quantiles })).sort((a, b) => (a.script + a.status < b.script + b.status ? -1 : 1)),
     total,
     dynamicWorkers: { byDay: dyn, total: dynTotal, note: "account-wide: no other Worker on the account used the loader before this run (0 rows for 2026-10-01..25 before the lab deployed)" },
-    d1,
+    d1: Array.isArray(d1) && process.env["D1_IDS"] ? (d1 as Array<{ dimensions: { databaseId: string } }>).filter((x) => process.env["D1_IDS"]!.split(",").includes(x.dimensions.databaseId)) : d1,
     cost,
   }),
 );

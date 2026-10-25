@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-25T16:35:28.913Z",
+  "issue": "FORG-38",
+  "measured": "deployed",
+  "n": 120,
+  "padBytes": 100000,
+  "rounds": [
+    {
+      "cold": 120,
+      "coldIds": "120 ids",
+      "coldMs": {
+        "max": 562,
+        "median": 20,
+        "min": 11,
+        "n": 120,
+        "p95": 48
+      },
+      "errors": [],
+      "pass": 0,
+      "probeIsolates": [
+        "997d8947"
+      ],
+      "warmMs": {
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "p95": null
+      }
+    },
+    {
+      "cold": 0,
+      "coldIds": [],
+      "coldMs": {
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "p95": null
+      },
+      "errors": [],
+      "pass": 1,
+      "probeIsolates": [
+        "997d8947"
+      ],
+      "warmMs": {
+        "max": 71,
+        "median": 3,
+        "min": 1,
+        "n": 120,
+        "p95": 6
+      }
+    }
+  ],
+  "run": null,
+  "section": "evict-many",
+  "version": "r4-deployed/1"
+}
