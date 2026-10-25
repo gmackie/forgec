@@ -7,6 +7,13 @@
 //   - the realtime Durable Object (it holds the sockets and runs the session protocol);
 //   - the realtime upgrade route (it returns a 101 with a WebSocket, which cannot cross RPC);
 //   - the dispatch owner (it sweeps the outbox for everyone: FORG-29/33 dispatch, unchanged).
+// And, because a shared request may make at most INVOCATION_BUDGET cross-script calls (script.ts), the
+// entry points whose work per invocation has no bound the link can see:
+//   - workflow start and signal routes (rooted at a workflow unit: they advance the instance inline,
+//     up to 33 calls in the conformance suite);
+//   - queue consumers (one invocation per batch of up to max_batch_size messages);
+//   - crons (one invocation sweeps every due schedule of every tenant).
+// Anything else that exceeds the budget at request time fails closed with RpcBudgetExceeded.
 import { createHash } from "node:crypto";
 import type { ManifestEntryPoint } from "../manifest.ts";
 import type { HostConfig } from "../host.ts";
@@ -17,11 +24,14 @@ import { RUNTIME_BINDING } from "./protocol.ts";
 export { RUNTIME_BINDING };
 
 /** Why a group keeps the in-process runtime, or null when it can use the shared runtime Worker. */
-export function inProcessReason(eps: ManifestEntryPoint[], dispatchOwner: boolean): string | null {
+export function inProcessReason(eps: ManifestEntryPoint[], dispatchOwner: boolean, roleOf: (unit: string) => string | undefined = () => undefined): string | null {
   if (dispatchOwner) return "dispatch owner";
   if (eps.some((e) => e.kind === "workflow")) return "workflow class";
   if (eps.some((e) => e.kind === "durable-object")) return "realtime object";
   if (eps.some((e) => (e as { runtimeService?: string }).runtimeService === "realtime-upgrade")) return "websocket upgrade";
+  if (eps.some((e) => e.kind === "http-route" && e.root && roleOf(e.root) === "workflow")) return "workflow start or signal";
+  if (eps.some((e) => e.kind === "queue-consumer")) return "queue consumer";
+  if (eps.some((e) => e.kind === "cron")) return "cron";
   return null;
 }
 

@@ -46,8 +46,13 @@ implementing `GroupingStrategy` and registering it in `STRATEGIES`. Cloudflare's
 The runtime Worker (`<package>-runtime`) carries the engine, every feature and Effect, and has no
 bindings and no app code, so it can only use what the calling script hands it, and an app edit never
 re-uploads it. Function units and externals run in the script and reach the engine back over RPC.
-Four groups keep the in-process host: the Workflows class, the realtime Durable Object, the WebSocket
-upgrade route and the dispatch owner (`link.json` records `runtime.mode` and the reason). Results:
+A shared request may make at most 29 cross-script calls, counted conservatively: the call that would
+be the 30th is refused, and the request fails closed with `RpcBudgetExceeded` (Workers allows 32
+invocations per request; `InvocationBudget` in `src/shared/script.ts`). Eight groups keep the
+in-process host. Four cannot leave their isolate: the Workflows class, the realtime Durable Object, the
+WebSocket upgrade route and the dispatch owner. Four have work per invocation the link cannot bound:
+workflow start and signal routes, queue consumers and crons. `link.json` records `runtime.mode` and the
+reason. Results:
 `research/composable-units/r3-runtime-cost/`.
 
 `src/local.ts` serves linked output in workerd through Miniflare, for tests and the research run.

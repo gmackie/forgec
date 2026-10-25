@@ -25,7 +25,7 @@
       "name": "whole-app",
       "describe": "today's Worker: deploy/cloudflare/worker.ts with the whole app.json",
       "scripts": 1,
-      "startupMs": 1004,
+      "startupMs": 990,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -129,7 +129,7 @@
       "name": "whole-app-repeat",
       "describe": "A/A control: today's Worker again, fresh instance; its differences from whole-app are run-to-run nondeterminism",
       "scripts": 1,
-      "startupMs": 852,
+      "startupMs": 749,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -233,7 +233,7 @@
       "name": "single",
       "describe": "linker A, strategy single: one script rebuilt from the manifest",
       "scripts": 1,
-      "startupMs": 923,
+      "startupMs": 765,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -337,7 +337,7 @@
       "name": "per-entry-point",
       "describe": "linker A, strategy per-entry-point, sliced app.json, router + dispatch owner",
       "scripts": 88,
-      "startupMs": 6164,
+      "startupMs": 5573,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -441,7 +441,7 @@
       "name": "per-entry-point-full",
       "describe": "control: per-entry-point with the whole app.json in every script (separates splitting from slicing)",
       "scripts": 88,
-      "startupMs": 9485,
+      "startupMs": 7971,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -545,7 +545,7 @@
       "name": "per-entry-point-shared",
       "describe": "linker A, strategy per-entry-point-shared: per-entry-point scripts without the engine, one shared runtime Worker over service-binding RPC",
       "scripts": 89,
-      "startupMs": 3296,
+      "startupMs": 3272,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -651,13 +651,12 @@
       "a": "whole-app",
       "b": "whole-app-repeat",
       "compared": 221,
-      "explained": 100,
+      "explained": 97,
       "explainedKeys": [
         "at",
         "freshUntil",
         "generated-id-order",
         "next",
-        "race",
         "requestId"
       ],
       "runToRun": 100,
@@ -667,13 +666,12 @@
       "a": "whole-app",
       "b": "single",
       "compared": 221,
-      "explained": 100,
+      "explained": 89,
       "explainedKeys": [
         "at",
         "freshUntil",
         "generated-id-order",
         "next",
-        "race",
         "requestId"
       ],
       "runToRun": 100,
@@ -698,13 +696,12 @@
       "a": "whole-app",
       "b": "per-entry-point-full",
       "compared": 221,
-      "explained": 100,
+      "explained": 101,
       "explainedKeys": [
         "at",
         "freshUntil",
         "generated-id-order",
         "next",
-        "race",
         "requestId"
       ],
       "runToRun": 100,
@@ -714,12 +711,13 @@
       "a": "whole-app",
       "b": "per-entry-point-shared",
       "compared": 221,
-      "explained": 97,
+      "explained": 101,
       "explainedKeys": [
         "at",
         "freshUntil",
         "generated-id-order",
         "next",
+        "race",
         "requestId"
       ],
       "runToRun": 100,

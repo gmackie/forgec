@@ -15,7 +15,10 @@ import { seal, writeSealed, type UnitPlan } from "@forgegraph/units";
 import { link, readJsonc } from "../src/index.ts";
 import type { HostConfig } from "../src/host.ts";
 import { sharedRuntime } from "../src/shared/runtime.ts";
-import { packedShared } from "../src/shared/script.ts";
+import { INVOCATION_BUDGET, packedShared } from "../src/shared/script.ts";
+import { unitHost } from "../src/shared/units.ts";
+import { Effect } from "effect";
+import type { FunctionImpl } from "@forgegraph/runtime";
 import { sliceHashOf } from "../src/shared/link.ts";
 
 const root = resolve(import.meta.dirname, "../../..");
@@ -55,15 +58,19 @@ describe("per-entry-point-shared over examples/acme", async () => {
     expect(shared.router?.table).toEqual(per.router?.table);
   });
 
-  it("keeps the engine in process only where the platform or dispatch needs it", () => {
+  it("keeps the engine in process where the platform or dispatch needs it, or the invocation budget cannot be bounded", () => {
     const inProcess = shared.scripts.filter((s) => s.runtime?.mode === "in-process").map((s) => [s.members[0], s.runtime!.reason]);
     expect(inProcess.sort()).toEqual([
+      ["@acme/commerce/_/NightlyReconciliation", "cron"],
       ["@acme/commerce/_/ProcessOrder", "workflow class"],
       ["ForgeRealtime", "realtime object"],
       ["GET /v1/live/orders", "websocket upgrade"],
+      ["POST /v1/orders/{order}/process", "workflow start or signal"],
+      ["POST /v1/workflows/process-order/signals/{message}", "workflow start or signal"],
       ["forge:sweep", "dispatch owner"],
+      ["fulfill-order", "queue consumer"],
     ]);
-    expect(shared.scripts.filter((s) => s.runtime?.mode === "shared")).toHaveLength(shared.scripts.length - 4);
+    expect(shared.scripts.filter((s) => s.runtime?.mode === "shared")).toHaveLength(shared.scripts.length - 8);
     expect(per.scripts.every((s) => s.runtime === undefined) && per.runtime === undefined).toBe(true);
   });
 
@@ -78,6 +85,13 @@ describe("per-entry-point-shared over examples/acme", async () => {
     expect(submit.linkerBindings.map((b) => b.name).sort()).toEqual(["FORGE_DISPATCH", "FORGE_RUNTIME"]);
   });
 
+  it("coexists with FORG-43's advance endpoint: only in-process scripts (the workflow class) serve it", async () => {
+    const dir = join(out, "shared-advance");
+    const l = await link({ app: acme.app, manifestDir: acme.units, environment: acme.env, strategy: "per-entry-point-shared", out: dir, advance: true, bundle: false });
+    const advancing = l.scripts.filter((s) => readFileSync(join(dir, s.name, "entry.mjs"), "utf8").includes('"advance":true'));
+    expect(advancing.map((s) => [s.members[0], s.runtime])).toEqual([["@acme/commerce/_/ProcessOrder", { mode: "in-process", reason: "workflow class" }]]);
+  });
+
   it("emits one runtime Worker with no bindings and no app code; every shared script binds it", () => {
     const rt = shared.runtime!;
     const cfg = readJsonc(join(out, "per-entry-point-shared", rt.name, "wrangler.jsonc")) as Record<string, unknown>;
@@ -87,7 +101,7 @@ describe("per-entry-point-shared over examples/acme", async () => {
     expect(rt.bytes!.raw).toBeGreaterThan(200_000);
     expect(Object.keys(rt.composition!).sort()).toEqual(["effect", "entry", "host", "runtime"]);
     const viaRuntime = shared.scripts.filter((s) => s.linkerBindings.some((b) => b.name === "FORGE_RUNTIME" && b.script === rt.name));
-    expect(viaRuntime).toHaveLength(shared.scripts.length - 4);
+    expect(viaRuntime).toHaveLength(shared.scripts.length - 8);
   });
 });
 
@@ -201,5 +215,74 @@ describe("shared host: narrowing stays per script (FORG-34 through the runtime W
     const runtime = new Runtime();
     const meta = { script: "s", sliceHash: "0".repeat(64), features: [], objects: false, bindings: [], withheld: [], sweeps: { outbox: false, schedules: false, workflows: false }, functions: [], externals: [] };
     await expect(runtime.serve(new Request("https://forge.test/"), { slice: async () => bundle }, meta, {})).rejects.toThrow(/does not match its hash/);
+  });
+});
+
+// --- The invocation budget (FORG-42 follow-up) ---------------------------------------------------
+
+describe("shared host: no request exceeds the invocation budget unnoticed", () => {
+  const cfg = { ...config(["DB", "CURSOR_SECRET", "FORGE_AUTH"], []), routes: null };
+  const meta = { script: cfg.script, sliceHash: "x", features: [], objects: false, bindings: [{ name: "DB", type: "d1" }, { name: "CURSOR_SECRET", type: "secret" }, { name: "FORGE_AUTH", type: "var" }], withheld: [], sweeps: cfg.sweeps };
+  const h = { "x-forge-tenant": "t1", "x-forge-actor": "a" };
+  const counting = () => {
+    const db = d1();
+    let statements = 0;
+    return { db: { ...db, prepare: (sql: string) => ((statements += 1), db.prepare(sql)) }, statements: () => statements };
+  };
+
+  it("refuses the 30th cross-script call and fails closed with RpcBudgetExceeded, never the runtime's answer", async () => {
+    const { db, statements } = counting();
+    let refusedAt: string | null = null;
+    // A runtime that keeps reading until a callback is refused, then swallows the refusal and answers 200.
+    const runtime = { serve: async (_r: Request, caps: { d1: (...a: unknown[]) => Promise<unknown> }) => {
+      for (let i = 0; i < 100; i++) await caps.d1("DB", "first", "SELECT 1 AS x", []).catch((e: Error) => { refusedAt ??= e.message; i = 100; });
+      return { response: new Response("{}", { status: 200 }), dispatch: [] };
+    } };
+    const { worker } = packedShared(Rpc, bundle, null, cfg, meta);
+    const res = await worker.fetch(new Request("https://forge.test/v1/customers/x", { headers: h }), { DB: db, CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime }, { waitUntil: (p) => void p.catch(() => undefined) });
+    expect(res.status).toBe(500);
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body).toMatchObject({ code: "RpcBudgetExceeded", retryable: false });
+    expect(String(body["detail"])).toMatch(/Nothing was written/);
+    // 29 = the router's call + the schedule-index hand-off + the call to the runtime + 26 callbacks.
+    expect(statements()).toBe(INVOCATION_BUDGET - 3);
+    expect(refusedAt).toMatch(/callback d1 would be cross-script call 30 of this request/);
+  });
+
+  it("counts a unit's deps calls back into the engine, and reserves the post-commit hand-off of a write", async () => {
+    let depsCalls = 0;
+    const loop: FunctionImpl = { id: "loop", body: (deps) => Effect.gen(function* () {
+      for (let i = 0; i < 100; i++) yield* deps.resources["Customer"]!.get(`c${i}`);
+      return {};
+    }) };
+    const runtime = { serve: async (_r: Request, caps: { invoke: (...a: unknown[]) => Promise<unknown> }) => {
+      await caps.invoke("loop", {}, {}, { call: async () => ((depsCalls += 1), { ok: true, value: {} }) }, { resources: ["Customer"], transitions: {} }).catch(() => undefined);
+      return { response: new Response("{}", { status: 201 }), dispatch: ["t1"] };
+    } };
+    const forwards: string[] = [];
+    const { worker } = packedShared(Rpc, bundle, unitHost([loop], {}), cfg, meta);
+    const env = { DB: d1(), CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime, FORGE_DISPATCH: { fetch: async (u: string, init: RequestInit) => (forwards.push(String(init.body)), new Response(null, { status: 204 })) } };
+    const res = await worker.fetch(new Request("https://forge.test/v1/loop", { method: "POST", headers: { ...h, "x-forge-tenant": "t2" }, body: "{}" }), env, { waitUntil: (p) => void p.catch(() => undefined) });
+    expect(res.status).toBe(500);
+    expect(((await res.json()) as { code: string }).code).toBe("RpcBudgetExceeded");
+    // 29 = router + schedule-index hand-off + post-commit reserve + runtime call + the invoke callback + 24 deps calls.
+    expect(depsCalls).toBe(INVOCATION_BUDGET - 5);
+    expect(forwards).toEqual([JSON.stringify({ tenant: "t2", sweep: false })]); // no post-commit hand-off for a failed request
+  });
+
+  it("a queue batch over budget throws, so every message is retried", async () => {
+    const runtime = { queue: async (_q: string, _b: unknown[], caps: { d1: (...a: unknown[]) => Promise<unknown> }) => {
+      for (let i = 0; i < 40; i++) await caps.d1("DB", "first", "SELECT 1", []).catch(() => undefined);
+      return ["ack"];
+    } };
+    const { worker } = packedShared(Rpc, bundle, null, cfg, meta);
+    const acked: string[] = [];
+    await expect(worker.queue({ queue: "q", messages: [{ body: 1, ack: () => acked.push("ack"), retry: () => acked.push("retry") }] }, { DB: d1(), FORGE_RUNTIME: runtime })).rejects.toThrow(/RpcBudgetExceeded|limit 29/);
+    expect(acked).toEqual([]);
+  });
+
+  it("a real request stays well inside the budget", async () => {
+    const r = await finalizeWithoutBytes(config(["DB", "BLOBS", "CURSOR_SECRET", "FORGE_AUTH"], []));
+    expect(r.status).toBe(422);
   });
 });

@@ -37,6 +37,55 @@ function refused(script: string, method: string, path: string): Response {
   return new Response(JSON.stringify(body), { status: 404, headers: { "content-type": "application/problem+json" } });
 }
 
+/**
+ * Workers allows a request at most 32 Worker invocations, and counts every service-binding call
+ * (developers.cloudflare.com/workers/runtime-apis/bindings/service-bindings/). Whether a call on a stub
+ * received as an RPC parameter counts is not documented, so a shared script assumes that every call
+ * that crosses a script boundary counts, and keeps 3 in hand. It counts:
+ *   - the invocation that started the request (the router's call, a queue batch, a cron): 1;
+ *   - its call to the runtime Worker: 1;
+ *   - every callback the runtime makes into this script, and every `deps` call a unit here makes back
+ *     into the engine: 1 each (a Durable Object fetch: 2, the callback and the object);
+ *   - every hand-off to the dispatch owner: 1 each, reserved before the runtime is called.
+ * The call that would be the 30th is refused, and the request fails closed with `RpcBudgetExceeded`.
+ * Every cross-script call in a shared request goes through this budget: the runtime Worker has no
+ * bindings, so it can reach nothing but this script.
+ */
+export const INVOCATION_BUDGET = 29;
+
+export class BudgetExceeded extends Error {
+  override readonly name = "RpcBudgetExceeded";
+}
+
+/** The cross-script calls of one request (see INVOCATION_BUDGET). */
+export class InvocationBudget {
+  used = 1;
+  refused: string | null = null;
+  /** A D1 batch or run completed before a refusal: a write may have committed. */
+  wrote = false;
+  readonly script: string;
+  readonly limit: number;
+  constructor(script: string, limit = INVOCATION_BUDGET) {
+    this.script = script;
+    this.limit = limit;
+  }
+  spend(what: string, n = 1): void {
+    if (this.used + n > this.limit) {
+      this.refused ??= what;
+      throw new BudgetExceeded(`${this.script}: ${what} would be cross-script call ${this.used + n} of this request; a shared script allows ${this.limit} (Workers allows 32 invocations per request)`);
+    }
+    this.used += n;
+  }
+}
+
+/** What a request answers when its budget refused a call: never the runtime's (partial) answer. */
+function overBudget(b: InvocationBudget): Response {
+  const detail = `${b.script} refused ${b.refused} after ${b.used} cross-script calls (limit ${b.limit}, Workers allows 32 invocations per request).${b.wrote ? " A write had already committed." : " Nothing was written."} Link this entry point in process.`;
+  console.error(`forge: RpcBudgetExceeded ${detail}`);
+  const body = { type: "https://forge.dev/errors/rpc-budget-exceeded", title: "RPC budget exceeded", status: 500, code: "RpcBudgetExceeded", detail, retryable: false };
+  return new Response(JSON.stringify(body), { status: 500, headers: { "content-type": "application/problem+json" } });
+}
+
 const plain = (r: { results?: unknown[]; meta?: { changes?: number } }) => ({ results: r.results ?? [], meta: { changes: r.meta?.changes ?? 0 } });
 
 export function packedShared(Rpc: RpcTargetClass, app: unknown, units: UnitHost | null, config: HostConfig, linked: Omit<SharedMeta, "functions" | "externals">) {
@@ -48,18 +97,22 @@ export function packedShared(Rpc: RpcTargetClass, app: unknown, units: UnitHost 
     return env[name] as T;
   };
 
+  /** Each request's budget, kept off the RpcTarget so the runtime cannot see or reset it. */
+  const budgets = new WeakMap<object, InvocationBudget>();
   class Capabilities extends Rpc {
     #env: Env;
-    /** Calls the runtime made back into this script during one request (research: `FORGE_RPC_TRACE`). */
-    calls = 0;
-    constructor(env: Env) {
+    #budget: InvocationBudget;
+    constructor(env: Env, budget: InvocationBudget) {
       super();
       this.#env = env;
+      this.#budget = budget;
+      budgets.set(this, budget);
     }
     async slice() {
       return app;
     }
     async d1(binding: string, op: "first" | "all" | "run", sql: string, params: unknown[]) {
+      if (op === "run") this.#budget.wrote = true;
       const stmt = own<{ prepare(s: string): { bind(...v: unknown[]): { first(): Promise<unknown>; all(): Promise<{ results: unknown[] }>; run(): Promise<{ meta: { changes: number } }> } } }>(this.#env, binding, "d1").prepare(sql).bind(...params);
       if (op === "first") return stmt.first();
       if (op === "all") return { results: (await stmt.all()).results };
@@ -67,6 +120,7 @@ export function packedShared(Rpc: RpcTargetClass, app: unknown, units: UnitHost 
     }
     async d1Batch(binding: string, statements: Array<{ sql: string; params: unknown[] }>) {
       const db = own<{ prepare(s: string): { bind(...v: unknown[]): unknown }; batch(s: unknown[]): Promise<Array<{ results?: unknown[]; meta?: { changes?: number } }>> }>(this.#env, binding, "d1");
+      this.#budget.wrote = true;
       return (await db.batch(statements.map((s) => db.prepare(s.sql).bind(...s.params)))).map(plain);
     }
     async r2(binding: string, op: "head" | "get" | "put" | "delete", key: string, value?: unknown, options?: unknown) {
@@ -90,12 +144,25 @@ export function packedShared(Rpc: RpcTargetClass, app: unknown, units: UnitHost 
       await (await wf.get(id)).sendEvent(event);
     }
     async durable(binding: string, name: string, request: Request) {
+      this.#budget.spend(`a Durable Object fetch on ${binding}`); // the object is an invocation of its own
       const ns = own<{ idFromName(n: string): unknown; get(id: unknown): Fetcher }>(this.#env, binding, "durable-object");
       return ns.get(ns.idFromName(name)).fetch(request);
     }
     async invoke(id: string, input: unknown, ctx: unknown, deps: RemoteDeps, shape: DepsShape): Promise<Outcome> {
       if (!units) return { ok: false, error: { code: "Internal", detail: `${config.script} links no unit ${id}` } };
-      return units.invoke(id, input, ctx, deps, shape);
+      // A unit's calls back into the engine cross scripts too.
+      const budget = this.#budget;
+      const counted: RemoteDeps = {
+        call: (path, args) => {
+          try {
+            budget.spend(`deps.${path.join(".")}`);
+          } catch (e) {
+            return Promise.reject(e);
+          }
+          return deps.call(path, args);
+        },
+      };
+      return units.invoke(id, input, ctx, counted, shape);
     }
     async external(id: string, input: unknown, ctx: unknown) {
       if (!units) throw new Error(`${config.script} links no external ${id}`);
@@ -103,13 +170,35 @@ export function packedShared(Rpc: RpcTargetClass, app: unknown, units: UnitHost 
     }
   }
 
+  // Every callback the runtime makes into this script spends one call of the request's budget.
   for (const k of Object.getOwnPropertyNames(Capabilities.prototype).filter((n) => n !== "constructor")) {
     const f = (Capabilities.prototype as unknown as Record<string, (...a: unknown[]) => unknown>)[k]!;
-    Object.defineProperty(Capabilities.prototype, k, { value: function (this: Capabilities, ...a: unknown[]) { this.calls++; return f.apply(this, a); } });
+    Object.defineProperty(Capabilities.prototype, k, {
+      value: function (this: Capabilities, ...a: unknown[]) {
+        try {
+          budgets.get(this)!.spend(`callback ${k}`);
+        } catch (e) {
+          return Promise.reject(e); // as it would arrive over RPC
+        }
+        return f.apply(this, a);
+      },
+    });
   }
-  /** Research only: with `FORGE_RPC_TRACE` set in the raw env (never a manifest binding), log RPC calls per request. */
-  const trace = (env: Env, what: string, caps: Capabilities) => {
-    if (env["FORGE_RPC_TRACE"]) console.log(`forge-rpc ${JSON.stringify({ script: config.script, what, callbacks: caps.calls, invocations: 1 })}`);
+  /** Research only: with `FORGE_RPC_TRACE` set in the raw env (never a manifest binding), log the calls of each request. */
+  const trace = (env: Env, what: string, b: InvocationBudget) => {
+    if (env["FORGE_RPC_TRACE"]) console.log(`forge-rpc ${JSON.stringify({ script: config.script, what, invocations: b.used, refused: b.refused })}`);
+  };
+  /** Calls the runtime and reports a refused budget as itself, whatever the runtime made of the refusal. */
+  const guarded = async <T>(b: InvocationBudget, call: () => Promise<T>): Promise<T> => {
+    b.spend("the call to the runtime Worker");
+    try {
+      const out = await call();
+      if (b.refused) throw new BudgetExceeded(`${b.script}: refused ${b.refused}`);
+      return out;
+    } catch (e) {
+      if (b.refused) throw new BudgetExceeded(`${b.script}: refused ${b.refused} after ${b.used} cross-script calls (limit ${b.limit})`);
+      throw e;
+    }
   };
   const values = (env: Env) => Object.fromEntries(meta.bindings.filter((b) => (b.type === "secret" || b.type === "var") && typeof env[b.name] === "string").map((b) => [b.name, env[b.name] as string]));
   const runtime = (env: Env) => {
@@ -135,26 +224,50 @@ export function packedShared(Rpc: RpcTargetClass, app: unknown, units: UnitHost 
         const methodMiss = !serves(request.method, url.pathname) && onPath(url.pathname) && !elsewhere(request.method, url.pathname);
         if ((!serves(request.method, url.pathname) && !methodMiss) || denied(request.method, url.pathname)) return refused(config.script, request.method, url.pathname);
         // As host.ts: the dispatch owner records each tenant this isolate sees in the schedule index.
+        const budget = new InvocationBudget(config.script);
         const tenant = request.headers.get("x-forge-tenant");
         if (tenant && !seen.has(tenant)) {
           seen.add(tenant);
+          budget.spend("the schedule-index hand-off");
           ctx.waitUntil(forward(env, tenant, false).catch(() => seen.delete(tenant)));
         }
-        const caps = new Capabilities(env);
-        const { response, dispatch } = await runtime(env).serve(request, caps as never, meta, values(env));
-        trace(env, `${request.method} ${url.pathname}`, caps);
-        for (const t of dispatch) ctx.waitUntil(forward(env, t, true).catch(() => undefined));
-        return response;
+        // A request that may commit hands its tenant to the dispatch owner afterwards: reserve that call.
+        const mayCommit = request.method !== "GET" && request.method !== "HEAD";
+        if (mayCommit) budget.spend("the post-commit hand-off");
+        let result: { response: Response; dispatch: string[] };
+        try {
+          result = await guarded(budget, () => runtime(env).serve(request, new Capabilities(env, budget) as never, meta, values(env)));
+        } catch (e) {
+          trace(env, `${request.method} ${url.pathname}`, budget);
+          if (e instanceof BudgetExceeded) return overBudget(budget);
+          throw e;
+        }
+        trace(env, `${request.method} ${url.pathname}`, budget);
+        // One commit, one tenant: the reserved hand-off. Anything beyond it would be over budget, so it
+        // is left to the cron sweep (the delivery guarantee), and said so.
+        result.dispatch.forEach((t, i) => {
+          if (mayCommit && i === 0) ctx.waitUntil(forward(env, t, true).catch(() => undefined));
+          else console.error(`forge: ${config.script} left the post-commit hand-off for ${t} to the cron sweep (invocation budget)`);
+        });
+        return result.response;
       },
       async scheduled(event: { cron?: string; scheduledTime?: number }, env: Env) {
-        const caps = new Capabilities(env);
-        await runtime(env).scheduled({ ...(event.cron ? { cron: event.cron } : {}), ...(event.scheduledTime ? { scheduledTime: event.scheduledTime } : {}) }, caps as never, meta, values(env));
-        trace(env, "scheduled", caps);
+        const budget = new InvocationBudget(config.script);
+        try {
+          await guarded(budget, () => runtime(env).scheduled({ ...(event.cron ? { cron: event.cron } : {}), ...(event.scheduledTime ? { scheduledTime: event.scheduledTime } : {}) }, new Capabilities(env, budget) as never, meta, values(env)));
+        } finally {
+          trace(env, "scheduled", budget);
+        }
       },
       async queue(batch: { queue: string; messages: Array<{ body: unknown; ack(): void; retry(): void }> }, env: Env) {
-        const caps = new Capabilities(env);
-        const outcomes = await runtime(env).queue(batch.queue, batch.messages.map((m) => m.body), caps as never, meta, values(env));
-        trace(env, `queue ${batch.queue} (${batch.messages.length})`, caps);
+        const budget = new InvocationBudget(config.script);
+        let outcomes: Array<"ack" | "retry">;
+        try {
+          // Over budget, the batch throws: every message is retried, and the refusal is in the error.
+          outcomes = await guarded(budget, () => runtime(env).queue(batch.queue, batch.messages.map((m) => m.body), new Capabilities(env, budget) as never, meta, values(env)));
+        } finally {
+          trace(env, `queue ${batch.queue} (${batch.messages.length})`, budget);
+        }
         batch.messages.forEach((m, i) => (outcomes[i] === "ack" ? m.ack() : m.retry()));
       },
     },
