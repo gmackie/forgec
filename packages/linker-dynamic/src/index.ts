@@ -4,3 +4,4 @@ export { jsUnits, LinkError, matchRoute, resolveManifest, type ClosureManifest, 
 export { derivePolicy, objectRoutePolicy, privilegedPolicy, type Policy, type SqlSchema } from "./policy.ts";
 export { checkSql, tableAccess } from "./sql-gate.ts";
 export { MemoryBlobStore, R2BlobStore, verifiedBlob, type BlobStore } from "./store.ts";
+export { MemoryUnits, missingBlobs, UnitFetcher, unitFetchConfig, type CacheLike, type FetchReport, type UnitFetchConfig } from "./unit-fetch.ts";

@@ -249,6 +249,37 @@ describe("Linker B host on local workerd", () => {
     expect((await h.stats(host.base)).denials).toEqual([]);
   });
 
+  it("FORG-48: a loader miss reads a closure's blobs from the isolate's memory, then the Cache API, verified", async () => {
+    expect((await link(acmeManifestText())).status).toBe(200);
+    const breakdown = async (layers: string) => {
+      const ev = await fetch(`${host.base}/_linker/evict-host-cache?layers=${layers}`, { method: "POST", headers: { "x-linker-admin": "local-linker-admin" } });
+      expect(ev.status).toBe(200);
+      const r = await fetch(`${host.base}/v1/customers`, { headers: H });
+      expect(r.status).toBe(200);
+      await r.arrayBuffer();
+      expect(r.headers.get("x-forge-isolate")).toBe("cold"); // the eviction bumps the child id: a loader miss
+      return Object.fromEntries((r.headers.get("x-forge-link-breakdown") ?? "").split(";").map((kv) => kv.split("=")));
+    };
+    await (await fetch(`${host.base}/v1/customers`, { headers: H })).arrayBuffer(); // fills the memory layer
+    // Code cache dropped, memory kept: every blob (runtime, Effect, app.json, units) from memory.
+    const fromMemory = await breakdown("code");
+    expect(fromMemory).toMatchObject({ fetch: "memory,cache,parallel", store: "0", cache: "0" });
+    expect(Number(fromMemory["memory"])).toBeGreaterThanOrEqual(3);
+    // Memory dropped too: what a new host isolate in the same colo sees, from the Cache API.
+    const fromCache = await breakdown("code,memory");
+    expect(fromCache).toMatchObject({ store: "0", memory: "0" });
+    expect(Number(fromCache["cache"])).toBeGreaterThanOrEqual(3);
+    // Cache API entries dropped too: the unit store, verified, in parallel.
+    const fromStore = await breakdown("code,memory,cache");
+    expect(fromStore).toMatchObject({ cache: "0", memory: "0" });
+    expect(Number(fromStore["store"])).toBeGreaterThanOrEqual(3);
+    // Warm again afterwards: no build at all.
+    const warm = await fetch(`${host.base}/v1/customers`, { headers: H });
+    await warm.arrayBuffer();
+    expect(warm.headers.get("x-forge-isolate")).toBe("warm");
+    expect(warm.headers.get("x-forge-link-breakdown")).not.toContain("fetch=");
+  });
+
   it("a manifest swap re-links only the closures whose implementation changed", async () => {
     expect((await link(acmeManifestText())).status).toBe(200);
     const order = await draftOrder("SWP1");
