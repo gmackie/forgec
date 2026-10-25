@@ -5,6 +5,10 @@ stages:
   - name: production
     url: https://forge.gmac.io
     sortOrder: 20
+  # FORG-38's lab stage (staging, sortOrder 90) is gone from this file but still on the server:
+  # ForgeGraph cannot remove a stage whose targets have deployment history. Its targets were retired
+  # (each build exits 1) and its Workers deleted; see research/composable-units/r4-deployed/README.md.
+  # `forge apply` leaves it alone, and it can never be the auto-deploy stage.
 
 # The deployable in this repository is packages/console (@forgegraph/console): the management
 # UI and signed package registry served at forge.gmac.io. The compiler crates and the
