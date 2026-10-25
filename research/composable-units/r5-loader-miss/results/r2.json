@@ -1,0 +1,612 @@
+{
+  "at": "2026-10-25T18:22:38.414Z",
+  "issue": "FORG-48",
+  "measured": "deployed",
+  "parallel": {
+    "blobsMs": {
+      "max": 162,
+      "median": 109,
+      "min": 86,
+      "n": 8,
+      "p95": 162
+    },
+    "perKey": {
+      "blobs/2d03b00d0f35 (211259 B)": {
+        "max": 162,
+        "median": 86,
+        "min": 81,
+        "n": 8,
+        "p95": 162
+      },
+      "blobs/3d62704e14f5 (92331 B)": {
+        "max": 105,
+        "median": 82,
+        "min": 67,
+        "n": 8,
+        "p95": 105
+      },
+      "blobs/6d47203f2acd (547934 B)": {
+        "max": 138,
+        "median": 106,
+        "min": 71,
+        "n": 8,
+        "p95": 138
+      },
+      "kit.json (356 B)": {
+        "max": 255,
+        "median": 84,
+        "min": 64,
+        "n": 8,
+        "p95": 255
+      }
+    }
+  },
+  "run": null,
+  "runs": {
+    "parallel": [
+      {
+        "blobsMs": 162,
+        "headMs": 77,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 87,
+            "key": "kit.json",
+            "ms": 87
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 91,
+            "key": "blobs/6d47203f2acd",
+            "ms": 96
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 100,
+            "key": "blobs/3d62704e14f5",
+            "ms": 101
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 138,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 162
+          }
+        ],
+        "parallel": true,
+        "totalMs": 405
+      },
+      {
+        "blobsMs": 109,
+        "headMs": 55,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 255,
+            "key": "kit.json",
+            "ms": 255
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 77,
+            "key": "blobs/3d62704e14f5",
+            "ms": 78
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 82,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 84
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 102,
+            "key": "blobs/6d47203f2acd",
+            "ms": 109
+          }
+        ],
+        "parallel": true,
+        "totalMs": 494
+      },
+      {
+        "blobsMs": 106,
+        "headMs": 68,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 75,
+            "key": "kit.json",
+            "ms": 85
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 67,
+            "key": "blobs/3d62704e14f5",
+            "ms": 67
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 80,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 86
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 97,
+            "key": "blobs/6d47203f2acd",
+            "ms": 106
+          }
+        ],
+        "parallel": true,
+        "totalMs": 359
+      },
+      {
+        "blobsMs": 138,
+        "headMs": 100,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 64,
+            "key": "kit.json",
+            "ms": 64
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 79,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 86
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 84,
+            "key": "blobs/3d62704e14f5",
+            "ms": 105
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 120,
+            "key": "blobs/6d47203f2acd",
+            "ms": 138
+          }
+        ],
+        "parallel": true,
+        "totalMs": 402
+      },
+      {
+        "blobsMs": 117,
+        "headMs": 82,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 70,
+            "key": "kit.json",
+            "ms": 70
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 88,
+            "key": "blobs/3d62704e14f5",
+            "ms": 95
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 102,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 110
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 100,
+            "key": "blobs/6d47203f2acd",
+            "ms": 117
+          }
+        ],
+        "parallel": true,
+        "totalMs": 364
+      },
+      {
+        "blobsMs": 127,
+        "headMs": 83,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 84,
+            "key": "kit.json",
+            "ms": 84
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 76,
+            "key": "blobs/3d62704e14f5",
+            "ms": 83
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 86,
+            "key": "blobs/6d47203f2acd",
+            "ms": 116
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 119,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 127
+          }
+        ],
+        "parallel": true,
+        "totalMs": 365
+      },
+      {
+        "blobsMs": 91,
+        "headMs": 71,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 83,
+            "key": "kit.json",
+            "ms": 85
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 79,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 81
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 82,
+            "key": "blobs/3d62704e14f5",
+            "ms": 82
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 85,
+            "key": "blobs/6d47203f2acd",
+            "ms": 91
+          }
+        ],
+        "parallel": true,
+        "totalMs": 318
+      },
+      {
+        "blobsMs": 86,
+        "headMs": 70,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 84,
+            "key": "kit.json",
+            "ms": 84
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 68,
+            "key": "blobs/3d62704e14f5",
+            "ms": 68
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 66,
+            "key": "blobs/6d47203f2acd",
+            "ms": 71
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 84,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 86
+          }
+        ],
+        "parallel": true,
+        "totalMs": 306
+      }
+    ],
+    "serial": [
+      {
+        "blobsMs": 416,
+        "headMs": 90,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 114,
+            "key": "kit.json",
+            "ms": 114
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 103,
+            "key": "blobs/3d62704e14f5",
+            "ms": 104
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 174,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 176
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 100,
+            "key": "blobs/6d47203f2acd",
+            "ms": 136
+          }
+        ],
+        "parallel": false,
+        "totalMs": 712
+      },
+      {
+        "blobsMs": 272,
+        "headMs": 95,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 142,
+            "key": "kit.json",
+            "ms": 142
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 88,
+            "key": "blobs/3d62704e14f5",
+            "ms": 90
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 83,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 85
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 85,
+            "key": "blobs/6d47203f2acd",
+            "ms": 97
+          }
+        ],
+        "parallel": false,
+        "totalMs": 576
+      },
+      {
+        "blobsMs": 265,
+        "headMs": 71,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 75,
+            "key": "kit.json",
+            "ms": 75
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 83,
+            "key": "blobs/3d62704e14f5",
+            "ms": 83
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 88,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 90
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 89,
+            "key": "blobs/6d47203f2acd",
+            "ms": 92
+          }
+        ],
+        "parallel": false,
+        "totalMs": 493
+      },
+      {
+        "blobsMs": 256,
+        "headMs": 72,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 86,
+            "key": "kit.json",
+            "ms": 86
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 71,
+            "key": "blobs/3d62704e14f5",
+            "ms": 71
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 90,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 96
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 77,
+            "key": "blobs/6d47203f2acd",
+            "ms": 89
+          }
+        ],
+        "parallel": false,
+        "totalMs": 480
+      },
+      {
+        "blobsMs": 274,
+        "headMs": 62,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 68,
+            "key": "kit.json",
+            "ms": 68
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 79,
+            "key": "blobs/3d62704e14f5",
+            "ms": 79
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 73,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 75
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 114,
+            "key": "blobs/6d47203f2acd",
+            "ms": 120
+          }
+        ],
+        "parallel": false,
+        "totalMs": 488
+      },
+      {
+        "blobsMs": 265,
+        "headMs": 67,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 78,
+            "key": "kit.json",
+            "ms": 78
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 82,
+            "key": "blobs/3d62704e14f5",
+            "ms": 98
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 84,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 86
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 72,
+            "key": "blobs/6d47203f2acd",
+            "ms": 81
+          }
+        ],
+        "parallel": false,
+        "totalMs": 475
+      },
+      {
+        "blobsMs": 340,
+        "headMs": 63,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 87,
+            "key": "kit.json",
+            "ms": 87
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 68,
+            "key": "blobs/3d62704e14f5",
+            "ms": 71
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 72,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 78
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 79,
+            "key": "blobs/6d47203f2acd",
+            "ms": 191
+          }
+        ],
+        "parallel": false,
+        "totalMs": 569
+      },
+      {
+        "blobsMs": 255,
+        "headMs": 69,
+        "ops": [
+          {
+            "bytes": 356,
+            "firstByteMs": 66,
+            "key": "kit.json",
+            "ms": 66
+          },
+          {
+            "bytes": 92331,
+            "firstByteMs": 72,
+            "key": "blobs/3d62704e14f5",
+            "ms": 72
+          },
+          {
+            "bytes": 211259,
+            "firstByteMs": 75,
+            "key": "blobs/2d03b00d0f35",
+            "ms": 75
+          },
+          {
+            "bytes": 547934,
+            "firstByteMs": 76,
+            "key": "blobs/6d47203f2acd",
+            "ms": 108
+          }
+        ],
+        "parallel": false,
+        "totalMs": 459
+      }
+    ]
+  },
+  "section": "r2",
+  "serial": {
+    "blobsMs": {
+      "max": 416,
+      "median": 265,
+      "min": 255,
+      "n": 8,
+      "p95": 416
+    },
+    "headMs": {
+      "max": 95,
+      "median": 69,
+      "min": 62,
+      "n": 8,
+      "p95": 95
+    },
+    "perKey": {
+      "blobs/2d03b00d0f35 (211259 B)": {
+        "max": 176,
+        "median": 85,
+        "min": 75,
+        "n": 8,
+        "p95": 176
+      },
+      "blobs/3d62704e14f5 (92331 B)": {
+        "max": 104,
+        "median": 79,
+        "min": 71,
+        "n": 8,
+        "p95": 104
+      },
+      "blobs/6d47203f2acd (547934 B)": {
+        "max": 191,
+        "median": 97,
+        "min": 81,
+        "n": 8,
+        "p95": 191
+      },
+      "kit.json (356 B)": {
+        "max": 142,
+        "median": 78,
+        "min": 66,
+        "n": 8,
+        "p95": 142
+      }
+    }
+  },
+  "version": "r5-loader-miss/1",
+  "worker": "miss-b"
+}

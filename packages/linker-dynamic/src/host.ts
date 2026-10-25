@@ -11,7 +11,8 @@ import { LinkError, matchRoute, resolveManifest, type ClosureManifest, type Entr
 import { expectedVersion, LinkedCache, PointerCache, readFresh, scopeOf, swap, ttlOf, type Pointer, type PointerEnv, type PointerRead } from "./pointer.ts";
 import { derivePolicy, objectRoutePolicy, privilegedPolicy, SWEEP_SERVICE, type Policy, type SqlSchema } from "./policy.ts";
 import { sqlDenial, type GatePolicy } from "./sql-gate.ts";
-import { R2BlobStore, verifiedBlob, type BlobStore, type R2BucketLike } from "./store.ts";
+import { R2BlobStore, type BlobStore, type R2BucketLike } from "./store.ts";
+import { forgetCached, memoryUnits, missingBlobs, openUnitCache, UnitFetcher, unitFetchConfig, type FetchReport } from "./unit-fetch.ts";
 
 /** The pointer's Durable Object class: a host script exports it and binds it as LINKER_POINTER. */
 export { ManifestPointer } from "./pointer-object.ts";
@@ -44,6 +45,8 @@ export interface HostEnv extends PointerEnv {
    * before use, so a child that cannot load is refused (a LinkError the router falls back on).
    */
   FORGE_DISPATCH?: { fetch(input: Request | string, init?: RequestInit): Promise<Response> };
+  /** Unit fetch layers (src/unit-fetch.ts): unset is "memory,cache,parallel"; "off" reads every blob from the store, serially. */
+  LINKER_UNIT_CACHE?: string;
   /** Set by linker C's tier host on a manifest swap: the entry points it serves dynamically (recorded in the pointer). */
   LINKER_TIER_DYNAMIC?: string[];
   [binding: string]: unknown;
@@ -67,6 +70,8 @@ interface ClosureStats {
   cold: number;
   warm: number;
   buildMs: number[];
+  /** Where each build's blobs came from (the last few builds). */
+  fetches: FetchReport[];
 }
 
 // ---------------------------------------------------------------------------------- host state
@@ -76,6 +81,8 @@ interface ClosureStats {
 const pointers = new PointerCache();
 const linkedByPointer = new LinkedCache<Linked>();
 const codeCache = new Map<string, WorkerLoaderCode>();
+/** Bumped by POST /_linker/evict-host-cache: part of every child id, so the next request is a loader miss. */
+let generation = 0;
 const stats = { closures: new Map<string, ClosureStats>(), denials: [] as string[], fallbacks: [] as string[], refused: [] as string[] };
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
@@ -90,25 +97,26 @@ const recordDenial = (msg: string) => {
 };
 
 /** Resolves a manifest and checks every blob it can reach exists, before it may serve. */
-async function link(store: BlobStore, kit: LinkerKit, manifest: ClosureManifest, checkStore = true): Promise<Linked> {
+async function link(store: BlobStore, kit: LinkerKit, manifest: ClosureManifest, env: HostEnv, checkStore = true): Promise<Linked> {
   const resolved = await resolveManifest(manifest);
-  const missing: string[] = [];
-  // A reader of the pointer skips the existence checks: the writer made them before the swap, blobs are
-  // immutable, and every blob a child loads is verified then (a missing one is a refusal, not a guess).
-  if (!checkStore) {
-    const app = kit.apps[manifest.buildHash];
-    if (!app) throw new LinkError("BuildMismatch", [`no app bundle for buildHash ${manifest.buildHash}`]);
-    const appBundle = JSON.parse(new TextDecoder().decode(await verifiedBlob(store, app, "app bundle"))) as { buildHash: string; sql: SqlSchema };
-    if (appBundle.buildHash !== manifest.buildHash) throw new LinkError("BuildMismatch", [`app bundle ${app} has buildHash ${appBundle.buildHash}, manifest has ${manifest.buildHash}`]);
-    return { resolved, kit, schema: appBundle.sql };
-  }
-  for (const [blob, m] of Object.entries(manifest.modules)) if (!(await store.has(blob))) missing.push(`module ${blob} (${m.path}) is not in the unit store`);
   const app = kit.apps[manifest.buildHash];
-  if (!app) missing.push(`no app bundle for buildHash ${manifest.buildHash}`);
-  else if (!(await store.has(app))) missing.push(`app bundle ${app} is not in the unit store`);
-  for (const [lib, blob] of Object.entries(kit.libraries)) if (!(await store.has(blob))) missing.push(`library ${lib} (${blob}) is not in the unit store`);
+  const config = unitFetchConfig(env.LINKER_UNIT_CACHE);
+  // FORG-47: a reader of the pointer skips the existence checks: the writer made them before the swap,
+  // blobs are immutable, and every blob a child loads is verified then (a missing one is a refusal).
+  const missing = !checkStore ? [] : await missingBlobs(
+    store,
+    [
+      ...Object.entries(manifest.modules).map(([blob, m]) => [blob, `module ${blob} (${m.path}) is not in the unit store`] as [string, string]),
+      ...(app ? [[app, `app bundle ${app} is not in the unit store`] as [string, string]] : []),
+      ...Object.entries(kit.libraries).map(([lib, blob]) => [blob, `library ${lib} (${blob}) is not in the unit store`] as [string, string]),
+    ],
+    config.parallel,
+  );
+  if (!app && !checkStore) throw new LinkError("BuildMismatch", [`no app bundle for buildHash ${manifest.buildHash}`]);
+  if (!app) missing.unshift(`no app bundle for buildHash ${manifest.buildHash}`);
   if (missing.length) throw new LinkError("MissingModule", missing);
-  const appBundle = JSON.parse(new TextDecoder().decode(await verifiedBlob(store, app!, "app bundle"))) as { buildHash: string; sql: SqlSchema };
+  // Through the unit fetcher, so the child builds that follow find app.json in memory.
+  const appBundle = await new UnitFetcher(store, { config, cache: await openUnitCache() }).json<{ buildHash: string; sql: SqlSchema }>(app!, "app bundle");
   if (appBundle.buildHash !== manifest.buildHash) throw new LinkError("BuildMismatch", [`app bundle ${app} has buildHash ${appBundle.buildHash}, manifest has ${manifest.buildHash}`]);
   return { resolved, kit, schema: appBundle.sql };
 }
@@ -116,10 +124,13 @@ async function link(store: BlobStore, kit: LinkerKit, manifest: ClosureManifest,
 /** The manifest and kit a pointer names, linked (no store checks: see link()). */
 async function materialise(env: HostEnv, p: Pointer): Promise<Linked> {
   const store = new R2BlobStore(env.UNITS);
-  const text = async (d: string, what: string) => new TextDecoder().decode(await verifiedBlob(store, d, what));
-  const kit = JSON.parse(await text(p.kitBlob!, "kit")) as LinkerKit;
-  const manifest = JSON.parse(await text(p.manifestBlob!, "manifest")) as ClosureManifest;
-  return link(store, kit, manifest, false);
+  // FORG-48: the kit and manifest blobs are content-addressed too, so they come through the unit fetcher
+  // (memory, Cache API, then R2; verified against their digests), both at once.
+  const config = unitFetchConfig(env.LINKER_UNIT_CACHE);
+  const blobs = await new UnitFetcher(store, { config, cache: await openUnitCache() }).all({ kit: p.kitBlob!, manifest: p.manifestBlob! }, (name) => name);
+  const kit = JSON.parse(blobs["kit"]!.text) as LinkerKit;
+  const manifest = JSON.parse(blobs["manifest"]!.text) as ClosureManifest;
+  return link(store, kit, manifest, env, false);
 }
 
 /** The pointer this request serves (revalidated past the bound; LinkerRefused when it cannot be) and its linked state. */
@@ -156,24 +167,29 @@ interface Child {
   privileged: boolean;
   cold: () => boolean;
   buildMs: number;
+  fetch: FetchReport | null;
 }
 
+type HostCtx = { exports: Record<string, (o: { props: unknown }) => unknown>; waitUntil?(p: Promise<unknown>): void };
+
 /** The child isolate for a closure under a policy. Bytes are fetched and verified only on a host cache miss. */
-async function childFor(env: HostEnv, ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, l: Linked, closureHash: string, policy: Policy): Promise<Child> {
+async function childFor(env: HostEnv, ctx: HostCtx, l: Linked, closureHash: string, policy: Policy): Promise<Child> {
   const m = l.resolved.manifest;
   const source = childSource(m, policy, l.kit);
   const vars = childVars(m);
   // closureHash pins the implementations; the suffix covers what else goes into the code: the
   // libraries' and app bundle's bytes and the policy the stubs carry.
-  const id = `${closureHash}~${(await digest(LINK_DOMAIN, { blobs: source.blobs, policy, vars })).slice(7, 23)}`;
+  const id = `${closureHash}~${(await digest(LINK_DOMAIN, { blobs: source.blobs, policy, vars, ...(generation ? { generation } : {}) })).slice(7, 23)}`;
   let code = codeCache.get(id);
   let buildMs = 0;
+  let report: FetchReport | null = null;
   if (!code) {
     const t0 = performance.now();
-    const store = new R2BlobStore(env.UNITS);
-    const text = async (name: string) => new TextDecoder().decode(await verifiedBlob(store, source.blobs[name]!, `${policy.label}: ${name}`));
+    const fetcher = new UnitFetcher(new R2BlobStore(env.UNITS), { config: unitFetchConfig(env.LINKER_UNIT_CACHE), cache: await openUnitCache(), ...(ctx.waitUntil ? { waitUntil: (p: Promise<unknown>) => ctx.waitUntil!(p) } : {}) });
+    const blobs = await fetcher.all(source.blobs, (name) => `${policy.label}: ${name}`);
     const modules: WorkerLoaderCode["modules"] = { "main.js": childMain(source, policy, vars) };
-    for (const name of Object.keys(source.blobs)) modules[name] = name === "app.json" ? { json: JSON.parse(await text(name)) } : { js: await text(name) };
+    for (const name of Object.keys(source.blobs)) modules[name] = name === "app.json" ? { json: blobs[name]!.json() } : { js: blobs[name]!.text };
+    report = fetcher.report();
     code = {
       compatibilityDate: COMPATIBILITY_DATE,
       mainModule: "main.js",
@@ -205,14 +221,15 @@ async function childFor(env: HostEnv, ctx: { exports: Record<string, (o: { props
       throw new LinkError("LoadFailed", [`${policy.label}: child ${id} did not start: ${String(e)}`]);
     }
   }
-  return { stub, id, closureHash, privileged: policy.privileged, cold: () => cold, buildMs };
+  return { stub, id, closureHash, privileged: policy.privileged, cold: () => cold, buildMs, fetch: report };
 }
 
 function record(child: Child, label: string, cold: boolean) {
-  const s = stats.closures.get(child.id) ?? { closureHash: child.closureHash, label, privileged: child.privileged, cold: 0, warm: 0, buildMs: [] };
+  const s = stats.closures.get(child.id) ?? { closureHash: child.closureHash, label, privileged: child.privileged, cold: 0, warm: 0, buildMs: [], fetches: [] };
   if (cold) s.cold++;
   else s.warm++;
   if (child.buildMs) s.buildMs.push(child.buildMs);
+  if (child.fetch) s.fetches = [...s.fetches, child.fetch].slice(-5);
   stats.closures.set(child.id, s);
 }
 
@@ -223,7 +240,7 @@ const sweepEntry = (l: Linked) => l.resolved.manifest.entryPoints.find((e) => e.
  * is narrowed to the sweep entry point's closure (the dispatch unit: every subscriber, workflow and
  * schedule). Only a manifest whose sweep has no root falls back to the whole app, reported.
  */
-async function dispatchChild(env: HostEnv, ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, l: Linked, label: string): Promise<Child> {
+async function dispatchChild(env: HostEnv, ctx: HostCtx, l: Linked, label: string): Promise<Child> {
   const sweep = sweepEntry(l);
   if (sweep?.root) return childFor(env, ctx, l, sweep.closureHash, { ...derivePolicy(l.resolved.manifest, sweep, l.schema), label });
   return childFor(env, ctx, l, sweep?.closureHash ?? "runtime", privilegedPolicy(l.resolved.manifest, l.schema, label));
@@ -251,7 +268,7 @@ async function admin(request: Request, env: HostEnv, url: URL): Promise<Response
       if (!kitObject) return json({ code: "NoKit" }, 409);
       const kitBytes = new Uint8Array(await kitObject.arrayBuffer());
       const kit = JSON.parse(new TextDecoder().decode(kitBytes)) as LinkerKit;
-      const next = await link(store, kit, JSON.parse(text) as ClosureManifest);
+      const next = await link(store, kit, JSON.parse(text) as ClosureManifest, env);
       const blob = await store.put(new TextEncoder().encode(text));
       const kitBlob = await store.put(kitBytes);
       const m = next.resolved.manifest;
@@ -267,7 +284,7 @@ async function admin(request: Request, env: HostEnv, url: URL): Promise<Response
       const pointer = await readFresh(env, scope);
       return json({ scope, ttlMs: ttlOf(env), pointer, isolate: pointers.view(), cache: pointers.stats }, 200, { etag: `"${pointer.version}"` });
     }
-    if (route === "GET /_linker/stats") return json({ manifestHash: pointers.view()[scopeOf(env)]?.manifestHash ?? null, pointer: { scope: scopeOf(env), ttlMs: ttlOf(env), isolate: pointers.view(), cache: pointers.stats }, closures: [...stats.closures].map(([id, s]) => ({ id, ...s })), denials: stats.denials, fallbacks: stats.fallbacks, refused: stats.refused, hostCodeCache: codeCache.size });
+    if (route === "GET /_linker/stats") return json({ manifestHash: pointers.view()[scopeOf(env)]?.manifestHash ?? null, pointer: { scope: scopeOf(env), ttlMs: ttlOf(env), isolate: pointers.view(), cache: pointers.stats }, closures: [...stats.closures].map(([id, s]) => ({ id, ...s })), denials: stats.denials, fallbacks: stats.fallbacks, refused: stats.refused, hostCodeCache: codeCache.size, unitFetch: { config: env.LINKER_UNIT_CACHE ?? null, memory: memoryUnits.stats(), generation } });
     if (route === "POST /_linker/stats/reset") {
       stats.closures.clear();
       stats.denials.length = 0;
@@ -276,8 +293,16 @@ async function admin(request: Request, env: HostEnv, url: URL): Promise<Response
       return json({ ok: true });
     }
     if (route === "POST /_linker/evict-host-cache") {
-      codeCache.clear();
-      return json({ ok: true });
+      // Default: every layer, so the next build re-reads the unit store. ?layers=code (or code,memory)
+      // keeps the nearer copies. `cache` drops the linked blobs from this colo's Cache API only. Either
+      // way the next child gets a new id, so it is a loader miss.
+      const layers = new Set((url.searchParams.get("layers") ?? "code,memory,cache").split(","));
+      if (layers.has("code")) codeCache.clear();
+      if (layers.has("memory")) memoryUnits.clear();
+      const l = layers.has("cache") ? await current(env).catch(() => null) : null;
+      const cached = l ? await forgetCached([...Object.keys(l.resolved.manifest.modules), ...Object.values(l.kit.libraries), ...Object.values(l.kit.apps)]) : 0;
+      generation++;
+      return json({ ok: true, layers: [...layers].sort(), generation, cacheDeleted: cached });
     }
   } catch (e) {
     if (e instanceof LinkError) {
@@ -303,6 +328,7 @@ export default {
     const t0 = performance.now();
     try {
       const { linked: l, read } = await resolveCurrent(env);
+      const resolveMs = performance.now() - t0;
       const pointerHeaders = { "x-forge-pointer": `${read.how}; v=${read.pointer.version}`, "x-forge-pointer-ms": read.ms.toFixed(2) };
       if (!l) return json({ code: "NoManifest", detail: "no Closure Manifest has been linked" }, 503, { [REFUSED_HEADER]: "NoManifest", ...pointerHeaders });
       const m = l.resolved.manifest;
@@ -328,7 +354,9 @@ export default {
         }
       }
       const child = await childFor(env, ctx, l, closureHash, policy);
+      const tChild = performance.now();
       const res = await child.stub.getEntrypoint().fetch(request);
+      const childMs = performance.now() - tChild;
       const cold = child.cold();
       record(child, policy.label, cold);
       const out = new Response(res.body, res);
@@ -337,6 +365,9 @@ export default {
       out.headers.set("x-forge-closure", closureHash);
       out.headers.set("x-forge-isolate", cold ? "cold" : "warm");
       out.headers.set("x-forge-link-ms", (performance.now() - t0).toFixed(2));
+      // FORG-48: where the miss time went. resolve = current(); build = the child's blobs; child = the child's answer.
+      const f = child.fetch;
+      out.headers.set("x-forge-link-breakdown", `resolve=${resolveMs.toFixed(1)};build=${child.buildMs.toFixed(1)};child=${childMs.toFixed(1)}${f ? `;fetch=${f.config};memory=${f.memory};cache=${f.cache};store=${f.store};storeBytes=${f.storeBytes}` : ""}`);
       for (const [k, v] of Object.entries(pointerHeaders)) out.headers.set(k, v);
       if (policy.privileged) out.headers.set("x-forge-linker", "fallback-whole-app");
       // The runtime's dispatch() (FORG-29) runs in the dispatch child, which holds the whole app and
@@ -513,7 +544,7 @@ export class Egress extends WorkerEntrypoint<HostEnv, EgressProps> {
  * workflow entry point's child.
  */
 /** One driver step of a workflow instance in its entry point's child. A LinkError means no unit code ran. */
-export async function advanceWorkflow(env: HostEnv, ctx: { exports: Record<string, (o: { props: unknown }) => unknown> }, className: string, tenant: string, id: string): Promise<{ status: string; dueAt?: string }> {
+export async function advanceWorkflow(env: HostEnv, ctx: HostCtx, className: string, tenant: string, id: string): Promise<{ status: string; dueAt?: string }> {
   const l = await current(env);
   const entry = l?.resolved.byWorkflowClass.get(className);
   if (!l || !entry) throw new LinkError("UnknownEntryPoint", [`workflow class ${className} is not an entry point`]);

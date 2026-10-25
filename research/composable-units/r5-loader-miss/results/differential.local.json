@@ -1,0 +1,873 @@
+{
+  "version": "r3-linker-differential/1",
+  "issue": "FORG-43",
+  "measured": true,
+  "local": true,
+  "date": "2026-10-25",
+  "node": "v24.14.0",
+  "harness": {
+    "runtime": "workerd via Miniflare (one instance per target, in-memory D1/R2/Queues/Workflows/DOs, Worker Loader)",
+    "compatibilityDate": "2026-09-01",
+    "explainedKeys": [
+      "at",
+      "cursor",
+      "endedAt",
+      "freshUntil",
+      "generation",
+      "lastEventAt",
+      "loadedAt",
+      "next",
+      "physicalActions",
+      "physicalLimit",
+      "requestId",
+      "startedAt"
+    ]
+  },
+  "policy": {
+    "dynamic": {
+      "entryPoints": [
+        "POST /v1/orders",
+        "POST /v1/orders/**",
+        "PATCH /v1/orders/{id}",
+        "DELETE /v1/orders/{id}",
+        "@acme/commerce/_/ProcessOrder",
+        "POST /v1/workflows/process-order/signals/{message}"
+      ]
+    },
+    "version": "tiered-policy/1"
+  },
+  "dynamic": [
+    "@acme/commerce/_/ProcessOrder",
+    "@acme/commerce/_/ProcessOrder#approve",
+    "@acme/commerce/_/ProcessOrder#short",
+    "@acme/commerce/_/ProcessOrder#submit",
+    "@acme/commerce/_/ProcessOrder#summary",
+    "DELETE /v1/orders/{id}",
+    "PATCH /v1/orders/{id}",
+    "POST /v1/orders",
+    "POST /v1/orders/{id}/actions/approve",
+    "POST /v1/orders/{id}/actions/cancel",
+    "POST /v1/orders/{id}/actions/complete",
+    "POST /v1/orders/{order}/process",
+    "POST /v1/orders/{order}/submit",
+    "POST /v1/workflows/process-order/signals/{message}"
+  ],
+  "targets": [
+    {
+      "name": "whole-app",
+      "describe": "today's Worker: deploy/cloudflare/worker.ts with the whole app.json",
+      "scripts": 1,
+      "startupMs": 1902,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    },
+    {
+      "name": "whole-app-repeat",
+      "describe": "A/A control: today's Worker again, fresh instance; its differences from whole-app are run-to-run nondeterminism",
+      "scripts": 1,
+      "startupMs": 2691,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    },
+    {
+      "name": "packed",
+      "describe": "linker A, per-entry-point: 87 sliced scripts, router + dispatch owner",
+      "scripts": 88,
+      "startupMs": 21670,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      }
+    },
+    {
+      "name": "dynamic",
+      "describe": "linker B: the host (host/acme.ts) and its children from the Worker Loader, every entry point dynamic, its own dispatch child",
+      "scripts": 1,
+      "startupMs": 1429,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": false,
+        "detail": "     × subscribe -> hello; a publication arrives as an event with a sequence number; a new connection resumes by position 94ms\n FAIL  test/realtime.test.ts > realtime profile against a live deployment > subscribe -> hello; a publication arrives as an event with a sequence number; a new connection resumes by position\nError: websocket error: \n     28|     ws.addEventListener(\"error\", (e) => reject(new Error(`websocket er…\n Test Files  1 failed (1)\n      Tests  1 failed (1)"
+      },
+      "dynamicHost": {
+        "distinctChildren": 53,
+        "privilegedChildren": [],
+        "dispatchChildren": 1,
+        "denials": [],
+        "refused": [
+          "UnlinkedEntryPoint"
+        ]
+      }
+    },
+    {
+      "name": "tiered",
+      "describe": "linker C: the order write path and ProcessOrder dynamic (linker B's host), everything else packed (linker A); one dispatch owner",
+      "scripts": 89,
+      "startupMs": 21250,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      },
+      "tier": {
+        "router": {
+          "dynamic": 34,
+          "packed": 212,
+          "fallback": 0,
+          "errors": 0,
+          "byReason": {}
+        },
+        "workflow": {
+          "scope": "shared",
+          "since": "2026-10-25T19:49:42.347Z",
+          "workflowAdvances": {
+            "dynamic": 8,
+            "fallback": 0
+          },
+          "fallbacks": []
+        }
+      },
+      "dynamicHost": {
+        "distinctChildren": 6,
+        "privilegedChildren": [],
+        "dispatchChildren": 0,
+        "denials": [],
+        "refused": []
+      }
+    },
+    {
+      "name": "tiered-fallback",
+      "describe": "linker C with no dynamic manifest linked: every dynamic entry point and workflow step falls back to its packed script",
+      "scripts": 89,
+      "startupMs": 19839,
+      "scenarios": [
+        {
+          "id": "m4.blobs",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.changesets",
+          "steps": 19,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.concurrency",
+          "steps": 5,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m4.csv-import",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.customer-crud",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.idempotency",
+          "steps": 4,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m3.integrity",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m8.limits",
+          "steps": 18,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m5.messaging",
+          "steps": 13,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.pagination",
+          "steps": 10,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.schedules",
+          "steps": 7,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m2.site-references",
+          "steps": 11,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.temporal-hierarchy",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m6.views-projections-cache",
+          "steps": 24,
+          "passed": true,
+          "failures": []
+        },
+        {
+          "id": "m7.workflows",
+          "steps": 29,
+          "passed": true,
+          "failures": []
+        }
+      ],
+      "passed": 15,
+      "failed": 0,
+      "realtime": {
+        "passed": true,
+        "detail": " Test Files  1 passed (1)\n      Tests  1 passed (1)"
+      },
+      "tier": {
+        "router": {
+          "dynamic": 0,
+          "packed": 212,
+          "fallback": 34,
+          "errors": 0,
+          "byReason": {
+            "NoManifest": 34
+          }
+        },
+        "workflow": {
+          "scope": "shared",
+          "since": "2026-10-25T19:50:23.514Z",
+          "workflowAdvances": {
+            "dynamic": 0,
+            "fallback": 8
+          },
+          "fallbacks": [
+            {
+              "at": "2026-10-25T19:50:29.619Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            },
+            {
+              "at": "2026-10-25T19:50:29.730Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            },
+            {
+              "at": "2026-10-25T19:50:34.722Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            },
+            {
+              "at": "2026-10-25T19:50:34.972Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            },
+            {
+              "at": "2026-10-25T19:50:35.047Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            },
+            {
+              "at": "2026-10-25T19:50:35.098Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            },
+            {
+              "at": "2026-10-25T19:50:35.409Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            },
+            {
+              "at": "2026-10-25T19:50:35.442Z",
+              "className": "ProcessOrderWorkflow",
+              "reason": "UnknownEntryPoint",
+              "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
+            }
+          ]
+        }
+      },
+      "dynamicHost": {
+        "distinctChildren": 0,
+        "privilegedChildren": [],
+        "dispatchChildren": 0,
+        "denials": [],
+        "refused": []
+      }
+    }
+  ],
+  "differential": [
+    {
+      "a": "whole-app",
+      "b": "whole-app-repeat",
+      "compared": 221,
+      "explained": 104,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "race",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    },
+    {
+      "a": "whole-app",
+      "b": "packed",
+      "compared": 221,
+      "explained": 104,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "race",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    },
+    {
+      "a": "whole-app",
+      "b": "dynamic",
+      "compared": 221,
+      "explained": 101,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "race",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    },
+    {
+      "a": "whole-app",
+      "b": "tiered",
+      "compared": 221,
+      "explained": 100,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "race",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    },
+    {
+      "a": "whole-app",
+      "b": "tiered-fallback",
+      "compared": 221,
+      "explained": 104,
+      "explainedKeys": [
+        "at",
+        "freshUntil",
+        "generated-id-order",
+        "next",
+        "race",
+        "requestId"
+      ],
+      "runToRun": 100,
+      "unexplained": []
+    }
+  ]
+}

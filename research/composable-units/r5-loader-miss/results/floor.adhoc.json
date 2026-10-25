@@ -1,0 +1,920 @@
+{
+  "at": "2026-10-25T18:28:45Z",
+  "freshHostRun": {
+    "createWorker": [
+      132,
+      85,
+      85,
+      111,
+      86
+    ],
+    "createWorker+request": [
+      103,
+      135,
+      88,
+      113,
+      90
+    ],
+    "empty": [
+      41,
+      23,
+      32,
+      428,
+      17
+    ],
+    "libraries": [
+      87,
+      96,
+      117,
+      101,
+      131
+    ],
+    "libraries+app(json)": [
+      104,
+      110,
+      124,
+      176,
+      125
+    ],
+    "libraries+app(text)": [
+      105,
+      153,
+      106,
+      134,
+      160
+    ]
+  },
+  "issue": "FORG-48",
+  "measured": "deployed",
+  "note": "GET /_lab/floor?n=5 three times by curl right after miss-b's redeploy (fa7430d7, ac8a018), before floor.json. Run 1 landed on a fresh host isolate; runs 2 and 3 on a warm one, in a quieter window than floor.json.",
+  "runs": [
+    {
+      "bytes": {
+        "app": 547931,
+        "effect": 92331,
+        "runtime": 211253
+      },
+      "n": 5,
+      "variants": {
+        "createWorker": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 132,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 85,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 85,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 111,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 86,
+              "status": 200
+            }
+          ],
+          "warm": [
+            13,
+            7,
+            6,
+            6,
+            6
+          ]
+        },
+        "createWorker+request": {
+          "cold": [
+            {
+              "body": "401",
+              "built": true,
+              "ms": 103,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 135,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 88,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 113,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 90,
+              "status": 200
+            }
+          ],
+          "warm": [
+            8,
+            8,
+            4,
+            5,
+            4
+          ]
+        },
+        "empty": {
+          "cold": [
+            {
+              "body": "0",
+              "built": true,
+              "ms": 41,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 23,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 32,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 428,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 17,
+              "status": 200
+            }
+          ],
+          "warm": [
+            9,
+            4,
+            5,
+            8,
+            3
+          ]
+        },
+        "libraries": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 87,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 96,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 117,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 101,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 131,
+              "status": 200
+            }
+          ],
+          "warm": [
+            4,
+            5,
+            14,
+            10,
+            7
+          ]
+        },
+        "libraries+app(json)": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 104,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 110,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 124,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 176,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 125,
+              "status": 200
+            }
+          ],
+          "warm": [
+            16,
+            8,
+            12,
+            10,
+            6
+          ]
+        },
+        "libraries+app(text)": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 105,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 153,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 106,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 134,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 160,
+              "status": 200
+            }
+          ],
+          "warm": [
+            5,
+            7,
+            6,
+            6,
+            6
+          ]
+        }
+      }
+    },
+    {
+      "bytes": {
+        "app": 547931,
+        "effect": 92331,
+        "runtime": 211253
+      },
+      "n": 5,
+      "variants": {
+        "createWorker": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 56,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 56,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 91,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 48,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 48,
+              "status": 200
+            }
+          ],
+          "warm": [
+            3,
+            3,
+            3,
+            2,
+            2
+          ]
+        },
+        "createWorker+request": {
+          "cold": [
+            {
+              "body": "401",
+              "built": true,
+              "ms": 49,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 76,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 47,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 111,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 47,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            2,
+            2,
+            4,
+            2
+          ]
+        },
+        "empty": {
+          "cold": [
+            {
+              "body": "0",
+              "built": true,
+              "ms": 13,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 15,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 20,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 12,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 12,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            3,
+            2,
+            3,
+            2
+          ]
+        },
+        "libraries": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 43,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 49,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 55,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 44,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 51,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            2,
+            2,
+            2,
+            3
+          ]
+        },
+        "libraries+app(json)": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 61,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 58,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 50,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 52,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 110,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            2,
+            3,
+            2,
+            3
+          ]
+        },
+        "libraries+app(text)": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 48,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 55,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 50,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 45,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 53,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            2,
+            2,
+            2,
+            4
+          ]
+        }
+      }
+    },
+    {
+      "bytes": {
+        "app": 547931,
+        "effect": 92331,
+        "runtime": 211253
+      },
+      "n": 5,
+      "variants": {
+        "createWorker": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 376,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 58,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 55,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 99,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 54,
+              "status": 200
+            }
+          ],
+          "warm": [
+            3,
+            2,
+            2,
+            4,
+            4
+          ]
+        },
+        "createWorker+request": {
+          "cold": [
+            {
+              "body": "401",
+              "built": true,
+              "ms": 116,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 75,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 56,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 84,
+              "status": 200
+            },
+            {
+              "body": "401",
+              "built": true,
+              "ms": 53,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            2,
+            3,
+            2,
+            2
+          ]
+        },
+        "empty": {
+          "cold": [
+            {
+              "body": "0",
+              "built": true,
+              "ms": 12,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 15,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 13,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 18,
+              "status": 200
+            },
+            {
+              "body": "0",
+              "built": true,
+              "ms": 15,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            3,
+            3,
+            2,
+            2
+          ]
+        },
+        "libraries": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 41,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 49,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 55,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 62,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 54,
+              "status": 200
+            }
+          ],
+          "warm": [
+            2,
+            2,
+            3,
+            4,
+            1
+          ]
+        },
+        "libraries+app(json)": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 57,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 50,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 75,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 54,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 77,
+              "status": 200
+            }
+          ],
+          "warm": [
+            1,
+            2,
+            3,
+            2,
+            2
+          ]
+        },
+        "libraries+app(text)": {
+          "cold": [
+            {
+              "body": "1",
+              "built": true,
+              "ms": 57,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 400,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 54,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 90,
+              "status": 200
+            },
+            {
+              "body": "1",
+              "built": true,
+              "ms": 47,
+              "status": 200
+            }
+          ],
+          "warm": [
+            3,
+            1,
+            2,
+            4,
+            3
+          ]
+        }
+      }
+    }
+  ],
+  "section": "floor-adhoc",
+  "version": "r5-loader-miss/1",
+  "warmHost": {
+    "createWorker": {
+      "coldMs": {
+        "max": 376,
+        "median": 56,
+        "min": 48,
+        "n": 10,
+        "p95": 376
+      },
+      "warmMs": {
+        "max": 4,
+        "median": 3,
+        "min": 2,
+        "n": 10,
+        "p95": 4
+      }
+    },
+    "createWorker+request": {
+      "coldMs": {
+        "max": 116,
+        "median": 56,
+        "min": 47,
+        "n": 10,
+        "p95": 116
+      },
+      "warmMs": {
+        "max": 4,
+        "median": 2,
+        "min": 2,
+        "n": 10,
+        "p95": 4
+      }
+    },
+    "empty": {
+      "coldMs": {
+        "max": 20,
+        "median": 13,
+        "min": 12,
+        "n": 10,
+        "p95": 20
+      },
+      "warmMs": {
+        "max": 3,
+        "median": 2,
+        "min": 2,
+        "n": 10,
+        "p95": 3
+      }
+    },
+    "libraries": {
+      "coldMs": {
+        "max": 62,
+        "median": 49,
+        "min": 41,
+        "n": 10,
+        "p95": 62
+      },
+      "warmMs": {
+        "max": 4,
+        "median": 2,
+        "min": 1,
+        "n": 10,
+        "p95": 4
+      }
+    },
+    "libraries+app(json)": {
+      "coldMs": {
+        "max": 110,
+        "median": 57,
+        "min": 50,
+        "n": 10,
+        "p95": 110
+      },
+      "warmMs": {
+        "max": 3,
+        "median": 2,
+        "min": 1,
+        "n": 10,
+        "p95": 3
+      }
+    },
+    "libraries+app(text)": {
+      "coldMs": {
+        "max": 400,
+        "median": 53,
+        "min": 45,
+        "n": 10,
+        "p95": 400
+      },
+      "warmMs": {
+        "max": 4,
+        "median": 2,
+        "min": 1,
+        "n": 10,
+        "p95": 4
+      }
+    }
+  }
+}

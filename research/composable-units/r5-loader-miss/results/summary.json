@@ -1,0 +1,588 @@
+{
+  "files": {
+    "cache.json": "Cache API put/match on workers.dev",
+    "d1.*.json": "D1 round trips by placement",
+    "differential.local.json": "linker differential, local workerd",
+    "floor.adhoc.json": "child cold start split (quiet window)",
+    "floor.json": "the same, slow window",
+    "fresh.json": "first request on a fresh host isolate",
+    "miss.2.json": "run 2 (not interleaved, a slow window: even an empty child was 2x slower)",
+    "miss.3.json": "paired (interleaved) loader misses: the headline",
+    "miss.json": "run 1 (not interleaved)",
+    "placement.json": "25 min of steady traffic to the Smart Placement Worker",
+    "r2.json": "raw R2 GET latency",
+    "rtt.json": "client floor",
+    "seed.json": "the link"
+  },
+  "headline": {
+    "childColdStartFloor (warm host, /_lab/floor)": {
+      "createWorker": {
+        "coldMs": {
+          "max": 376,
+          "median": 56,
+          "min": 48,
+          "n": 10,
+          "p95": 376
+        },
+        "warmMs": {
+          "max": 4,
+          "median": 3,
+          "min": 2,
+          "n": 10,
+          "p95": 4
+        }
+      },
+      "createWorker+request": {
+        "coldMs": {
+          "max": 116,
+          "median": 56,
+          "min": 47,
+          "n": 10,
+          "p95": 116
+        },
+        "warmMs": {
+          "max": 4,
+          "median": 2,
+          "min": 2,
+          "n": 10,
+          "p95": 4
+        }
+      },
+      "empty": {
+        "coldMs": {
+          "max": 20,
+          "median": 13,
+          "min": 12,
+          "n": 10,
+          "p95": 20
+        },
+        "warmMs": {
+          "max": 3,
+          "median": 2,
+          "min": 2,
+          "n": 10,
+          "p95": 3
+        }
+      },
+      "libraries": {
+        "coldMs": {
+          "max": 62,
+          "median": 49,
+          "min": 41,
+          "n": 10,
+          "p95": 62
+        },
+        "warmMs": {
+          "max": 4,
+          "median": 2,
+          "min": 1,
+          "n": 10,
+          "p95": 4
+        }
+      },
+      "libraries+app(json)": {
+        "coldMs": {
+          "max": 110,
+          "median": 57,
+          "min": 50,
+          "n": 10,
+          "p95": 110
+        },
+        "warmMs": {
+          "max": 3,
+          "median": 2,
+          "min": 1,
+          "n": 10,
+          "p95": 3
+        }
+      },
+      "libraries+app(text)": {
+        "coldMs": {
+          "max": 400,
+          "median": 53,
+          "min": 45,
+          "n": 10,
+          "p95": 400
+        },
+        "warmMs": {
+          "max": 4,
+          "median": 2,
+          "min": 1,
+          "n": 10,
+          "p95": 4
+        }
+      }
+    },
+    "d1 SELECT 1 per statement": {
+      "ORD (miss-b)": {
+        "max": 55,
+        "median": 16,
+        "min": 11,
+        "n": 100,
+        "p95": 24
+      },
+      "ORD in the same window as us-east-1": {
+        "max": 461,
+        "median": 19,
+        "min": 12,
+        "n": 100,
+        "p95": 29
+      },
+      "Smart Placement, unanalysed (local-ORD)": {
+        "max": 40,
+        "median": 16,
+        "min": 12,
+        "n": 100,
+        "p95": 24
+      },
+      "targeted aws:us-east-1 (remote-IAD)": {
+        "max": 115,
+        "median": 35,
+        "min": 30,
+        "n": 100,
+        "p95": 47
+      },
+      "targeted aws:us-east-2 (local-ORD)": {
+        "max": 111,
+        "median": 27,
+        "min": 15,
+        "n": 100,
+        "p95": 42
+      }
+    },
+    "firstRequestFreshHostIsolate GET /v1/customers": {
+      "after": {
+        "buildMs": {
+          "max": 88,
+          "median": 13,
+          "min": 9,
+          "n": 7,
+          "p95": 88
+        },
+        "childMs": {
+          "max": 253,
+          "median": 150,
+          "min": 87,
+          "n": 7,
+          "p95": 253
+        },
+        "clientMs": {
+          "max": 1419.5,
+          "median": 826.76,
+          "min": 781.58,
+          "n": 7,
+          "p95": 1419.5
+        },
+        "fresh": "7/8",
+        "layers": [
+          "m1/c0/s2",
+          "m1/c2/s0",
+          "m1/c2/s0",
+          "m1/c2/s0",
+          "m1/c2/s0",
+          "m1/c2/s0",
+          "m1/c2/s0"
+        ],
+        "linkMs": {
+          "max": 911,
+          "median": 531,
+          "min": 457,
+          "n": 7,
+          "p95": 911
+        },
+        "resolveMs": {
+          "max": 613,
+          "median": 410,
+          "min": 351,
+          "n": 7,
+          "p95": 613
+        }
+      },
+      "before": {
+        "buildMs": {
+          "max": 523,
+          "median": 407,
+          "min": 329,
+          "n": 7,
+          "p95": 523
+        },
+        "childMs": {
+          "max": 167,
+          "median": 111,
+          "min": 97,
+          "n": 7,
+          "p95": 167
+        },
+        "clientMs": {
+          "max": 3019.77,
+          "median": 2630.89,
+          "min": 2226.77,
+          "n": 7,
+          "p95": 3019.77
+        },
+        "fresh": "7/8",
+        "layers": [
+          "m0/c0/s3",
+          "m0/c0/s3",
+          "m0/c0/s3",
+          "m0/c0/s3",
+          "m0/c0/s3",
+          "m0/c0/s3",
+          "m0/c0/s3"
+        ],
+        "linkMs": {
+          "max": 2761,
+          "median": 2372,
+          "min": 2021,
+          "n": 7,
+          "p95": 2761
+        },
+        "resolveMs": {
+          "max": 2292,
+          "median": 1838,
+          "min": 1452,
+          "n": 7,
+          "p95": 2292
+        }
+      }
+    },
+    "r2 (3 kit blobs + kit.json)": {
+      "headMs": {
+        "max": 95,
+        "median": 69,
+        "min": 62,
+        "n": 8,
+        "p95": 95
+      },
+      "parallelBlobsMs": {
+        "max": 162,
+        "median": 109,
+        "min": 86,
+        "n": 8,
+        "p95": 162
+      },
+      "serialBlobsMs": {
+        "max": 416,
+        "median": 265,
+        "min": 255,
+        "n": 8,
+        "p95": 416
+      }
+    },
+    "warmHostMiss GET /forge/discovery (no D1)": {
+      "after, memory": {
+        "buildMs": {
+          "max": 0,
+          "median": 0,
+          "min": 0,
+          "n": 12,
+          "p95": 0
+        },
+        "childMs": {
+          "max": 100,
+          "median": 71,
+          "min": 64,
+          "n": 12,
+          "p95": 100
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 100,
+          "median": 71,
+          "min": 64,
+          "n": 12,
+          "p95": 100
+        },
+        "missOverWarmMs": {
+          "max": 97,
+          "median": 66,
+          "min": 54,
+          "n": 12,
+          "p95": 97
+        },
+        "warmLinkMs": {
+          "max": 14,
+          "median": 5,
+          "min": 3,
+          "n": 12,
+          "p95": 14
+        }
+      },
+      "before": {
+        "buildMs": {
+          "max": 781,
+          "median": 401,
+          "min": 307,
+          "n": 12,
+          "p95": 781
+        },
+        "childMs": {
+          "max": 188,
+          "median": 141,
+          "min": 95,
+          "n": 12,
+          "p95": 188
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 2697,
+          "median": 554,
+          "min": 411,
+          "n": 12,
+          "p95": 2697
+        },
+        "missOverWarmMs": {
+          "max": 2690,
+          "median": 545,
+          "min": 404,
+          "n": 12,
+          "p95": 2690
+        },
+        "warmLinkMs": {
+          "max": 15,
+          "median": 7,
+          "min": 0,
+          "n": 12,
+          "p95": 15
+        }
+      }
+    },
+    "warmHostMiss GET /v1/customers": {
+      "after, Cache API": {
+        "buildMs": {
+          "max": 26,
+          "median": 9,
+          "min": 7,
+          "n": 12,
+          "p95": 26
+        },
+        "childMs": {
+          "max": 511,
+          "median": 110,
+          "min": 91,
+          "n": 12,
+          "p95": 511
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 520,
+          "median": 121,
+          "min": 100,
+          "n": 12,
+          "p95": 520
+        },
+        "missOverWarmMs": {
+          "max": 478,
+          "median": 85,
+          "min": 63,
+          "n": 12,
+          "p95": 478
+        },
+        "warmLinkMs": {
+          "max": 62,
+          "median": 36,
+          "min": 32,
+          "n": 12,
+          "p95": 62
+        }
+      },
+      "after, R2 in parallel": {
+        "buildMs": {
+          "max": 415,
+          "median": 92,
+          "min": 73,
+          "n": 12,
+          "p95": 415
+        },
+        "childMs": {
+          "max": 156,
+          "median": 112,
+          "min": 97,
+          "n": 12,
+          "p95": 156
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 547,
+          "median": 204,
+          "min": 173,
+          "n": 12,
+          "p95": 547
+        },
+        "missOverWarmMs": {
+          "max": 509,
+          "median": 169,
+          "min": 143,
+          "n": 12,
+          "p95": 509
+        },
+        "warmLinkMs": {
+          "max": 43,
+          "median": 35,
+          "min": 29,
+          "n": 12,
+          "p95": 43
+        }
+      },
+      "after, blobs in memory": {
+        "buildMs": {
+          "max": 0,
+          "median": 0,
+          "min": 0,
+          "n": 12,
+          "p95": 0
+        },
+        "childMs": {
+          "max": 150,
+          "median": 106,
+          "min": 89,
+          "n": 12,
+          "p95": 150
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 150,
+          "median": 106,
+          "min": 89,
+          "n": 12,
+          "p95": 150
+        },
+        "missOverWarmMs": {
+          "max": 121,
+          "median": 72,
+          "min": 56,
+          "n": 12,
+          "p95": 121
+        },
+        "warmLinkMs": {
+          "max": 43,
+          "median": 32,
+          "min": 25,
+          "n": 12,
+          "p95": 43
+        }
+      },
+      "before (LINKER_UNIT_CACHE=off)": {
+        "buildMs": {
+          "max": 634,
+          "median": 487,
+          "min": 413,
+          "n": 12,
+          "p95": 634
+        },
+        "childMs": {
+          "max": 1001,
+          "median": 159,
+          "min": 140,
+          "n": 12,
+          "p95": 1001
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 1635,
+          "median": 645,
+          "min": 572,
+          "n": 12,
+          "p95": 1635
+        },
+        "missOverWarmMs": {
+          "max": 1576,
+          "median": 580,
+          "min": 526,
+          "n": 12,
+          "p95": 1576
+        },
+        "warmLinkMs": {
+          "max": 73,
+          "median": 51,
+          "min": 42,
+          "n": 12,
+          "p95": 73
+        }
+      }
+    },
+    "warmHostMiss POST /v1/customers": {
+      "after, memory": {
+        "buildMs": {
+          "max": 0,
+          "median": 0,
+          "min": 0,
+          "n": 12,
+          "p95": 0
+        },
+        "childMs": {
+          "max": 678,
+          "median": 155,
+          "min": 142,
+          "n": 12,
+          "p95": 678
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 678,
+          "median": 155,
+          "min": 142,
+          "n": 12,
+          "p95": 678
+        },
+        "missOverWarmMs": {
+          "max": 583,
+          "median": 79,
+          "min": 31,
+          "n": 12,
+          "p95": 583
+        },
+        "warmLinkMs": {
+          "max": 120,
+          "median": 75,
+          "min": 70,
+          "n": 12,
+          "p95": 120
+        }
+      },
+      "before": {
+        "buildMs": {
+          "max": 759,
+          "median": 410,
+          "min": 346,
+          "n": 12,
+          "p95": 759
+        },
+        "childMs": {
+          "max": 310,
+          "median": 263,
+          "min": 189,
+          "n": 12,
+          "p95": 310
+        },
+        "cold": "12/12",
+        "missLinkMs": {
+          "max": 1037,
+          "median": 663,
+          "min": 565,
+          "n": 12,
+          "p95": 1037
+        },
+        "missOverWarmMs": {
+          "max": 937,
+          "median": 550,
+          "min": 460,
+          "n": 12,
+          "p95": 937
+        },
+        "warmLinkMs": {
+          "max": 147,
+          "median": 100,
+          "min": 80,
+          "n": 12,
+          "p95": 147
+        }
+      }
+    }
+  },
+  "issue": "FORG-48",
+  "measured": "deployed",
+  "version": "r5-loader-miss/1",
+  "when": "2026-10-25 18:14\u201319:05 UTC",
+  "where": "Workers Paid account c07a7e70\u2026, colo ORD for every request; D1 and R2 buckets in ENAM; client on a residential connection (rtt.json)"
+}
