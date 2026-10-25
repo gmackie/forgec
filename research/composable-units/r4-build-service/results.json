@@ -1,0 +1,197 @@
+{
+  "issue": "FORG-50",
+  "date": "2026-10-25",
+  "app": "examples/acme",
+  "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+  "byteIdentity": {
+    "reference": "native target/release/forgec build examples/acme --units + node packages/units/src/cli.ts (esbuild 0.27.7), same commit",
+    "files": 10,
+    "localFileMap": true,
+    "localArtifacts": true,
+    "deployedFileMap": true,
+    "deployedRefsViaR2": true,
+    "nodeMemoryHost": "packages/units/test/memory.test.ts: native esbuild and esbuild-wasm, identical",
+    "ci": "parity.mjs in the units job (Miniflare/workerd, file map + fake Artifacts)",
+    "deterministicResponses": {
+      "local": true,
+      "deployed": true
+    }
+  },
+  "size": {
+    "rawBytes": 21374895,
+    "gzipBytes": 5675847,
+    "wranglerDryRun": "20873.92 KiB / gzip 5578.91 KiB",
+    "limitPaidCompressed": "10 MB",
+    "limitFreeCompressed": "3 MB (does not fit)"
+  },
+  "outputs": {
+    "files": 10,
+    "modules": 4,
+    "bytesByKind": {
+      "manifest": 467549,
+      "modules": 2232,
+      "plan": 529171,
+      "wit": 7911
+    },
+    "closures": 91,
+    "closureBytes": {
+      "n": 91,
+      "min": 0,
+      "median": 0,
+      "p90": 288,
+      "max": 1855
+    }
+  },
+  "local": {
+    "host": "wrangler dev --local (workerd), loopback HTTP",
+    "measuredAt": "2026-10-25T18:18:41.934Z",
+    "runs": 20,
+    "fileMap": {
+      "firstServerTimingMs": {
+        "parse": 12,
+        "forgec": 870,
+        "libraries": 1,
+        "esbuild-init": 408,
+        "seal": 1645,
+        "total": 3000
+      },
+      "firstWorkerdCpuMs": 2060,
+      "warmTotalMs": {
+        "n": 20,
+        "min": 299,
+        "median": 617,
+        "p90": 854,
+        "max": 1021
+      },
+      "warmForgecMs": {
+        "n": 20,
+        "min": 31,
+        "median": 163,
+        "p90": 352,
+        "max": 358
+      },
+      "warmSealMs": {
+        "n": 20,
+        "min": 66,
+        "median": 246,
+        "p90": 436,
+        "max": 524
+      },
+      "warmWorkerdCpuMs": {
+        "n": 20,
+        "min": 110,
+        "median": 160,
+        "p90": 310,
+        "max": 550
+      },
+      "warmClientWallMs": {
+        "n": 20,
+        "min": 448.8,
+        "median": 832.5,
+        "p90": 1141.7,
+        "max": 1168.4
+      },
+      "requestBytes": 355007,
+      "responseBytes": 1740529,
+      "responseGzipBytes": 185431
+    },
+    "artifacts": {
+      "rounds": 6,
+      "subrequests": 51,
+      "firstServerTimingMs": {
+        "parse": 0,
+        "resolve": 42,
+        "forgec": 164,
+        "fetch-forgec-inputs": 225,
+        "fetch-seal-inputs": 28,
+        "libraries": 100,
+        "esbuild-init": 0,
+        "seal": 346,
+        "total": 979
+      },
+      "warmTotalMs": {
+        "n": 20,
+        "min": 407,
+        "median": 602,
+        "p90": 1060,
+        "max": 1253
+      },
+      "warmWorkerdCpuMs": {
+        "n": 20,
+        "min": 120,
+        "median": 130,
+        "p90": 150,
+        "max": 160
+      },
+      "note": "fake-artifacts.mjs on loopback, not the Cloudflare API"
+    },
+    "memory": {
+      "forgecLinearBytes": 7536640,
+      "esbuildLinearBytes": "12-16 MiB (parity.mjs runs, stat added after this series)",
+      "workerdRssBeforeBytes": 196689920,
+      "workerdRssMaxBytes": 713555968,
+      "note": "RSS is the whole workerd process (compiled wasm code, all services), not the isolate limit"
+    }
+  },
+  "deployed": {
+    "host": "deployed: workers.dev, Workers Paid account c07a7e70…, client on a Mac in the US",
+    "measuredAt": "2026-10-25T18:27:54.139Z",
+    "deployment": "717c52ad-c28c-47fb-8aca-c7f3c007d1d9 (commit 6bc1e56)",
+    "runs": 20,
+    "cpuMsPerBuild": {
+      "n": 16,
+      "min": 131,
+      "median": 168,
+      "p90": 215,
+      "max": 612
+    },
+    "wallMsPerBuild": {
+      "n": 16,
+      "min": 175,
+      "median": 196,
+      "p90": 645,
+      "max": 764
+    },
+    "outcomes": [
+      "ok"
+    ],
+    "clientWallMs": {
+      "first": 1993.2,
+      "warm": {
+        "n": 20,
+        "min": 333.6,
+        "median": 477.9,
+        "p90": 804.2,
+        "max": 953.6
+      }
+    },
+    "linearMemory": {
+      "forgecBytes": 7536640,
+      "esbuildBytes": 16777216
+    },
+    "serverTimingNote": "deployed clocks advance only across I/O, so Server-Timing reads ~0 for compute; CPU is from wrangler tail",
+    "errors": {
+      "compileError": {
+        "status": 422,
+        "code": "compile_failed",
+        "renderedStartsWith": "error[E-RES-002]: src/orders/order.forge:42:1: resource `Broken` must declare `id : id`"
+      },
+      "missingImplementation": {
+        "status": 422,
+        "code": "seal_failed",
+        "error": "missing unit: @acme/commerce/_/SubmitOrder (function) has no implementation under impl/"
+      },
+      "invalidRequest": {
+        "status": 400,
+        "code": "invalid_request",
+        "error": "root must be a repository-relative path"
+      }
+    },
+    "artifacts": "not measured deployed: no Artifacts repository holds forgec and the lab had no Artifacts token"
+  },
+  "limits": {
+    "fitsPaid": true,
+    "fitsFree": false,
+    "why": "5.6 MB gzip > 3 MB Free; ~170 ms CPU > 10 ms Free"
+  }
+}
