@@ -1,9 +1,9 @@
 // Finds where `impl/` defines each unit, statically: nothing in impl/ is executed. A function
 // unit is `export const x = defineFunction("<id>", ...)`; an external unit is an entry of
 // `export const externals = { "<id>": ident }` in the impl index, resolved through its import.
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { dirname, join, relative, resolve } from "node:path";
+// It reads through a `SourceFiles` view (FORG-50), so it runs the same over a checkout or a snapshot.
 import ts from "typescript";
+import { dirname, join, nodeFiles, normalize, text, type SourceFiles } from "./files.ts";
 
 export interface ImplSite {
   symbol: string;
@@ -17,20 +17,22 @@ export interface ImplSite {
 }
 
 /** Byte offsets of a node's text (leading trivia excluded). TypeScript positions are UTF-16 units. */
+const utf8 = new TextEncoder();
 function byteRange(src: ts.SourceFile, node: ts.Node): { start: number; end: number } {
-  const bytes = (pos: number) => Buffer.byteLength(src.text.slice(0, pos), "utf8");
+  // TextEncoder counts a lone surrogate as U+FFFD's 3 bytes, as Buffer.byteLength does.
+  const bytes = (pos: number) => utf8.encode(src.text.slice(0, pos)).byteLength;
   return { start: bytes(node.getStart(src)), end: bytes(node.end) };
 }
 
 /** The top-level statement that exports `name`, or the whole file when it is re-exported some other way. */
-function definitionOf(file: string, name: string): { start: number; end: number } {
-  const src = parse(file);
+function definitionOf(files: SourceFiles, file: string, name: string): { start: number; end: number } {
+  const src = parse(files, file);
   for (const stmt of src.statements) {
     if (!exported(stmt)) continue;
     if ((ts.isFunctionDeclaration(stmt) || ts.isClassDeclaration(stmt)) && stmt.name?.text === name) return byteRange(src, stmt);
     if (ts.isVariableStatement(stmt) && stmt.declarationList.declarations.some((d) => ts.isIdentifier(d.name) && d.name.text === name)) return byteRange(src, stmt);
   }
-  return { start: 0, end: Buffer.byteLength(src.text, "utf8") };
+  return { start: 0, end: utf8.encode(src.text).byteLength };
 }
 
 export interface LocateOptions {
@@ -38,16 +40,17 @@ export interface LocateOptions {
   index?: string;
 }
 
-function sourceFiles(dir: string): string[] {
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true })
-    .flatMap((d) => (d.isDirectory() ? sourceFiles(join(dir, d.name)) : [join(dir, d.name)]))
+function sourceFiles(files: SourceFiles, dir: string): string[] {
+  return files
+    .list(dir)
     .filter((f) => /\.(ts|tsx|mts)$/.test(f) && !/\.d\.ts$|\.test\.tsx?$/.test(f))
     .sort();
 }
 
-function parse(file: string): ts.SourceFile {
-  return ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.ES2022, true);
+function parse(files: SourceFiles, file: string): ts.SourceFile {
+  const bytes = files.read(file);
+  if (!bytes) throw new Error(`${file} does not exist`);
+  return ts.createSourceFile(file, text(bytes), ts.ScriptTarget.ES2022, true);
 }
 
 function exported(node: ts.Node): boolean {
@@ -55,18 +58,23 @@ function exported(node: ts.Node): boolean {
 }
 
 /** `./payment-adapter.js` written for NodeNext resolves to the `.ts` source next to it. */
-function resolveImport(from: string, spec: string): string | null {
+function resolveImport(files: SourceFiles, from: string, spec: string): string | null {
   if (!spec.startsWith(".")) return null;
-  const base = resolve(dirname(from), spec);
+  const base = join(dirname(from), spec);
   const stem = base.replace(/\.(m?js|tsx?)$/, "");
-  for (const c of [base, `${stem}.ts`, `${stem}.tsx`, `${stem}.mts`, join(base, "index.ts")]) if (existsSync(c) && c.match(/\.(ts|tsx|mts)$/)) return c;
+  for (const c of [base, `${stem}.ts`, `${stem}.tsx`, `${stem}.mts`, join(base, "index.ts")]) if (c.match(/\.(ts|tsx|mts)$/) && files.read(c)) return c;
   return null;
 }
 
 export function locateImpl(appRoot: string, options: LocateOptions = {}): Map<string, ImplSite> {
-  const implDir = resolve(appRoot, options.implDir ?? "impl");
-  const index = resolve(appRoot, options.index ?? "impl/index.ts");
-  const rel = (f: string) => relative(appRoot, f).split("\\").join("/");
+  return locateIn(nodeFiles(appRoot), options);
+}
+
+/** `locateImpl` over any view of the app's files; paths are relative to the app root. */
+export function locateIn(files: SourceFiles, options: LocateOptions = {}): Map<string, ImplSite> {
+  const implDir = normalize(options.implDir ?? "impl");
+  const index = normalize(options.index ?? "impl/index.ts");
+  const rel = (f: string) => f.split("\\").join("/");
   const sites = new Map<string, ImplSite>();
   const add = (site: ImplSite) => {
     const previous = sites.get(site.symbol);
@@ -74,8 +82,8 @@ export function locateImpl(appRoot: string, options: LocateOptions = {}): Map<st
     sites.set(site.symbol, site);
   };
 
-  for (const file of sourceFiles(implDir)) {
-    const src = parse(file);
+  for (const file of sourceFiles(files, implDir)) {
+    const src = parse(files, file);
     for (const stmt of src.statements) {
       if (!ts.isVariableStatement(stmt) || !exported(stmt)) continue;
       for (const decl of stmt.declarationList.declarations) {
@@ -89,13 +97,13 @@ export function locateImpl(appRoot: string, options: LocateOptions = {}): Map<st
     }
   }
 
-  if (!existsSync(index)) return sites;
-  const src = parse(index);
+  if (!files.read(index)) return sites;
+  const src = parse(files, index);
   const imports = new Map<string, { file: string; name: string }>();
   for (const stmt of src.statements) {
     if (!ts.isImportDeclaration(stmt) || !ts.isStringLiteral(stmt.moduleSpecifier)) continue;
     const bindings = stmt.importClause?.namedBindings;
-    const target = resolveImport(index, stmt.moduleSpecifier.text);
+    const target = resolveImport(files, index, stmt.moduleSpecifier.text);
     if (!target || !bindings || !ts.isNamedImports(bindings)) continue;
     for (const el of bindings.elements) imports.set(el.name.text, { file: target, name: (el.propertyName ?? el.name).text });
   }
@@ -110,7 +118,7 @@ export function locateImpl(appRoot: string, options: LocateOptions = {}): Map<st
         if (!key || !value || !ts.isIdentifier(value)) throw new Error(`${rel(index)}: each external must be \`"<id>": <imported binding>\``);
         const target = imports.get(value.text);
         if (!target) throw new Error(`${rel(index)}: external ${key} is bound to ${value.text}, which is not imported from a local module`);
-        add({ symbol: key, file: rel(target.file), exportName: target.name, binding: "external", ...definitionOf(target.file, target.name) });
+        add({ symbol: key, file: rel(target.file), exportName: target.name, binding: "external", ...definitionOf(files, target.file, target.name) });
       }
     }
   }

@@ -1,0 +1,92 @@
+
+ ⛅️ wrangler 4.135.0 (update available 4.152.0)
+───────────────────────────────────────────────
+Your Worker has access to the following bindings:
+Binding                                                       Resource                  Mode
+env.BLOBS (forge-lab-build-service-blobs)                     R2 Bucket                 local
+env.ARTIFACTS_API_BASE ("(hidden)")                           Environment Variable      local
+env.ARTIFACTS_API_TOKEN ("(hidden)")                          Environment Variable      local
+env.ARTIFACTS_ACCOUNT_ID ("(hidden)")                         Environment Variable      local
+
+Attaching additional modules:
+┌───────────────────┬───────────────┬──────────────┐
+│ Name              │ Type          │ Size         │
+├───────────────────┼───────────────┼──────────────┤
+│ esbuild.wasm      │ compiled-wasm │ 13228.42 KiB │
+├───────────────────┼───────────────┼──────────────┤
+│ forgec.wasm       │ compiled-wasm │ 4070.95 KiB  │
+├───────────────────┼───────────────┼──────────────┤
+│ Total (2 modules) │               │ 17299.37 KiB │
+└───────────────────┴───────────────┴──────────────┘
+⎔ Starting local server...
+Wrangler detected this dev session is running in an AI agent.
+The Local Explorer API is available at http://localhost:8851/cdn-cgi/local/explorer/api
+Useful routes:
+  GET http://localhost:8851/cdn-cgi/local/explorer/api/local/workers - local Workers and bindings
+  GET http://localhost:8851/cdn-cgi/local/explorer/api/storage/kv/namespaces - KV namespaces
+  GET http://localhost:8851/cdn-cgi/local/explorer/api/d1/database - D1 databases
+  GET http://localhost:8851/cdn-cgi/local/explorer/api/r2/buckets - R2 buckets
+  GET http://localhost:8851/cdn-cgi/local/explorer/api/workers/durable_objects/namespaces - Durable Object namespaces
+  GET http://localhost:8851/cdn-cgi/local/explorer/api/workflows - Workflows
+  POST http://localhost:8851/cdn-cgi/local/explorer/api/local/observability/query - run a read-only SQL query (SELECT/WITH only) over captured request traces and console logs. Tables: spans, logs (read attributes via json(attributes)). Example:
+    curl -X POST http://localhost:8851/cdn-cgi/local/explorer/api/local/observability/query -H 'Content-Type: application/json' -d '{"sql":"SELECT service, name, outcome, duration_ms FROM spans WHERE parent_id IS NULL LIMIT 20"}'
+  POST http://localhost:8851/cdn-cgi/local/explorer/api/local/observability/clear - clear all captured traces and logs
+If the routes above don't cover what you need, fetch the full OpenAPI schema (large - use only as a last resort):
+  GET http://localhost:8851/cdn-cgi/local/explorer/api - OpenAPI schema
+[wrangler:info] Ready on http://localhost:8851
+[wrangler:info] POST /v1/builds 200 OK (3012ms)
+[wrangler:info] POST /v1/builds 200 OK (873ms)
+[wrangler:info] POST /v1/builds 200 OK (1027ms)
+[wrangler:info] POST /v1/builds 200 OK (691ms)
+[wrangler:info] POST /v1/builds 200 OK (890ms)
+[wrangler:info] POST /v1/builds 200 OK (857ms)
+[wrangler:info] POST /v1/builds 200 OK (658ms)
+[wrangler:info] POST /v1/builds 200 OK (794ms)
+[wrangler:info] POST /v1/builds 200 OK (713ms)
+[wrangler:info] POST /v1/builds 200 OK (500ms)
+[wrangler:info] POST /v1/builds 200 OK (517ms)
+[wrangler:info] POST /v1/builds 200 OK (628ms)
+[wrangler:info] POST /v1/builds 200 OK (575ms)
+[wrangler:info] POST /v1/builds 200 OK (492ms)
+[wrangler:info] POST /v1/builds 200 OK (433ms)
+[wrangler:info] POST /v1/builds 200 OK (524ms)
+[wrangler:info] POST /v1/builds 200 OK (306ms)
+[wrangler:info] POST /v1/builds 200 OK (428ms)
+[wrangler:info] POST /v1/builds 200 OK (680ms)
+[wrangler:info] POST /v1/builds 200 OK (719ms)
+[wrangler:info] POST /v1/builds 200 OK (785ms)
+[wrangler:info] POST /v1/builds 200 OK (997ms)
+[wrangler:info] POST /v1/builds 200 OK (1113ms)
+[wrangler:info] POST /v1/builds 200 OK (652ms)
+[wrangler:info] POST /v1/builds 200 OK (575ms)
+[wrangler:info] POST /v1/builds 200 OK (615ms)
+[wrangler:info] POST /v1/builds 200 OK (863ms)
+[wrangler:info] POST /v1/builds 200 OK (666ms)
+[wrangler:info] POST /v1/builds 200 OK (575ms)
+[wrangler:info] POST /v1/builds 200 OK (636ms)
+[wrangler:info] POST /v1/builds 200 OK (421ms)
+[wrangler:info] POST /v1/builds 200 OK (605ms)
+[wrangler:info] POST /v1/builds 200 OK (598ms)
+[wrangler:info] POST /v1/builds 200 OK (482ms)
+[wrangler:info] POST /v1/builds 200 OK (1064ms)
+[wrangler:info] POST /v1/builds 200 OK (746ms)
+[wrangler:info] POST /v1/builds 200 OK (524ms)
+[wrangler:info] POST /v1/builds 200 OK (1013ms)
+[wrangler:info] POST /v1/builds 200 OK (472ms)
+[wrangler:info] POST /v1/builds 200 OK (968ms)
+[wrangler:info] POST /v1/builds 200 OK (1359ms)
+[wrangler:info] POST /v1/builds 200 OK (483ms)
+[wrangler:info] POST /v1/builds 200 OK (596ms)
+[wrangler:info] GET /v1/blobs/sha256:b82e2dc972de7e502bcef5e12eb6bf23c47e730c798cf002d193e0256f2a5969 200 OK (16ms)
+[wrangler:info] GET /v1/blobs/sha256:1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427 200 OK (6ms)
+[wrangler:info] GET /v1/blobs/sha256:45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee 200 OK (8ms)
+[wrangler:info] GET /v1/blobs/sha256:4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9 200 OK (4ms)
+[wrangler:info] GET /v1/blobs/sha256:d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9 200 OK (3ms)
+[wrangler:info] GET /v1/blobs/sha256:3460430d449919a77d21cf54079d404a593a3ac650c11fd76a4fe4ef44f525e2 200 OK (13ms)
+[wrangler:info] GET /v1/blobs/sha256:4e368c75b8348ff4143c1c51667d305af0d0ac385510367e894c40c35fe48d8c 200 OK (5ms)
+[wrangler:info] GET /v1/blobs/sha256:2354b18a50de2cb05cf9b82c39fbd775073c76ab0b04abbbbe742bb830e6d0b3 200 OK (53ms)
+[wrangler:info] GET /v1/blobs/sha256:86ca7914ca26bfc8382b375e64ef5456a142d57f6969a3da5b9a920c8f49b44d 200 OK (6ms)
+[wrangler:info] GET /v1/blobs/sha256:027e6645cbb9e5e2433f382cd6bb73ebb5dd2b76f1004fbd59c262712d420bdc 200 OK (2ms)
+[wrangler:info] POST /v1/builds 422 Unprocessable Entity (49ms)
+[wrangler:info] POST /v1/builds 422 Unprocessable Entity (210ms)
+[wrangler:info] POST /v1/builds 400 Bad Request (9ms)

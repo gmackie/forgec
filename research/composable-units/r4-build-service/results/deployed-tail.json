@@ -1,0 +1,320 @@
+{
+  "source": "wrangler tail --format json (cpuTime, wallTime per invocation), during measure.mjs deployed run",
+  "note": "tail delivered 26 of the run's ~45 invocations (the first builds, including the isolate's first, were not delivered); statistics are over what arrived",
+  "builds200": {
+    "cpuMs": {
+      "n": 16,
+      "min": 131,
+      "median": 168,
+      "p90": 215,
+      "max": 612
+    },
+    "wallMs": {
+      "n": 16,
+      "min": 175,
+      "median": 196,
+      "p90": 645,
+      "max": 764
+    }
+  },
+  "blobs": {
+    "cpuMs": {
+      "n": 7,
+      "min": 0,
+      "median": 1,
+      "p90": 2,
+      "max": 2
+    }
+  },
+  "outcomes": [
+    "ok"
+  ],
+  "events": [
+    {
+      "at": "2026-10-25T18:27:55.178Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 612,
+      "wallMs": 645,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:27:56.551Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 169,
+      "wallMs": 196,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:27:57.469Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 215,
+      "wallMs": 240,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:27:58.066Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 170,
+      "wallMs": 196,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:27:58.435Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 161,
+      "wallMs": 187,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:27:58.928Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 193,
+      "wallMs": 217,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:27:59.432Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 168,
+      "wallMs": 196,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:27:59.860Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 150,
+      "wallMs": 176,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:00.306Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 175,
+      "wallMs": 198,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:00.695Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 168,
+      "wallMs": 195,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:01.051Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 151,
+      "wallMs": 178,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:01.535Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 131,
+      "wallMs": 610,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:02.990Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 150,
+      "wallMs": 179,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:05.567Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 188,
+      "wallMs": 222,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:06.081Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 142,
+      "wallMs": 175,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:07.899Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 152,
+      "wallMs": 764,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:09.376Z",
+      "method": "GET",
+      "path": "/v1/blobs/sha256:REDACTED",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 2,
+      "wallMs": 150,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:10.358Z",
+      "method": "GET",
+      "path": "/v1/blobs/sha256:REDACTED",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 0,
+      "wallMs": 152,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:10.560Z",
+      "method": "GET",
+      "path": "/v1/blobs/sha256:REDACTED",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 1,
+      "wallMs": 130,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:10.733Z",
+      "method": "GET",
+      "path": "/v1/blobs/sha256:REDACTED",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 0,
+      "wallMs": 106,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:10.916Z",
+      "method": "GET",
+      "path": "/v1/blobs/sha256:REDACTED",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 1,
+      "wallMs": 194,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:11.555Z",
+      "method": "GET",
+      "path": "/v1/blobs/sha256:REDACTED",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 1,
+      "wallMs": 118,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:12.022Z",
+      "method": "GET",
+      "path": "/v1/blobs/sha256:REDACTED",
+      "status": 200,
+      "outcome": "ok",
+      "cpuMs": 1,
+      "wallMs": 123,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:12.321Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 422,
+      "outcome": "ok",
+      "cpuMs": 15,
+      "wallMs": 19,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:12.758Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 422,
+      "outcome": "ok",
+      "cpuMs": 951,
+      "wallMs": 974,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    },
+    {
+      "at": "2026-10-25T18:28:13.776Z",
+      "method": "POST",
+      "path": "/v1/builds",
+      "status": 400,
+      "outcome": "ok",
+      "cpuMs": 0,
+      "wallMs": 0,
+      "exceptions": 0,
+      "scriptVersion": "dba3d74d-5ea2-46e1-bf1a-caac4707cd02"
+    }
+  ]
+}

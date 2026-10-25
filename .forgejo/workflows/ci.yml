@@ -110,6 +110,11 @@ jobs:
         run: pnpm --filter @forgegraph/units --filter @forgegraph/linker-packed --filter @forgegraph/linker-dynamic --filter @forgegraph/linker-tiered run typecheck
       # One package per step: the linker tests both build examples/acme/generated and start workerd.
       - run: pnpm --filter @forgegraph/units test
+      # FORG-50: the build service. Builds forgegraph-wasm for wasm32 (release) and the Worker, runs
+      # it in workerd (Miniflare) and checks that a file map and the Artifacts source (a fake API
+      # over this checkout's git objects) both write the bytes native forgec + forge-units write.
+      - name: Check the build-service Worker against native forgec + forge-units
+        run: node research/composable-units/r4-build-service/parity.mjs
       - run: pnpm --filter @forgegraph/linker-packed test
       - run: pnpm --filter @forgegraph/linker-dynamic test
       # Linker C (FORG-43): link-time tests, then A's packed scripts, C's router and B's host with a
