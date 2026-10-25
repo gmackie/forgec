@@ -221,31 +221,22 @@ fn write_unit_wit(unit_plan: &serde_json::Value, dir: &Path) -> Result<()> {
     if dir.exists() {
         std::fs::remove_dir_all(dir)?;
     }
+    for (rel, world) in pipeline::unit_wit_files(unit_plan) {
+        std::fs::create_dir_all(dir)?;
+        let name = rel.rsplit('/').next().unwrap_or_default();
+        std::fs::write(dir.join(name), world)?;
+    }
     for u in unit_plan["units"].as_array().into_iter().flatten() {
         let symbol = u["symbol"].as_str().unwrap_or_default();
-        match u["wit"]["status"].as_str() {
-            Some("ok") => {
-                std::fs::create_dir_all(dir)?;
-                let file = symbol
-                    .trim_start_matches('@')
-                    .replace("/_/", "/")
-                    .replace('/', ".");
-                std::fs::write(
-                    dir.join(format!("{file}.wit")),
-                    u["wit"]["world"].as_str().unwrap_or_default(),
-                )?;
+        if u["wit"]["status"].as_str().is_some_and(|s| s != "ok") {
+            for d in u["wit"]["diagnostics"].as_array().into_iter().flatten() {
+                eprintln!(
+                    "note[{}]: {symbol}: {}: {} (no WIT world; js-module only)",
+                    d["code"].as_str().unwrap_or_default(),
+                    d["path"].as_str().unwrap_or_default(),
+                    d["message"].as_str().unwrap_or_default()
+                );
             }
-            Some(_) => {
-                for d in u["wit"]["diagnostics"].as_array().into_iter().flatten() {
-                    eprintln!(
-                        "note[{}]: {symbol}: {}: {} (no WIT world; js-module only)",
-                        d["code"].as_str().unwrap_or_default(),
-                        d["path"].as_str().unwrap_or_default(),
-                        d["message"].as_str().unwrap_or_default()
-                    );
-                }
-            }
-            None => {}
         }
     }
     Ok(())

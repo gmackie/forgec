@@ -437,6 +437,28 @@ pub fn artifacts(
     Artifacts { files, warnings }
 }
 
+/// `units/wit/<unit>.wit`: the WIT world of every unit the plan has one for, named after its
+/// symbol (`@acme/pricing/_/QuoteOrder` -> `acme.pricing.QuoteOrder.wit`). Written by
+/// `forgec build --units` beside the plan, and by the build service (FORG-50).
+pub fn unit_wit_files(unit_plan: &serde_json::Value) -> Vec<(String, String)> {
+    let mut files = Vec::new();
+    for u in unit_plan["units"].as_array().into_iter().flatten() {
+        if u["wit"]["status"].as_str() != Some("ok") {
+            continue;
+        }
+        let symbol = u["symbol"].as_str().unwrap_or_default();
+        let file = symbol
+            .trim_start_matches('@')
+            .replace("/_/", "/")
+            .replace('/', ".");
+        files.push((
+            format!("units/wit/{file}.wit"),
+            u["wit"]["world"].as_str().unwrap_or_default().to_string(),
+        ));
+    }
+    files
+}
+
 /// `units/plan.json`: the composable-unit plan that `@forgegraph/units` bundles
 /// and seals into a Closure Manifest (research, FORG-28). Written by
 /// `forgec build --units`.

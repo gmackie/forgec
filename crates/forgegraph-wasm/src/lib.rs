@@ -2,13 +2,20 @@
 //! compiler runs where there is no filesystem (a Cloudflare Worker isolate).
 //! The caller supplies every file the CLI would read: manifests, sources,
 //! `forge.lock`, path dependencies and pinned extension manifests.
+//!
+//! A host that fetches sources lazily (the FORG-50 build service over Cloudflare
+//! Artifacts) can also pass directory listings, and reads the `missing` paths
+//! every response reports: what the compiler looked for and did not find. It
+//! fetches those and calls again until nothing new turns up.
 
 use forgegraph_codegen::pipeline::{self, LockStatus};
-use forgegraph_semantic::MemoryTree;
+use forgegraph_semantic::SourceTree;
 use serde::Deserialize;
 use serde_json::{Value, json};
-use std::collections::BTreeMap;
-use std::path::Path;
+use std::cell::RefCell;
+use std::collections::{BTreeMap, BTreeSet};
+use std::io;
+use std::path::{Component, Path, PathBuf};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -23,15 +30,128 @@ struct Request {
     /// `FORGE_SOURCE_REVISION` for the source map.
     #[serde(default)]
     source_revision: Option<String>,
+    /// Directory listings, `dir -> [(name, is_dir)]`, for directories whose files
+    /// are not all in `files` yet. Directories without one exist implicitly, as
+    /// the parents of the files given.
+    #[serde(default)]
+    dirs: BTreeMap<String, Vec<(String, bool)>>,
+    /// `forgec build --units`: also emit `units/plan.json`.
+    #[serde(default)]
+    units: bool,
+    /// Emit the regular build artifacts (default). `false` with `units` emits the plan alone.
+    #[serde(default = "yes")]
+    artifacts: bool,
 }
 
-fn tree(request: &Request) -> MemoryTree {
-    MemoryTree::new(
-        request
+fn yes() -> bool {
+    true
+}
+
+/// The request's files and listings as a [`SourceTree`]. Paths are resolved
+/// lexically, as `MemoryTree` resolves them; with no listings it answers
+/// exactly as `MemoryTree` does. Every lookup that misses is recorded.
+struct Snapshot {
+    files: BTreeMap<PathBuf, Vec<u8>>,
+    dirs: BTreeMap<PathBuf, Vec<(PathBuf, bool)>>,
+    missing: RefCell<BTreeSet<String>>,
+}
+
+fn normalize(path: &Path) -> PathBuf {
+    let mut out: Vec<Component> = Vec::new();
+    for c in path.components() {
+        match c {
+            Component::CurDir => {}
+            Component::ParentDir => match out.last() {
+                Some(Component::Normal(_)) => {
+                    out.pop();
+                }
+                Some(Component::RootDir | Component::Prefix(_)) => {}
+                _ => out.push(c),
+            },
+            c => out.push(c),
+        }
+    }
+    out.iter().collect()
+}
+
+impl Snapshot {
+    fn new(request: &Request) -> Snapshot {
+        let files = request
             .files
             .iter()
-            .map(|(path, text)| (path.clone(), text.as_bytes().to_vec())),
-    )
+            .map(|(path, text)| (normalize(Path::new(path)), text.as_bytes().to_vec()))
+            .collect();
+        let dirs = request
+            .dirs
+            .iter()
+            .map(|(dir, entries)| {
+                let dir = normalize(Path::new(dir));
+                let entries = entries
+                    .iter()
+                    .map(|(name, is_dir)| (dir.join(name), *is_dir))
+                    .collect();
+                (dir, entries)
+            })
+            .collect();
+        Snapshot {
+            files,
+            dirs,
+            missing: RefCell::default(),
+        }
+    }
+    fn miss(&self, path: &Path) -> io::Error {
+        let shown = path.to_string_lossy().replace('\\', "/");
+        self.missing.borrow_mut().insert(shown);
+        io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("{} is not in the in-memory source tree", path.display()),
+        )
+    }
+    fn is_dir(&self, dir: &Path) -> bool {
+        self.dirs.contains_key(dir) || self.files.keys().any(|p| p != dir && p.starts_with(dir))
+    }
+    fn missing(&self) -> Vec<String> {
+        self.missing.borrow().iter().cloned().collect()
+    }
+}
+
+impl SourceTree for Snapshot {
+    fn read(&self, path: &Path) -> io::Result<Vec<u8>> {
+        let path = normalize(path);
+        self.files
+            .get(&path)
+            .cloned()
+            .ok_or_else(|| self.miss(&path))
+    }
+    fn read_dir(&self, dir: &Path) -> io::Result<Vec<(PathBuf, bool)>> {
+        let dir = normalize(dir);
+        if let Some(entries) = self.dirs.get(&dir) {
+            return Ok(entries.clone());
+        }
+        let depth = dir.components().count();
+        let mut entries = BTreeMap::new();
+        for path in self
+            .files
+            .keys()
+            .filter(|p| **p != dir && p.starts_with(&dir))
+        {
+            let mut components = path.components();
+            let child: PathBuf = components.by_ref().take(depth + 1).collect();
+            entries.insert(child, components.next().is_some());
+        }
+        if entries.is_empty() {
+            return Err(self.miss(&dir));
+        }
+        Ok(entries.into_iter().collect())
+    }
+    fn canonicalize(&self, path: &Path) -> io::Result<PathBuf> {
+        let path = normalize(path);
+        if self.files.contains_key(&path) || self.is_dir(&path) {
+            Ok(path)
+        } else {
+            Err(self.miss(&path))
+        }
+    }
 }
 
 /// The error and its causes on one line, as `anyhow`'s `{:#}` would print them.
@@ -64,16 +184,16 @@ pub fn check(input: &str) -> Value {
         Ok(request) => request,
         Err(e) => return json!({"ok": false, "error": format!("invalid check request: {e}")}),
     };
-    let tree = tree(&request);
+    let tree = Snapshot::new(&request);
     let root = Path::new(&request.root);
     let loaded = match pipeline::load_tree(&tree, root) {
         Ok(loaded) => loaded,
-        Err(e) => return failure(&e),
+        Err(e) => return with_missing(failure(&e), &tree),
     };
     let lock = pipeline::lock_status(&tree, root, &loaded);
     let diagnostics = &loaded.compilation.diagnostics;
     let errors = diagnostics.iter().filter(|d| d.is_error()).count();
-    json!({
+    let result = json!({
         "ok": errors == 0 && lock != LockStatus::Stale,
         "package": loaded.package.name,
         "files": loaded.package.files.len(),
@@ -83,10 +203,18 @@ pub fn check(input: &str) -> Value {
         "lock": lock_name(lock),
         "diagnostics": diagnostics,
         "rendered": loaded.compilation.render(),
-    })
+    });
+    with_missing(result, &tree)
 }
 
-/// `forgec build <root>`: every artifact the CLI writes, keyed by path relative to the output directory.
+/// Adds the paths the compiler looked up and did not find.
+fn with_missing(mut result: Value, tree: &Snapshot) -> Value {
+    result["missing"] = json!(tree.missing());
+    result
+}
+
+/// `forgec build <root>` (with `units`, `forgec build --units`): every artifact the CLI writes,
+/// keyed by path relative to the output directory.
 pub fn build(input: &str) -> Value {
     let request = match serde_json::from_str::<Request>(input) {
         Ok(request) => request,
@@ -97,13 +225,17 @@ pub fn build(input: &str) -> Value {
     {
         return json!({"ok": false, "error": format!("--service-id `{id}` is not an identifier (letters, digits, _ and -, starting with a letter)")});
     }
-    let tree = tree(&request);
+    let tree = Snapshot::new(&request);
+    with_missing(build_in(&request, &tree), &tree)
+}
+
+fn build_in(request: &Request, tree: &Snapshot) -> Value {
     let root = Path::new(&request.root);
-    let loaded = match pipeline::load_tree(&tree, root) {
+    let loaded = match pipeline::load_tree(tree, root) {
         Ok(loaded) => loaded,
         Err(e) => return failure(&e),
     };
-    let lock = pipeline::lock_status(&tree, root, &loaded);
+    let lock = pipeline::lock_status(tree, root, &loaded);
     let rendered = loaded.compilation.render();
     if lock == LockStatus::Stale {
         return json!({"ok": false, "lock": "stale", "error": "error[E-LOCK-001]: forge.lock is stale", "rendered": rendered});
@@ -117,15 +249,25 @@ pub fn build(input: &str) -> Value {
             return json!({"ok": false, "lock": lock_name(lock), "error": e.to_string(), "rendered": rendered});
         }
     };
-    let artifacts = pipeline::artifacts(
-        &loaded,
-        ir,
-        &plans,
-        request.service_id.clone(),
-        request.source_revision.as_deref(),
-    );
-    let files: serde_json::Map<String, Value> = artifacts
-        .files
+    let (mut files, warnings) = if request.artifacts {
+        let artifacts = pipeline::artifacts(
+            &loaded,
+            ir,
+            &plans,
+            request.service_id.clone(),
+            request.source_revision.as_deref(),
+        );
+        (artifacts.files, artifacts.warnings)
+    } else {
+        (Vec::new(), Vec::new())
+    };
+    if request.units {
+        let (path, plan) = pipeline::units_plan(&loaded, ir, &plans);
+        let parsed: Value = serde_json::from_str(&plan).expect("the unit plan is JSON");
+        files.push((path, plan));
+        files.extend(pipeline::unit_wit_files(&parsed));
+    }
+    let files: serde_json::Map<String, Value> = files
         .into_iter()
         .map(|(path, text)| (path, Value::String(text)))
         .collect();
@@ -134,7 +276,7 @@ pub fn build(input: &str) -> Value {
         "package": loaded.package.name,
         "lock": lock_name(lock),
         "files": files,
-        "warnings": artifacts.warnings,
+        "warnings": warnings,
         "rendered": rendered,
     })
 }
@@ -249,6 +391,110 @@ mod tests {
                 "{path}"
             );
         }
+    }
+
+    #[test]
+    fn plans_units_from_memory_exactly_as_from_disk() {
+        let request = json!({"root": "examples/acme", "files": acme_files(), "units": true, "artifacts": false});
+        let result = build(&request.to_string());
+        assert_eq!(result["ok"], true, "{result}");
+        let files = result["files"].as_object().unwrap();
+        assert_eq!(
+            files.keys().next().map(String::as_str),
+            Some("units/plan.json")
+        );
+        assert!(files.keys().skip(1).all(|k| k.starts_with("units/wit/")));
+        let loaded = pipeline::load_tree(&OsTree, &repo().join("examples/acme")).unwrap();
+        let ir = loaded.compilation.ir.as_ref().unwrap();
+        let plans = forgegraph_planner::plan(ir).unwrap();
+        let (path, text) = pipeline::units_plan(&loaded, ir, &plans);
+        assert_eq!(files[&path].as_str(), Some(text.as_str()));
+        assert_eq!(
+            result["missing"],
+            json!([]),
+            "a complete tree misses nothing"
+        );
+    }
+
+    /// A host that only knows what it has been asked for converges on the files the CLI reads,
+    /// fetching listings and files for the paths each call reports missing. Like the build
+    /// service's Artifacts source, listing a directory also lists its subdirectories and fetches
+    /// the `.forge` sources, `forge.toml` and `forge.lock` in them, so a package is not discovered
+    /// one file per call.
+    #[test]
+    fn a_lazy_host_converges_on_the_missing_paths() {
+        let all = acme_files();
+        let listing = |dir: &str| -> Option<Vec<(String, bool)>> {
+            let dir = repo().join(dir);
+            // Untracked install and build output is not in a git tree.
+            let mut out: Vec<(String, bool)> = std::fs::read_dir(&dir)
+                .ok()?
+                .map(|e| {
+                    let e = e.unwrap();
+                    (
+                        e.file_name().to_string_lossy().into_owned(),
+                        e.path().is_dir(),
+                    )
+                })
+                .filter(|(name, _)| name != "node_modules" && name != "generated")
+                .collect();
+            out.sort();
+            Some(out)
+        };
+        let mut files = BTreeMap::<String, String>::new();
+        let mut dirs = BTreeMap::<String, Vec<(String, bool)>>::new();
+        let mut absent = BTreeSet::<String>::new();
+        let mut rounds = 0;
+        let result = loop {
+            rounds += 1;
+            assert!(rounds < 50, "did not converge");
+            let request =
+                json!({"root": "examples/acme", "files": files, "dirs": dirs, "units": true});
+            let result = build(&request.to_string());
+            let mut progressed = false;
+            for path in result["missing"].as_array().unwrap() {
+                let path = path.as_str().unwrap().to_string();
+                if absent.contains(&path) || files.contains_key(&path) || dirs.contains_key(&path) {
+                    continue;
+                }
+                progressed = true;
+                if let Some(text) = all.get(&path) {
+                    files.insert(path, text.clone());
+                } else if let Ok(text) = std::fs::read_to_string(repo().join(&path)) {
+                    files.insert(path, text);
+                } else if listing(&path).is_some() {
+                    let mut stack = vec![path];
+                    while let Some(dir) = stack.pop() {
+                        let entries = listing(&dir).unwrap();
+                        for (name, is_dir) in &entries {
+                            let child = format!("{dir}/{name}");
+                            if *is_dir {
+                                stack.push(child);
+                            } else if name.ends_with(".forge")
+                                || name == "forge.toml"
+                                || name == "forge.lock"
+                            {
+                                files.insert(
+                                    child.clone(),
+                                    std::fs::read_to_string(repo().join(&child)).unwrap(),
+                                );
+                            }
+                        }
+                        dirs.insert(dir, entries);
+                    }
+                } else {
+                    absent.insert(path);
+                }
+            }
+            if !progressed {
+                break result;
+            }
+        };
+        assert_eq!(result["ok"], true, "{result}");
+        let eager =
+            build(&json!({"root": "examples/acme", "files": all, "units": true}).to_string());
+        assert_eq!(result["files"], eager["files"]);
+        assert!(rounds <= 6, "{rounds} rounds");
     }
 
     #[test]
