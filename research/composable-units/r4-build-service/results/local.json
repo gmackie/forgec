@@ -1,0 +1,423 @@
+{
+  "issue": "FORG-50",
+  "host": "wrangler dev --local (workerd), loopback HTTP",
+  "measuredAt": "2026-10-25T18:18:41.934Z",
+  "runsPerSeries": 20,
+  "url": "http://127.0.0.1:8851",
+  "commit": "293de736059e2d3e923e74c6ebae455231c77984",
+  "workerdBefore": {
+    "rssBytes": 196689920,
+    "cpuMs": 380
+  },
+  "fileMap": {
+    "first": {
+      "clientWallMs": 3238.7,
+      "serverTiming": {
+        "parse": 12,
+        "forgec": 870,
+        "libraries": 1,
+        "esbuild-init": 408,
+        "seal": 1645,
+        "total": 3000
+      },
+      "stats": {
+        "rounds": 1,
+        "subrequests": 0,
+        "snapshotFiles": 51,
+        "forgecMemoryBytes": 7536640
+      },
+      "workerdCpuMs": 2060
+    },
+    "warm": {
+      "clientWallMs": {
+        "n": 20,
+        "min": 448.8,
+        "median": 832.5,
+        "p90": 1141.7,
+        "max": 1168.4
+      },
+      "serverTimingMs": {
+        "parse": {
+          "n": 20,
+          "min": 1,
+          "median": 2,
+          "p90": 37,
+          "max": 61
+        },
+        "forgec": {
+          "n": 20,
+          "min": 31,
+          "median": 163,
+          "p90": 352,
+          "max": 358
+        },
+        "libraries": {
+          "n": 20,
+          "min": 0,
+          "median": 1,
+          "p90": 12,
+          "max": 23
+        },
+        "esbuild-init": {
+          "n": 20,
+          "min": 0,
+          "median": 0,
+          "p90": 0,
+          "max": 0
+        },
+        "seal": {
+          "n": 20,
+          "min": 66,
+          "median": 246,
+          "p90": 436,
+          "max": 524
+        },
+        "total": {
+          "n": 20,
+          "min": 299,
+          "median": 617,
+          "p90": 854,
+          "max": 1021
+        }
+      },
+      "workerdCpuMs": {
+        "n": 20,
+        "min": 110,
+        "median": 160,
+        "p90": 310,
+        "max": 550
+      }
+    },
+    "stats": {
+      "rounds": 1,
+      "subrequests": 0,
+      "snapshotFiles": 51,
+      "forgecMemoryBytes": 7536640
+    },
+    "requestBytes": 355007,
+    "responseBytes": 1740529,
+    "responseGzipBytes": 185431,
+    "deterministic": true,
+    "responseDigest": "sha256:cd83333607b02c542cfb041499530d895c4b23a0cdfc5859dac3bc3add784fe7",
+    "parity": {
+      "identical": true,
+      "files": 10,
+      "mismatched": [],
+      "byFile": [
+        {
+          "path": "units/manifest.json",
+          "nativeBytes": 467549,
+          "serviceBytes": 467549,
+          "digest": "sha256:b82e2dc972de7e502bcef5e12eb6bf23c47e730c798cf002d193e0256f2a5969",
+          "identical": true
+        },
+        {
+          "path": "units/modules/1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427.js",
+          "nativeBytes": 1065,
+          "serviceBytes": 1065,
+          "digest": "sha256:1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427",
+          "identical": true
+        },
+        {
+          "path": "units/modules/45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee.js",
+          "nativeBytes": 288,
+          "serviceBytes": 288,
+          "digest": "sha256:45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee",
+          "identical": true
+        },
+        {
+          "path": "units/modules/4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9.js",
+          "nativeBytes": 502,
+          "serviceBytes": 502,
+          "digest": "sha256:4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9",
+          "identical": true
+        },
+        {
+          "path": "units/modules/d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9.js",
+          "nativeBytes": 377,
+          "serviceBytes": 377,
+          "digest": "sha256:d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9",
+          "identical": true
+        },
+        {
+          "path": "units/plan.json",
+          "nativeBytes": 529171,
+          "serviceBytes": 529171,
+          "digest": "sha256:3460430d449919a77d21cf54079d404a593a3ac650c11fd76a4fe4ef44f525e2",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.commerce.FulfillOrder.wit",
+          "nativeBytes": 1738,
+          "serviceBytes": 1738,
+          "digest": "sha256:4e368c75b8348ff4143c1c51667d305af0d0ac385510367e894c40c35fe48d8c",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.commerce.RebuildOrderSummary.wit",
+          "nativeBytes": 1500,
+          "serviceBytes": 1500,
+          "digest": "sha256:2354b18a50de2cb05cf9b82c39fbd775073c76ab0b04abbbbe742bb830e6d0b3",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.commerce.SubmitOrder.wit",
+          "nativeBytes": 3973,
+          "serviceBytes": 3973,
+          "digest": "sha256:86ca7914ca26bfc8382b375e64ef5456a142d57f6969a3da5b9a920c8f49b44d",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.payments.AuthorizePayment.wit",
+          "nativeBytes": 700,
+          "serviceBytes": 700,
+          "digest": "sha256:027e6645cbb9e5e2433f382cd6bb73ebb5dd2b76f1004fbd59c262712d420bdc",
+          "identical": true
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "first": {
+      "clientWallMs": 1500.6,
+      "serverTiming": {
+        "parse": 0,
+        "resolve": 42,
+        "forgec": 164,
+        "fetch-forgec-inputs": 225,
+        "fetch-seal-inputs": 28,
+        "libraries": 100,
+        "esbuild-init": 0,
+        "seal": 346,
+        "total": 979
+      },
+      "stats": {
+        "rounds": 6,
+        "subrequests": 51,
+        "snapshotFiles": 26,
+        "forgecMemoryBytes": 7536640
+      },
+      "workerdCpuMs": 150
+    },
+    "warm": {
+      "clientWallMs": {
+        "n": 20,
+        "min": 452.3,
+        "median": 716.8,
+        "p90": 1252.4,
+        "max": 1597.5
+      },
+      "serverTimingMs": {
+        "parse": {
+          "n": 20,
+          "min": 0,
+          "median": 0,
+          "p90": 8,
+          "max": 15
+        },
+        "resolve": {
+          "n": 20,
+          "min": 1,
+          "median": 3,
+          "p90": 16,
+          "max": 45
+        },
+        "forgec": {
+          "n": 20,
+          "min": 23,
+          "median": 110,
+          "p90": 291,
+          "max": 406
+        },
+        "fetch-forgec-inputs": {
+          "n": 20,
+          "min": 31,
+          "median": 93,
+          "p90": 252,
+          "max": 286
+        },
+        "fetch-seal-inputs": {
+          "n": 20,
+          "min": 6,
+          "median": 17,
+          "p90": 73,
+          "max": 100
+        },
+        "libraries": {
+          "n": 20,
+          "min": 3,
+          "median": 17,
+          "p90": 49,
+          "max": 106
+        },
+        "esbuild-init": {
+          "n": 20,
+          "min": 0,
+          "median": 0,
+          "p90": 0,
+          "max": 0
+        },
+        "seal": {
+          "n": 20,
+          "min": 73,
+          "median": 241,
+          "p90": 440,
+          "max": 645
+        },
+        "total": {
+          "n": 20,
+          "min": 407,
+          "median": 602,
+          "p90": 1060,
+          "max": 1253
+        }
+      },
+      "workerdCpuMs": {
+        "n": 20,
+        "min": 120,
+        "median": 130,
+        "p90": 150,
+        "max": 160
+      }
+    },
+    "stats": {
+      "rounds": 6,
+      "subrequests": 51,
+      "snapshotFiles": 26,
+      "forgecMemoryBytes": 7536640
+    },
+    "requestBytes": 141,
+    "responseBytes": 1740581,
+    "responseGzipBytes": 185478,
+    "deterministic": true,
+    "responseDigest": "sha256:6dba941ceee1998d08cc6d30037f51216feb76a1f9a4b7b7f41fab399e70c384",
+    "fakeRequestsPerBuild": 51,
+    "parity": {
+      "identical": true,
+      "files": 10,
+      "mismatched": [],
+      "byFile": [
+        {
+          "path": "units/manifest.json",
+          "nativeBytes": 467549,
+          "serviceBytes": 467549,
+          "digest": "sha256:b82e2dc972de7e502bcef5e12eb6bf23c47e730c798cf002d193e0256f2a5969",
+          "identical": true
+        },
+        {
+          "path": "units/modules/1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427.js",
+          "nativeBytes": 1065,
+          "serviceBytes": 1065,
+          "digest": "sha256:1fa391103005b4402b5cc72f957c0661602da011934da48a8875dc67081f2427",
+          "identical": true
+        },
+        {
+          "path": "units/modules/45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee.js",
+          "nativeBytes": 288,
+          "serviceBytes": 288,
+          "digest": "sha256:45f2e9a6a4eb1c52281e99aba9e7b2140f38fb7d3b1f74642a6f2f268c6df9ee",
+          "identical": true
+        },
+        {
+          "path": "units/modules/4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9.js",
+          "nativeBytes": 502,
+          "serviceBytes": 502,
+          "digest": "sha256:4c1107eda5aa3337d298df80a8eca1b310fcc4f26ed48dff19974c6b2f6bd2d9",
+          "identical": true
+        },
+        {
+          "path": "units/modules/d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9.js",
+          "nativeBytes": 377,
+          "serviceBytes": 377,
+          "digest": "sha256:d958862ada2cf1532b593740ca91d722071f870747f6086193c305307742aed9",
+          "identical": true
+        },
+        {
+          "path": "units/plan.json",
+          "nativeBytes": 529171,
+          "serviceBytes": 529171,
+          "digest": "sha256:3460430d449919a77d21cf54079d404a593a3ac650c11fd76a4fe4ef44f525e2",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.commerce.FulfillOrder.wit",
+          "nativeBytes": 1738,
+          "serviceBytes": 1738,
+          "digest": "sha256:4e368c75b8348ff4143c1c51667d305af0d0ac385510367e894c40c35fe48d8c",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.commerce.RebuildOrderSummary.wit",
+          "nativeBytes": 1500,
+          "serviceBytes": 1500,
+          "digest": "sha256:2354b18a50de2cb05cf9b82c39fbd775073c76ab0b04abbbbe742bb830e6d0b3",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.commerce.SubmitOrder.wit",
+          "nativeBytes": 3973,
+          "serviceBytes": 3973,
+          "digest": "sha256:86ca7914ca26bfc8382b375e64ef5456a142d57f6969a3da5b9a920c8f49b44d",
+          "identical": true
+        },
+        {
+          "path": "units/wit/acme.payments.AuthorizePayment.wit",
+          "nativeBytes": 700,
+          "serviceBytes": 700,
+          "digest": "sha256:027e6645cbb9e5e2433f382cd6bb73ebb5dd2b76f1004fbd59c262712d420bdc",
+          "identical": true
+        }
+      ]
+    },
+    "sameManifestAsFileMap": true,
+    "sameOutputsAsFileMap": true
+  },
+  "refs": {
+    "status": 200,
+    "blobsInline": false,
+    "fetched": 10,
+    "identical": true,
+    "error": null
+  },
+  "errors": {
+    "compileError": {
+      "status": 422,
+      "code": "compile_failed",
+      "renderedStartsWith": "error[E-RES-002]: src/orders/order.forge:42:1: resource `Broken` must declare `id : id`"
+    },
+    "missingImplementation": {
+      "status": 422,
+      "code": "seal_failed",
+      "error": "missing unit: @acme/commerce/_/SubmitOrder (function) has no implementation under impl/"
+    },
+    "invalidRequest": {
+      "status": 400,
+      "code": "invalid_request",
+      "error": "root must be a repository-relative path"
+    }
+  },
+  "workerdAfter": {
+    "rssBytes": 469106688,
+    "cpuMs": 9090
+  },
+  "workerdMaxRssBytes": 713555968,
+  "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+  "outputs": {
+    "files": 10,
+    "modules": 4,
+    "bytesByKind": {
+      "manifest": 467549,
+      "modules": 2232,
+      "plan": 529171,
+      "wit": 7911
+    },
+    "closures": 91,
+    "closureBytes": {
+      "n": 91,
+      "min": 0,
+      "median": 0,
+      "p90": 288,
+      "max": 1855
+    }
+  }
+}
