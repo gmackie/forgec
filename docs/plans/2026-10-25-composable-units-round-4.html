@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Composable units: round 4</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--background, #fff); color: var(--foreground, #202124); font: 14px/1.5 var(--font-sans, system-ui, sans-serif); }
+  main { width: 100%; min-width: 0; }
+  h1 { font-size: 1.2rem; margin: 0 0 .25rem; }
+  h2 { font-size: 1rem; margin: 1.5rem 0 .5rem; }
+  h3 { font-size: .9rem; margin: 0 0 .25rem; }
+  p { max-width: 75ch; margin: .5rem 0; }
+  a { color: var(--accent-surface-foreground, #2458ac); }
+  .meta, .muted { color: var(--muted-foreground, #606773); }
+  code { font-family: var(--font-mono, Menlo, monospace); background: var(--code-background, #f1f3f5); color: var(--code-foreground, #202124); padding: 0 .2rem; border-radius: 4px; font-size: .85em; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th, td { text-align: left; vertical-align: top; padding: .4rem .5rem; border-bottom: 1px solid var(--border, #d8dce2); }
+  th { font-weight: 600; }
+  .badge, .chip { display: inline-block; border-radius: 999px; padding: .1rem .5rem; font-size: .72rem; font-weight: 600; white-space: nowrap; }
+  .badge { background: var(--accent-surface, #eaf0ff); color: var(--accent-surface-foreground, #2458ac); }
+  .chip.done { background: color-mix(in srgb, var(--success, #1e8e3e) 18%, transparent); color: var(--success, #1e8e3e); }
+  .chip.active { background: var(--accent-surface, #eaf0ff); color: var(--accent-surface-foreground, #2458ac); }
+  .chip.todo { background: var(--muted, #f1f3f5); color: var(--muted-foreground, #606773); }
+  .chip.risk { background: var(--warning-surface, #fff4d6); color: var(--warning-foreground, #7a5200); }
+  .chip.bad { background: var(--destructive-surface, #fde7e7); color: var(--destructive, #b3261e); }
+  .callout { border-left: 3px solid var(--accent, #2458ac); background: var(--accent-surface, #eaf0ff); color: var(--accent-surface-foreground, #1a2b4d); border-radius: 0 var(--radius, .625rem) var(--radius, .625rem) 0; padding: .65rem .85rem; margin: .75rem 0; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: .75rem; }
+  .card { border: 1px solid var(--border, #d8dce2); border-radius: var(--radius, .625rem); background: var(--card, #f7f8fa); color: var(--card-foreground, #202124); padding: .75rem; }
+  .card.recommended { border-color: var(--accent, #2458ac); box-shadow: 0 0 0 1px var(--accent, #2458ac); }
+  .card ul { margin: .4rem 0 0; padding-left: 1.1rem; }
+  .bars { display: grid; gap: .35rem; margin: .5rem 0; }
+  .bar { display: grid; grid-template-columns: minmax(120px, 34%) 1fr auto; gap: .5rem; align-items: center; font-size: .82rem; }
+  .bar .track { height: 10px; background: var(--muted, #eceef1); border-radius: 5px; overflow: hidden; }
+  .bar .fill { height: 100%; width: var(--w); background: var(--chart-1, #2458ac); border-radius: 5px; transform-origin: left; }
+  .bar .fill.local { background: var(--chart-3, #9aa5b1); }
+  .legend { font-size: .78rem; display: flex; gap: 1rem; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: .3rem; vertical-align: -1px; }
+  .timeline { list-style: none; margin: 0; padding: 0; position: relative; }
+  .timeline::before { content: ""; position: absolute; left: 7px; top: 6px; bottom: 6px; width: 2px; background: var(--border, #d8dce2); }
+  .timeline li { position: relative; padding: 0 0 1rem 1.75rem; }
+  .timeline li::before { content: ""; position: absolute; left: 0; top: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--background, #fff); border: 2px solid var(--border, #d8dce2); }
+  .timeline li.active::before { background: var(--accent, #2458ac); border-color: var(--accent, #2458ac); }
+  .timeline .head { display: flex; gap: .5rem; align-items: baseline; flex-wrap: wrap; }
+  details { border: 1px solid var(--border, #d8dce2); border-radius: var(--radius, .625rem); background: var(--card, #f7f8fa); padding: .6rem .75rem; margin: .6rem 0; }
+  summary { cursor: pointer; font-weight: 600; }
+  .goals { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: .75rem; }
+  .goals ul { list-style: none; padding: 0; margin: .3rem 0; }
+  .goals li { padding-left: 1.3rem; position: relative; margin: .2rem 0; }
+  .goals .yes li::before { content: "✓"; position: absolute; left: 0; color: var(--success, #1e8e3e); }
+  .goals .no li::before { content: "✕"; position: absolute; left: 0; color: var(--muted-foreground, #606773); }
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal { animation: rise .45s cubic-bezier(.2,.7,.3,1) both; animation-delay: calc(var(--i, 0) * 60ms); }
+    .bar .fill { animation: grow .6s ease-out both; animation-delay: calc(250ms + var(--i, 0) * 50ms); }
+    .timeline li.active::before { animation: pulse 1.8s ease-in-out infinite; }
+    @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+    @keyframes grow { from { transform: scaleX(0); } }
+    @keyframes pulse { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent, #2458ac) 25%, transparent); } }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1 class="reveal">Composable units, round 4: from spikes to a working loop <span class="badge">Proposed</span></h1>
+  <p class="meta reveal" style="--i:1">2026-10-25 · forgec (Forgejo gmackie/forge) and Loom · epics FORG-26 and LOOM-11 · follows FORG-38's deployed measurements</p>
+
+  <div class="callout reveal" style="--i:2"><strong>Recommendation:</strong> First fix the two problems the deployed run exposed in linkers B and C: manifest swaps that only reach one isolate, and a 250–600 ms R2 fetch on every loader miss. In parallel, start the first end-to-end Vision 3 loop: a Loom Session edit is compiled by forgec in a Worker and served as a dynamic closure on a preview URL, while every packed script stays untouched.</div>
+
+  <h2 class="reveal" style="--i:3">What the deployed run showed (FORG-38, measured-deployed)</h2>
+  <div class="legend reveal" style="--i:4"><span><i style="background:var(--chart-3,#9aa5b1)"></i>local workerd</span><span><i style="background:var(--chart-1,#2458ac)"></i>deployed (colo ORD)</span></div>
+  <div class="bars" role="img" aria-label="Latency, local vs deployed, in milliseconds">
+    <div class="bar reveal" style="--i:5"><span>B warm read</span><div class="track"><div class="fill local" style="--w:0.4%;--i:0"></div></div><span>3.5</span></div>
+    <div class="bar reveal" style="--i:5"><span></span><div class="track"><div class="fill" style="--w:3.5%;--i:1"></div></div><span>28–35</span></div>
+    <div class="bar reveal" style="--i:6"><span>B warm write</span><div class="track"><div class="fill local" style="--w:1.5%;--i:2"></div></div><span>13.7</span></div>
+    <div class="bar reveal" style="--i:6"><span></span><div class="track"><div class="fill" style="--w:20%;--i:3"></div></div><span>148–203</span></div>
+    <div class="bar reveal" style="--i:7"><span>B loader miss</span><div class="track"><div class="fill local" style="--w:3.6%;--i:4"></div></div><span>32</span></div>
+    <div class="bar reveal" style="--i:7"><span></span><div class="track"><div class="fill" style="--w:100%;--i:5"></div></div><span>458–889</span></div>
+    <div class="bar reveal" style="--i:8"><span>C dynamic write</span><div class="track"><div class="fill local" style="--w:3.8%;--i:6"></div></div><span>33.5</span></div>
+    <div class="bar reveal" style="--i:8"><span></span><div class="track"><div class="fill" style="--w:20%;--i:7"></div></div><span>176</span></div>
+  </div>
+  <p class="muted reveal" style="--i:9">Bars are scaled to the 889 ms loader miss. Most of a miss is the R2 unit-store fetch: 246–614 ms deployed, against 5 ms locally. Deployed write and D1 times include about 15 ms per D1 round trip from ORD to ENAM.</p>
+  <div class="table-scroll reveal" style="--i:10"><table>
+    <thead><tr><th>Finding</th><th>Consequence</th><th>Round 4</th></tr></thead>
+    <tbody>
+      <tr><td><span class="chip bad">Bug</span> <code>PUT /_linker/manifest</code> only updates the isolate that receives it</td><td>After a swap, other isolates kept serving the old closure (409s), and a restored manifest still fell back.</td><td>FORG-47</td></tr>
+      <tr><td><span class="chip risk">Cost</span> Loader miss 458–889 ms, mostly R2</td><td>Each evicted child (idle eviction at 10–30 s) pays it again.</td><td>FORG-48</td></tr>
+      <tr><td><span class="chip done">Good news</span> The 32-invocation limit is nesting depth: 30 hops pass, 31 fail; 1,000 sequential calls and 5,000 callbacks pass</td><td>FORG-42's counter is too strict. The queue, cron and workflow paths can return to the shared runtime (about 0.77 MB).</td><td>FORG-49</td></tr>
+      <tr><td><span class="chip done">Good news</span> JSPI and the Worker Loader work deployed with no flag; cost about $0 inside the Paid inclusions</td><td>WASM units and linker B are viable in production.</td><td>Enables FORG-50 and LOOM-19</td></tr>
+      <tr><td><span class="chip risk">Gap</span> Per-isolate router stats; <code>since</code> reads 1970</td><td>The fallback metric can't be trusted deployed.</td><td>FORG-47</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2 class="reveal" style="--i:11">Where the manifest pointer lives (FORG-47)</h2>
+  <div class="options">
+    <section class="card recommended reveal" style="--i:12"><h3>Durable Object <span class="badge">Recommended</span></h3><ul><li>Strongly consistent: one object holds the current closureHash per entry point, versioned with a compare-and-swap.</li><li>Isolates cache it briefly and revalidate. A swap is visible within a known bound.</li><li>The same object can own the tier stats, fixing the per-isolate counts.</li><li>Cost: one DO read on a cache miss.</li></ul></section>
+    <section class="card reveal" style="--i:13"><h3>Workers KV</h3><ul><li>Cheap reads at the edge.</li><li>Eventually consistent, up to about 60 s, so a swap can still serve a mix of old and new for a minute.</li><li>Doesn't fit "fall back, never hide"; the stats problem stays.</li></ul></section>
+    <section class="card reveal" style="--i:14"><h3>Redeploy the host</h3><ul><li>Bake the manifest into the host script.</li><li>Every swap becomes a deploy, which defeats linker B's point.</li></ul></section>
+  </div>
+
+  <h2 class="reveal" style="--i:15">Tracks</h2>
+  <ol class="timeline">
+    <li class="active reveal" style="--i:16"><div class="head"><h3>FORG-47: shared manifest pointer and stats for linkers B and C</h3><span class="chip active">Parallel</span></div><p class="muted">A Durable Object holds the current manifest and closure hashes, with a versioned CAS on swap and a bounded revalidation window in each isolate. Tier stats move into the object. Tests show a swap reaching every isolate; local workerd runs several isolates. A deployed re-check reuses <code>r4-deployed</code> through a temporary stage.</p></li>
+    <li class="active reveal" style="--i:17"><div class="head"><h3>FORG-48: faster loader misses</h3><span class="chip active">Parallel</span></div><p class="muted">Content-addressed caching of unit code by <code>unitHash</code>: the Cache API, or a small per-closure bundle in the pointer object. Measure placement (Smart Placement or a co-located D1) for the 15 ms D1 round trips. Target: a warm-host miss under 100 ms deployed, or explain why that isn't reachable.</p></li>
+    <li class="active reveal" style="--i:18"><div class="head"><h3>FORG-49: replace the call counter with a depth guard</h3><span class="chip active">Parallel</span></div><p class="muted">Guard on nesting depth (limit 32; refuse at 30 hops) instead of total calls. Move queue, cron and workflow start/signal back to the shared runtime, and re-measure deploy bytes and the linker-A differential at 15/15.</p></li>
+    <li class="active reveal" style="--i:19"><div class="head"><h3>FORG-50: build service — forgec in a Worker emits units</h3><span class="chip active">Parallel</span></div><p class="muted">Extend <code>crates/forgegraph-wasm</code> (T1) from check/build to <code>units/plan.json</code>, the Closure Manifest and per-closure bundles, read from a <code>SourceTree</code> over Artifacts or Loom. It must be byte-identical to native forgec on acme, and it reports CPU and wall time per build in a Worker.</p></li>
+    <li class="reveal" style="--i:20"><div class="head"><h3>LOOM-19: Session previews on isolates</h3><span class="chip todo">After FORG-47 and FORG-50</span></div><p class="muted">A Session write triggers the build service, then <code>PlanSessionRebuild</code>, then only the changed closures are pushed to the dynamic tier under a session-scoped pointer. A preview URL serves the Session's code, and packed scripts are never re-uploaded. Staging and production smokes cover it.</p></li>
+  </ol>
+
+  <h2 class="reveal" style="--i:21">Scope</h2>
+  <div class="goals reveal" style="--i:22">
+    <div class="yes"><h3>Goals</h3><ul><li>Swaps that are correct across isolates</li><li>Loader misses priced and reduced, measured deployed</li><li>One Session edit → isolate preview, end to end</li><li>Compiling on Workers, not only checking</li></ul></div>
+    <div class="no"><h3>Not in this round</h3><ul><li>The Forge-native behaviour language</li><li>Compiling TS to WASM</li><li>Changing Loom's byte-canonical storage (ADR 0093)</li><li>Serving customer traffic through linkers B or C</li></ul></div>
+  </div>
+
+  <h2 class="reveal" style="--i:23">Risks</h2>
+  <p class="reveal" style="--i:24"><span class="chip risk">Medium</span> forgec in WASM may exceed Worker CPU or memory for a full unit build. <span class="muted">FORG-50 measures it first. The fallback is the same pipeline in a Container or on hetzner-build, keeping the API.</span></p>
+  <p class="reveal" style="--i:25"><span class="chip risk">Medium</span> FORG-47 and FORG-48 both touch the linker-dynamic host. <span class="muted">Ownership is split: FORG-47 owns manifest resolution, FORG-48 owns unit fetching. Rebase order follows merge order.</span></p>
+  <p class="reveal" style="--i:26"><span class="chip risk">Low</span> Deployed re-checks need temporary stages, and ForgeGraph can't remove a stage yet (FORGE-219). <span class="muted">Reuse forge-console's retired staging stage and its targets rather than creating more.</span></p>
+
+  <h2 class="reveal" style="--i:27">Verification</h2>
+  <p class="reveal" style="--i:28">Every track keeps the linker differential at 15/15 (whole-app, A, B, C), reproducible bytes, and green Forgejo CI at the exact head. Deployed numbers are labelled measured-deployed, and anything not deployed is labelled local. LOOM-19 is closed by production smoke evidence. Its production.healthy receipt depends on FORGE-217.</p>
+
+  <details class="reveal" style="--i:29"><summary>Outside this round: ForgeGraph gaps found</summary>
+    <p>FORGE-217: no health receipts for apps with both staging and production; <code>deploy promote</code> is a no-op; PRs contained in a deployed commit are never receipted. It blocks closing LOOM-13, 15, 16, 17 and 18.</p>
+    <p>FORGE-219: stages can't be torn down; FG_COMMIT_HASH misses generated configs; branch deploys need break-glass.</p>
+  </details>
+</main>
+</body>
+</html>
