@@ -19,7 +19,7 @@ const out = join(here, "generated");
 mkdirSync(out, { recursive: true });
 if (!process.env.FORGEC_WASM)
   execFileSync("cargo", ["build", "--locked", "-p", "forgegraph-wasm", "--target", "wasm32-unknown-unknown", "--release"], { cwd: root, stdio: "inherit" });
-copyFileSync(process.env.FORGEC_WASM || join(root, "target/wasm32-unknown-unknown/release/forgegraph_wasm.wasm"), join(out, "forgec.wasm"));
+copyFileSync(process.env.FORGEC_WASM || join(process.env.CARGO_TARGET_DIR ? resolve(root, process.env.CARGO_TARGET_DIR) : join(root, "target"), "wasm32-unknown-unknown/release/forgegraph_wasm.wasm"), join(out, "forgec.wasm"));
 copyFileSync(join(require.resolve("esbuild-wasm/package.json"), "../esbuild.wasm"), join(out, "esbuild.wasm"));
 
 // TypeScript's CommonJS build probes for Node (process.nextTick plus `require`), which nodejs_compat
