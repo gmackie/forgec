@@ -13,6 +13,11 @@
 // another layer. A corrupt Cache API entry is deleted before the error is thrown, so the next request
 // reads the store. The memory layer holds only bytes that were verified when they entered it.
 //
+// The store is the source of truth for bytes (every copy is checked against the digest the manifest pins)
+// and for existence, which link() checks against the store alone. A verified copy in memory or the Cache
+// API can outlive a blob's deletion from the store until the manifest is re-linked or the host caches are
+// evicted (POST /_linker/evict-host-cache drops all three layers by default).
+//
 // LINKER_UNIT_CACHE selects the layers: unset means "memory,cache,parallel"; "off" is the pre-FORG-48
 // path (every blob from the store, one after another), kept as a kill switch and as the baseline.
 import { sha256 } from "./hash.ts";

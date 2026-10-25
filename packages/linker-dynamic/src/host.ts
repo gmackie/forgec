@@ -258,9 +258,10 @@ async function admin(request: Request, env: HostEnv, url: URL): Promise<Response
       return json({ ok: true });
     }
     if (route === "POST /_linker/evict-host-cache") {
-      // ?layers=code keeps the memory layer; the default drops both; `cache` also drops the linked blobs
-      // from this colo's Cache API. Either way the next child is a loader miss.
-      const layers = new Set((url.searchParams.get("layers") ?? "code,memory").split(","));
+      // Default: every layer, so the next build re-reads the unit store. ?layers=code (or code,memory)
+      // keeps the nearer copies. `cache` drops the linked blobs from this colo's Cache API only. Either
+      // way the next child gets a new id, so it is a loader miss.
+      const layers = new Set((url.searchParams.get("layers") ?? "code,memory,cache").split(","));
       if (layers.has("code")) codeCache.clear();
       if (layers.has("memory")) memoryUnits.clear();
       const k = linked?.kit;
