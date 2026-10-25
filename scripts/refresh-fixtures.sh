@@ -32,6 +32,9 @@ cargo run -q -p forgegraph-cli -- build examples/sql-identifiers --out conforman
 # Required self-references: `$self` on create and dependency-ordered import (#200).
 cargo run -q -p forgegraph-cli -- build examples/self-reference --out conformance/fixtures/self-reference
 
+# Declared error statuses (FORG-44): `InvalidManifest status 422` served, documented and contracted.
+cargo run -q -p forgegraph-cli -- build examples/error-status --out conformance/fixtures/error-status
+
 feature_out=$(mktemp -d)
 trap 'rm -rf "$foundation_out" "$feature_out"' EXIT
 for feature_slug in collections credentials search issue-numbers project-portfolio deployment-lanes; do
@@ -49,6 +52,7 @@ contract_ir_fixtures=(
   examples/studio-desk
   examples/console-playground
   examples/acme
+  examples/error-status
   packages/foundation/billing
 )
 mkdir -p conformance/fixtures/contract-ir

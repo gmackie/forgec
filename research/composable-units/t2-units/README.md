@@ -39,7 +39,10 @@ One command for acme: `pnpm --filter @acme/commerce-deploy units:build`.
 
 - `interfaceHash` = H(`forge:unit-interface:`, canonical interface). The interface is structural.
   It holds the input, output, sorted errors, effects (sends, workflow waits), required capabilities, purpose,
-  and the transitive closure of every named type the signature reaches. Shapes, enums, the
+  and the transitive closure of every named type the signature reaches. A function whose errors
+  declare a non-default HTTP status (`Name status 422`, FORG-44) also carries `errorStatuses`
+  (name → status). The status is observable to callers, so changing it moves `interfaceHash`.
+  Errors that keep the 409 default add nothing, so existing interface hashes stay the same. Shapes, enums, the
   fields of `X.Record`, lifecycle states and channel messages are expanded. References stay ids.
   `doc` is removed everywhere. The symbol, routes, SLOs, `generated` and the unit's role are left
   out, so two units of the same shape share an interface hash. The symbol stays in the manifest as

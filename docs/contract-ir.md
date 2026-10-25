@@ -108,7 +108,8 @@ cannot express is reported at its exact location, never approximated:
 | `error-body`, `server-error-response`, `non-success-status` | Forge errors are Problem Details; 5xx are runtime failures |
 
 Statuses the runtime serves on every function itself (401, 403, 412, 422) are
-not turned into domain errors. Operations become functions named
+not turned into domain errors. Imported domain errors keep the 409 default;
+the importer does not write `status` clauses. Operations become functions named
 `<Group><Endpoint>` (`users.getUser` -> `UsersGetUser`); operations in group
 `functions` keep their endpoint name, and a name another declaration uses gets
 an `Op` suffix.
@@ -134,7 +135,10 @@ import produces `@http` functions rather than `@crud` resources:
   `functions.ContactCreateOp`); a function keeps its id;
 - `request.headers`, `request.query`, `request.bodies`: the function transport
   profile (`Idempotency-Key`, no `If-Match`, input as a JSON body);
-- `successes`, `errors`: functions answer 200 and 401/403/409/412/422;
+- `successes`, `errors`: functions answer 200 and 401/403/409/412/422, plus
+  any status a declared error chooses (`InvalidManifest status 422` adds none,
+  `Retired status 410` adds 410, and 409 is listed only while some declared
+  error keeps the default);
 - `response.*`, `request.bodies` schemas: JSON Schema re-derived from Forge
   types (no `readOnly`/`default`, `x-forge-type` per scalar);
 - `policy.slo`: the `function` objective class.

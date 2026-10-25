@@ -265,18 +265,30 @@ pub fn openapi(c: &Contracts, obs: &ObservabilityPlan) -> Value {
         responses.insert("403".into(), problem_response("NotPermitted"));
         responses.insert("412".into(), problem_response("VersionConflict"));
         responses.insert("422".into(), problem_response("ValidationFailed"));
-        if !f.errors.is_empty() {
-            responses.insert(
-                "409".into(),
-                problem_response(&format!(
-                    "Domain errors: {}",
-                    f.errors
-                        .iter()
-                        .map(|e| format!("{}.{e}", f.id))
-                        .collect::<Vec<_>>()
-                        .join(", ")
-                )),
-            );
+        // Declared errors answer 409 unless they declare a status (FORG-44); each status lists its
+        // codes, after the runtime's own meaning when the status already has one (422).
+        let mut by_status: std::collections::BTreeMap<u16, Vec<String>> = Default::default();
+        for e in &f.errors {
+            let status = f
+                .error_statuses
+                .get(e)
+                .copied()
+                .unwrap_or(forgegraph_semantic::ir::DEFAULT_ERROR_STATUS);
+            by_status
+                .entry(status)
+                .or_default()
+                .push(format!("{}.{e}", f.id));
+        }
+        for (status, codes) in by_status {
+            let codes = codes.join(", ");
+            let description = match responses.get(&status.to_string()) {
+                Some(existing) => format!(
+                    "{}; domain errors: {codes}",
+                    existing["description"].as_str().unwrap_or_default()
+                ),
+                None => format!("Domain errors: {codes}"),
+            };
+            responses.insert(status.to_string(), problem_response(&description));
         }
         let mut o = json!({ "operationId": f.id, "tags": ["functions"], "x-forge-kind": "function", "parameters": parameters, "requestBody": { "required": true, "content": { "application/json": { "schema": input } } }, "responses": responses });
         let s = slo(&f.id);

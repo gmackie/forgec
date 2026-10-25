@@ -1381,3 +1381,111 @@ fn workflow_choice_bindings_do_not_escape_or_leak_to_other_branch() {
         );
     }
 }
+
+/// FORG-44: `Name status 422` in a function's `errors { }` chooses the error's HTTP status.
+fn errors_fn(errors: &str) -> Package {
+    inline(
+        "@t/x",
+        &[(
+            "src/a.forge",
+            &format!(
+                "shape In {{\n  a : text\n}}\nfunction F\n  @http(POST, \"/v1/f\")\n{{\n  input In\n  errors {{\n{errors}\n  }}\n}}\n"
+            ),
+        )],
+    )
+}
+
+#[test]
+fn declared_errors_choose_a_client_status() {
+    let out = compile(
+        &errors_fn("    InvalidManifest status 422\n    Retired status 410\n    Locked"),
+        &[],
+    );
+    assert!(out.diagnostics.is_empty(), "{:#?}", out.diagnostics);
+    let ir = out.ir.unwrap();
+    let f = &ir.modules[0].functions[0];
+    assert_eq!(f.errors, ["InvalidManifest", "Retired", "Locked"]);
+    assert_eq!(
+        f.error_statuses,
+        [
+            ("InvalidManifest".to_string(), 422),
+            ("Retired".to_string(), 410)
+        ]
+        .into()
+    );
+    let json = serde_json::to_value(f).unwrap();
+    assert_eq!(
+        json["errorStatuses"],
+        serde_json::json!({ "InvalidManifest": 422, "Retired": 410 })
+    );
+    // No `status`: the IR is what it was before FORG-44 (no `errorStatuses` key at all).
+    let plain = compile(&errors_fn("    Locked"), &[]).ir.unwrap();
+    let plain = serde_json::to_value(&plain.modules[0].functions[0]).unwrap();
+    assert!(plain.get("errorStatuses").is_none(), "{plain}");
+    for status in forgegraph_semantic::ir::DECLARABLE_ERROR_STATUSES {
+        assert_eq!(
+            codes(errors_fn(&format!("    E status {status}"))),
+            Vec::<String>::new(),
+            "{status}"
+        );
+    }
+}
+
+#[test]
+fn declared_error_statuses_are_validated() {
+    let message = |errors: &str| {
+        compile(&errors_fn(errors), &[])
+            .diagnostics
+            .iter()
+            .map(|d| format!("{}: {}", d.code, d.message))
+            .collect::<Vec<_>>()
+    };
+    // Reserved by the runtime, non-4xx, or not a status at all.
+    for (status, why) in [
+        ("401", "authentication and authorization"),
+        ("403", "`CapabilityDenied`"),
+        ("405", "routing"),
+        ("409", "already the default"),
+        ("412", "preconditions"),
+        ("428", "preconditions"),
+        ("413", "request size"),
+        ("429", "admission control"),
+        ("418", "protocol or transport status"),
+        ("500", "server error"),
+        ("503", "server error"),
+        ("200", "not an error status"),
+        ("302", "not an error status"),
+        ("42", "not an HTTP status code"),
+        ("99999999999999999999999", "not an HTTP status code"),
+    ] {
+        let m = message(&format!("    Bad status {status}"));
+        assert_eq!(m.len(), 1, "{status}: {m:?}");
+        assert!(m[0].starts_with("E-ERR-001: error `Bad`: "), "{m:?}");
+        assert!(m[0].contains(why), "{status}: {m:?}");
+        assert!(
+            m[0].ends_with("declare one of 400, 402, 404, 410, 422, 423, 451"),
+            "{m:?}"
+        );
+    }
+    // A name declared twice cannot say which status it answers.
+    assert_eq!(
+        codes(errors_fn("    Dup status 422\n    Dup")),
+        vec!["E-ERR-003"]
+    );
+    // `status` needs a code.
+    assert_eq!(codes(errors_fn("    Bad status")), vec!["E-SYN-001"]);
+    // An error named `status` is still an error name.
+    assert_eq!(
+        codes(errors_fn("    status\n    Other status 404")),
+        Vec::<String>::new()
+    );
+    // Workflow errors are instance outcomes, not HTTP responses.
+    let wf = inline(
+        "@t/x",
+        &[(
+            "src/a.forge",
+            "workflow W {\n  version 1\n  fail Gone\n  errors {\n    Gone status 410\n  }\n}\n",
+        )],
+    );
+    assert_eq!(codes(wf), vec!["E-ERR-002"]);
+}

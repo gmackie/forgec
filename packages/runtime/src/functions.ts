@@ -56,6 +56,25 @@ export function defineFunction(id: string, body: (deps: FunctionContext) => Effe
   return { id, body, ...options };
 }
 
+/**
+ * `e` with the status its function declared for it, when `e` is one of `decl`'s declared errors
+ * and does not carry it yet (an error revived after crossing a unit boundary keeps only its code).
+ */
+function withDeclaredStatus(e: ForgeError, decl: { id: string; errorStatuses?: Record<string, number> }): ForgeError {
+  if (e.declaredStatus !== undefined || !e.code.startsWith(`${decl.id}.`)) return e;
+  const status = decl.errorStatuses?.[e.code.slice(decl.id.length + 1)];
+  if (status === undefined) return e;
+  return new ForgeError({
+    code: e.code,
+    ...(e.detail !== undefined ? { detail: e.detail } : {}),
+    ...(e.fields !== undefined ? { fields: e.fields } : {}),
+    ...(e.constraint !== undefined ? { constraint: e.constraint } : {}),
+    ...(e.budget !== undefined ? { budget: e.budget } : {}),
+    ...(e.denial !== undefined ? { denial: e.denial } : {}),
+    declaredStatus: status,
+  });
+}
+
 export class Functions {
   private readonly impls = new Map<string, FunctionImpl>();
   constructor(private readonly engine: Engine, impls: FunctionImpl[], private readonly externals: Record<string, ExternalBinding>) {
@@ -79,7 +98,11 @@ export class Functions {
       let plans: CommitPlan[] = view?.plans ?? [];
       const lifecycle = { active: true, busy: false };
       const deps = self.context(decl, input, ctx, pending, plans, delivery, view, lifecycle);
-      const result = yield* impl.body(deps).pipe(Effect.provide(self.engine.layer), Effect.ensuring(Effect.sync(() => { lifecycle.active = false; })));
+      const result = yield* impl.body(deps).pipe(
+        Effect.provide(self.engine.layer),
+        Effect.mapError((e) => (e instanceof ForgeError ? withDeclaredStatus(e, decl) : e)),
+        Effect.ensuring(Effect.sync(() => { lifecycle.active = false; })),
+      );
       if (view && lifecycle.busy) return yield* Effect.fail(err("ValidationFailed", "Function body must await every resource call"));
       if (view) plans = yield* lowerTransaction(plans, !!storage.atomicReadSet);
       if (plans.length || pending.length || delivery || (view && ctx.idempotencyKey)) {
@@ -197,7 +220,8 @@ export class Functions {
       },
       fail: (name, detail) => {
         if (!decl.errors.includes(name)) return Effect.fail(err("Internal", `${decl.name} raised undeclared error ${name}`));
-        return Effect.fail(new ForgeError({ code: `${decl.id}.${name}`, ...(detail ? { detail } : {}) }));
+        const status = decl.errorStatuses?.[name];
+        return Effect.fail(new ForgeError({ code: `${decl.id}.${name}`, ...(detail ? { detail } : {}), ...(status !== undefined ? { declaredStatus: status } : {}) }));
       },
     };
   }

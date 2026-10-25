@@ -83,6 +83,8 @@ export interface FunctionDecl {
   uses: ({ kind: "resource"; resource: string; capability: string } | { kind: "transition"; resource: string; action: string } | { kind: "function"; function: string })[];
   sends: { message: string; channel: string }[];
   errors: string[];
+  /** Declared errors that answer a status other than 409 (`Name status 422`, FORG-44), by name. */
+  errorStatuses?: Record<string, number>;
   http?: HttpBinding;
   generated: boolean;
 }

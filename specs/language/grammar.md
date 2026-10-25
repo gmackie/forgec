@@ -71,8 +71,9 @@ FunctionItem  = "input" TypeRef
               | "output" TypeRef
               | "uses" "{" { NL } { UseDecl NL } "}"
               | "sends" "{" { NL } { SendDecl NL } "}"
-              | "errors" "{" { NL } { IDENT NL } "}"
+              | "errors" "{" { NL } { ErrorDecl NL } "}"
               | SloBlock ;
+ErrorDecl     = IDENT [ "status" INT ] ;    (* status: function errors only, see language.md *)
 UseDecl       = QualifiedName [ Capability ] ;
 Capability    = "read" | "write" | "create" | "delete" ;
 SendDecl      = IDENT "to" QualifiedName ;

@@ -1214,6 +1214,11 @@ fn function_unit(
     if !surface.is_empty() {
         interface["capabilitySignatures"] = json!(surface);
     }
+    // A declared error's HTTP status is observable to callers (FORG-44). Only non-default statuses
+    // enter, so a unit whose errors all answer 409 keeps its interface hash.
+    if !f.error_statuses.is_empty() {
+        interface["errorStatuses"] = json!(f.error_statuses);
+    }
     let imports = sorted(imports);
     let wit = (!f.generated).then(|| crate::wit::function_world(scope, f, &imports));
     let (kind, implementation) = if f.generated {

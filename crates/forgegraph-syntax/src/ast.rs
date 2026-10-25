@@ -850,12 +850,12 @@ impl FunctionDecl {
             .unwrap_or_default()
     }
     pub fn errors(&self) -> Vec<SyntaxToken> {
+        self.error_decls().iter().filter_map(|e| e.name()).collect()
+    }
+    /// The declared errors with their optional `status` clauses.
+    pub fn error_decls(&self) -> Vec<ErrorDecl> {
         child::<ErrorsBlock>(&self.0)
-            .map(|b| {
-                children::<ErrorDecl>(&b.0)
-                    .filter_map(|e| idents(&e.0).next())
-                    .collect()
-            })
+            .map(|b| children::<ErrorDecl>(&b.0).collect())
             .unwrap_or_default()
     }
     pub fn slo(&self) -> Vec<SloItem> {
@@ -896,6 +896,17 @@ impl SendDecl {
 }
 node!(ErrorsBlock, ERRORS_BLOCK);
 node!(ErrorDecl, ERROR_DECL);
+impl ErrorDecl {
+    pub fn name(&self) -> Option<SyntaxToken> {
+        idents(&self.0).next()
+    }
+    /// `Name status 422`: the integer after `status`, as written (FORG-44).
+    pub fn status(&self) -> Option<SyntaxToken> {
+        tokens(&self.0)
+            .skip_while(|t| !(t.kind() == K::IDENT && t.text() == "status"))
+            .find(|t| t.kind() == K::INT)
+    }
+}
 node!(SloBlock, SLO_BLOCK);
 node!(SloItem, SLO_ITEM);
 impl SloItem {
@@ -1067,12 +1078,12 @@ impl WorkflowDecl {
         child::<WorkflowVersion>(&self.0).and_then(|v| tokens(&v.0).find(|t| t.kind() == K::INT))
     }
     pub fn errors(&self) -> Vec<SyntaxToken> {
+        self.error_decls().iter().filter_map(|e| e.name()).collect()
+    }
+    /// The declared errors with their optional `status` clauses.
+    pub fn error_decls(&self) -> Vec<ErrorDecl> {
         child::<ErrorsBlock>(&self.0)
-            .map(|b| {
-                children::<ErrorDecl>(&b.0)
-                    .filter_map(|e| idents(&e.0).next())
-                    .collect()
-            })
+            .map(|b| children::<ErrorDecl>(&b.0).collect())
             .unwrap_or_default()
     }
     /// Top-level step graph items in source order.

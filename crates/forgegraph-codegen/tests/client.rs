@@ -166,3 +166,38 @@ fn bounded_collection_contracts_preserve_elements_and_wire_bounds() {
     assert!(ts.contains("grid: Array<Array<number>>;"));
     assert!(ts.contains("tags: Array<string>;"));
 }
+
+/// FORG-44: a declared error is listed under the status it declares; without one it stays 409.
+#[test]
+fn openapi_lists_declared_errors_under_their_status() {
+    let ex = Path::new(concat!(env!("CARGO_MANIFEST_DIR"), "/../../examples"));
+    let ir = compile(&load_package(&ex.join("error-status")).unwrap(), &[])
+        .ir
+        .unwrap();
+    let plans = plan(&ir).unwrap();
+    let doc = forgegraph_codegen::openapi(&plans.contracts, &plans.observability);
+    let responses = doc["paths"]["/v1/manifests/validate"]["post"]["responses"]
+        .as_object()
+        .unwrap();
+    let id = "@fixture/error-status/_/ValidateManifest";
+    let described = |s: &str| responses[s]["description"].as_str().unwrap().to_string();
+    assert_eq!(
+        described("422"),
+        format!("ValidationFailed; domain errors: {id}.InvalidManifest")
+    );
+    assert_eq!(
+        described("410"),
+        format!("Domain errors: {id}.ManifestRetired")
+    );
+    assert_eq!(
+        described("409"),
+        format!("Domain errors: {id}.ManifestLocked")
+    );
+    assert_eq!(
+        responses["410"]["content"]["application/problem+json"]["schema"]["$ref"],
+        "#/components/schemas/Problem"
+    );
+    // The client reads the status from the response; its typed surface is the same either way.
+    let ts = client_ts(&plans.contracts);
+    assert!(ts.contains("validateManifest(input: ValidateManifestInput"));
+}

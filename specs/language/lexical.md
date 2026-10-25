@@ -31,7 +31,7 @@ Keywords are **contextual**: `resource`, `enum`, `type`, `shape`, `function`,
 `output`, `rules`, `lifecycle`, `initial`, `terminal`, `find`, `list`, `by`,
 `order`, `asc`, `desc`, `unique`, `within`, `message`, `distribution`,
 `delivery`, `broadcast`, `work`, `on`, `cron`, `timezone`, `slo`,
-`availability`, `latency`, `over`, `send-only`, `recv-only`, `at-least-once`,
+`availability`, `latency`, `over`, `status`, `send-only`, `recv-only`, `at-least-once`,
 `true`, `false`, `null`. They are recognized by position; a field may be named
 `status` or `order`. A field named exactly like a construct keyword (`resource`)
 is rejected with a diagnostic rather than parsed ambiguously.

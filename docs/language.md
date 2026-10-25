@@ -113,7 +113,11 @@ export function SubmitOrder
   output Order.Record
   uses { Order read  Order.status.submit  Site read  payments.AuthorizePayment }
   sends { OrderSubmitted to OrderEvents }
-  errors { SiteDisabled  PaymentDeclined  PaymentUnavailable }
+  errors {
+    SiteDisabled
+    PaymentDeclined status 402
+    PaymentUnavailable
+  }
   slo { availability 99.9% over 28d  latency 99% <= 1s over 28d }
 }
 
@@ -136,6 +140,33 @@ parameter is not an input field). A segment may be a whole parameter
 wins over a whole parameter. Unbalanced or nested braces, an empty or
 non-identifier name, and two parameters with no literal between them are
 rejected (`E-HTTP-002`).
+
+A declared error is a domain outcome: `deps.fail("SiteDisabled")` answers a
+Problem Details body with `code` `<function id>.SiteDisabled`, `retryable:
+false`, and HTTP 409. `Name status <code>` chooses another status, here 402 for
+`PaymentDeclined`. The runtime serves it, and OpenAPI, `contract.json` and the
+unit interface list it. The status must be a 4xx class with no protocol meaning
+of its own: `400`, `402`, `404`, `410`, `422`, `423` or `451`. The compiler
+rejects everything else (`E-ERR-001`):
+
+- `401` and `403` belong to authentication and authorization (`Unauthenticated`,
+  `Forbidden`, `NotPermitted`, `CapabilityDenied`).
+- `405` belongs to routing.
+- `409` is already the default (shared with `IdempotencyMismatch` and
+  `InvalidTransition`), so leave `status` out instead of writing it.
+- `412` and `428` belong to preconditions.
+- `413` is request size (`PayloadTooLarge`), and `429` is admission control
+  (`RateLimited`, which is retryable).
+- Other 4xx codes are transport statuses.
+- 5xx codes are server failures, which are `Internal` or
+  `DependencyUnavailable`, never declared.
+- 1xx–3xx codes are not errors.
+
+A name declared twice with a status is ambiguous (`E-ERR-003`). Workflow
+`errors { }` take no status (`E-ERR-002`): a workflow error is the outcome of
+an instance, not an HTTP response, so declare the status on the function
+error the workflow maps from. An error without `status` changes no output, so
+existing apps build byte-for-byte as before.
 
 The body lives in `impl/` (`defineFunction`) and sees exactly the declared
 capabilities. Writes and `send`s commit together at the end of the body. Each
