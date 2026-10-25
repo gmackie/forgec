@@ -47,7 +47,25 @@ class Caps extends RpcTarget {
   }
 }
 
-async function rpc(url, env) {
+/**
+ * Nested invocations: each hop is a new invocation of this Worker through its own loopback service
+ * binding (ctx.exports), nested inside the last, `n` deep. `hop` is Workers RPC; `fetchHop` is fetch().
+ */
+export class Hop extends WorkerEntrypoint {
+  async hop(n) {
+    if (n <= 0) return 0;
+    return 1 + (await this.ctx.exports.Hop({ props: {} }).hop(n - 1));
+  }
+  async fetch(request) {
+    const n = Number(new URL(request.url).searchParams.get("n"));
+    if (n <= 0) return Response.json({ depth: 0 });
+    const r = await this.ctx.exports.Hop({ props: {} }).fetch(`https://hop/?n=${n - 1}`);
+    if (!r.ok) return new Response(await r.text(), { status: r.status });
+    return Response.json({ depth: 1 + (await r.json()).depth });
+  }
+}
+
+async function rpc(url, env, ctx) {
   const n = int(url, "n", 40);
   const kind = url.pathname.slice("/rpc/".length);
   const out = { kind, n };
@@ -94,6 +112,16 @@ async function rpc(url, env) {
         }
       }
       out.callerSaw = caps.calls;
+    } else if (kind === "depth") {
+      try {
+        out.depth = await ctx.exports.Hop({ props: {} }).hop(n);
+      } catch (e) {
+        out.error = String(e);
+      }
+    } else if (kind === "fdepth") {
+      const r = await ctx.exports.Hop({ props: {} }).fetch(`https://hop/?n=${n}`);
+      out.status = r.status;
+      out.body = (await r.text()).slice(0, 300);
     } else if (kind === "chain") {
       const caps = new Caps(env);
       try {
@@ -252,7 +280,7 @@ export default {
     const t0 = Date.now();
     let res;
     if (url.pathname === "/_lab/whoami") res = Response.json(id);
-    else if (url.pathname.startsWith("/rpc/")) res = await rpc(url, env);
+    else if (url.pathname.startsWith("/rpc/")) res = await rpc(url, env, ctx);
     else if (url.pathname.startsWith("/loader/")) res = await loader(url, env);
     else if (url.pathname.startsWith("/jspi/")) res = await jspi(request, url, env, ctx);
     else res = Response.json({ code: "NotFound" }, { status: 404 });

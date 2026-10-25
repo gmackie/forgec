@@ -43,8 +43,10 @@ const summary = (xs: number[]) => ({ n: xs.length, min: q(xs, 0), median: q(xs, 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const save = (name: string, data: unknown) => {
   mkdirSync(join(here, "results"), { recursive: true });
-  writeFileSync(join(here, "results", `${name}.json`), stableJson({ version: "r4-deployed/1", issue: "FORG-38", measured: "deployed", section: name, at: new Date().toISOString(), ...(data as object) }));
-  console.log(`results/${name}.json`);
+  // RUN=<tag> keeps repeated runs of a section side by side (results/<section>.<tag>.json).
+  const file = process.env["RUN"] ? `${name}.${process.env["RUN"]}.json` : `${name}.json`;
+  writeFileSync(join(here, "results", file), stableJson({ version: "r4-deployed/1", issue: "FORG-38", measured: "deployed", section: name, run: process.env["RUN"] ?? null, at: new Date().toISOString(), ...(data as object) }));
+  console.log(`results/${file}`);
 };
 
 interface Timed {
@@ -88,13 +90,19 @@ const rec = (r: Timed) => ({
 });
 
 // ------------------------------------------------------------------------------- acme requests
-function acmeClient(base: string, tenant: string) {
+/**
+ * Requests for one tenant. `setup` serves the customers and sites a draft order needs: linker C's lab
+ * cut has no packed script for POST /v1/customers or /v1/sites, so C's client creates them through
+ * linker B's host, which shares C's D1 database.
+ */
+function acmeClient(base: string, tenant: string, setup = base) {
   const H = { "x-forge-tenant": tenant, "x-forge-actor": "forg38" };
   let n = 0;
   const c = (method: string, path: string, body?: unknown) => call(base, method, path, body, H);
+  const s = (method: string, path: string, body?: unknown) => call(setup, method, path, body, H);
   const customer = async () => {
     n++;
-    const r = await c("POST", "/v1/customers", { code: `L${Date.now().toString(36).slice(-5).toUpperCase()}${n}`, name: "Lab" });
+    const r = await s("POST", "/v1/customers", { code: `L${Date.now().toString(36).slice(-5).toUpperCase()}${n}`, name: "Lab" });
     if (r.status !== 201) throw new Error(`customer: ${r.status} ${JSON.stringify(r.json).slice(0, 400)}`);
     return r;
   };
@@ -102,9 +110,9 @@ function acmeClient(base: string, tenant: string) {
   const draft = async (subtotal = "10.00") => {
     if (!site) {
       const cu = await customer();
-      const s = await c("POST", "/v1/sites", { customer: cu.json.id, code: "hq", name: "HQ", timezone: "UTC" });
-      if (s.status !== 201) throw new Error(`site: ${s.status} ${JSON.stringify(s.json).slice(0, 400)}`);
-      site = { customer: cu.json.id, site: s.json.id };
+      const st = await s("POST", "/v1/sites", { customer: cu.json.id, code: "hq", name: "HQ", timezone: "UTC" });
+      if (st.status !== 201) throw new Error(`site: ${st.status} ${JSON.stringify(st.json).slice(0, 400)}`);
+      site = { customer: cu.json.id, site: st.json.id };
     }
     const o = await c("POST", "/v1/orders", { customer: site.customer, site: site.site, subtotal, tax: "1.00", requestedOn: "2026-09-20" });
     if (o.status !== 201) throw new Error(`order: ${o.status} ${JSON.stringify(o.json).slice(0, 400)}`);
@@ -167,6 +175,18 @@ async function sealVariant(edit: (impl: string) => void) {
 const edit = (file: string, f: (s: string) => string) => (impl: string) => writeFileSync(join(impl, file), f(readFileSync(join(impl, file), "utf8")));
 const raiseLimit = edit("payment-adapter.ts", (s) => s.replace("amount >= 1000", "amount >= 2000"));
 const breakModule = edit("payment-adapter.ts", (s) => `${s}\nif (!(globalThis as Record<string, unknown>)["forgeNever"]) throw new Error("payment adapter failed to initialise");\n`);
+/** /_linker/stats is per host isolate: poll it and keep one answer per isolate that answers. */
+async function hostStats(base: string, tries = 12) {
+  const seen: Record<string, unknown> = {};
+  for (let i = 0; i < tries; i++) {
+    const r = await fetch(`${base}/_linker/stats`, { headers: ADMIN });
+    const iso = r.headers.get("x-lab-b-isolate") ?? r.headers.get("x-lab-tier-isolate") ?? "?";
+    const j = (await r.json()) as any;
+    if (seen[iso]) continue;
+    seen[iso] = { ageMs: Number(r.headers.get("x-lab-b-isolate-age-ms") ?? r.headers.get("x-lab-tier-isolate-age-ms")), manifestHash: j.manifestHash, hostCodeCache: j.hostCodeCache, closures: j.closures.map((c: any) => ({ label: c.label, cold: c.cold, warm: c.warm, buildMs: c.buildMs.map((x: number) => Math.round(x)) })), denials: j.denials.length, refused: j.refused.slice(-3) };
+  }
+  return seen;
+}
 const okOnly = (xs: any[], k: string) => summary(xs.filter((x) => x.status < 300).map((x) => x[k]).filter((x) => typeof x === "number"));
 const uniq = (xs: any[], k: string) => [...new Set(xs.map((x) => x[k]))];
 
@@ -215,6 +235,7 @@ const sections: Record<string, () => Promise<void>> = {
       cold.submit!.push(rec(await a.submit(o.json.id)));
       await sleep(500);
     }
+    const statsAfterCold = await hostStats(B);
     const warm: Record<string, any[]> = { read: [], write: [], orderCreate: [], submit: [] };
     for (let i = 0; i < WARM; i++) warm.read!.push(rec(await a.c("GET", "/v1/customers")));
     for (let i = 0; i < WARM; i++) warm.write!.push(rec(await a.customer()));
@@ -242,8 +263,8 @@ const sections: Record<string, () => Promise<void>> = {
       const r = await a.submit(o.json.id);
       afterSubmit.push({ ...rec(r), state: r.json?.status ?? r.json?.code ?? null });
     }
+    const statsAfterSwap = await hostStats(B);
     const relink = await link(B); // restore the sealed manifest
-    const stats = (await (await fetch(`${B}/_linker/stats`, { headers: ADMIN })).json()) as any;
     save("b", {
       tenant,
       rounds: ROUNDS,
@@ -251,7 +272,7 @@ const sections: Record<string, () => Promise<void>> = {
       coldSummary: Object.fromEntries(Object.entries(cold).map(([k, xs]) => [k, { clientMs: okOnly(xs, "clientMs"), linkMs: okOnly(xs, "linkMs"), hostMs: okOnly(xs, "hostMs"), statuses: uniq(xs, "status"), isolates: xs.map((x) => x.isolate), hostIsolates: uniq(xs, "hostIsolate") }])),
       warmSummary: Object.fromEntries(Object.entries(warm).map(([k, xs]) => [k, { clientMs: okOnly(xs, "clientMs"), linkMs: okOnly(xs, "linkMs"), hostMs: okOnly(xs, "hostMs"), statuses: uniq(xs, "status"), isolates: uniq(xs, "isolate"), hostIsolates: uniq(xs, "hostIsolate") }])),
       swap: { changedModules: changed.length, changedEntryPoints: changedEntries, uploadMs, linkMs: swapped.ms, manifestHash: swapped.json.manifestHash, before: { ...before, code: (before as any).error?.code ?? null }, afterRead, afterWrite, afterSubmit, restoredLinkMs: relink.ms },
-      hostStats: { hostCodeCache: stats.hostCodeCache, closures: stats.closures.length, denials: stats.denials, refused: stats.refused.slice(-10) },
+      hostStats: { afterCold: statsAfterCold, afterSwap: statsAfterSwap },
       cold,
       warm,
     });
@@ -259,7 +280,7 @@ const sections: Record<string, () => Promise<void>> = {
 
   /** Linker C before the tier host holds a manifest: every dynamic request falls back (NoManifest). */
   async "c-nomanifest"() {
-    const a = acmeClient(C, `cn-${Date.now().toString(36)}`);
+    const a = acmeClient(C, `cn-${Date.now().toString(36)}`, B);
     const samples: any[] = [];
     for (let i = 0; i < 10; i++) samples.push(rec(await a.draft()));
     const packed: any[] = [];
@@ -278,17 +299,15 @@ const sections: Record<string, () => Promise<void>> = {
   /** Linker C: packed read and write, dynamic writes (first, then warm), and the LoadFailed fallback. */
   async c() {
     const WARM = Number(process.env["WARM"] ?? 30);
-    const a = acmeClient(C, `c-${Date.now().toString(36)}`);
+    const a = acmeClient(C, `c-${Date.now().toString(36)}`, B);
     const firstRead = rec(await a.c("GET", "/v1/customers"));
     const firstOrder = rec(await a.draft());
     const o1 = await a.draft();
     const firstSubmit = rec(await a.submit(o1.json.id));
     const read: any[] = [];
-    const write: any[] = [];
     const order: any[] = [];
     const submit: any[] = [];
     for (let i = 0; i < WARM; i++) read.push(rec(await a.c("GET", "/v1/customers")));
-    for (let i = 0; i < WARM; i++) write.push(rec(await a.customer()));
     for (let i = 0; i < Math.min(WARM, 15); i++) {
       const o = await a.draft();
       order.push(rec(o));
@@ -309,11 +328,11 @@ const sections: Record<string, () => Promise<void>> = {
     const w = (xs: any[]) => ({ clientMs: okOnly(xs, "clientMs"), routerMs: okOnly(xs, "routerMs"), tierMs: okOnly(xs, "hostMs"), linkMs: okOnly(xs, "linkMs"), statuses: uniq(xs, "status"), tiers: uniq(xs, "tier"), isolates: uniq(xs, "isolate"), routerIsolates: uniq(xs, "routerIsolate") });
     save("c", {
       first: { read: firstRead, orderCreate: firstOrder, submit: firstSubmit },
-      warmSummary: { "GET /v1/customers (packed)": w(read), "POST /v1/customers (packed)": w(write), "POST /v1/orders (dynamic)": w(order), "POST …/submit (dynamic)": w(submit) },
+      warmSummary: { "GET /v1/customers (packed)": w(read), "POST /v1/orders (dynamic)": w(order), "POST …/submit (dynamic)": w(submit) },
       fallback: { manifestHash: brokenLink.json.manifestHash, ...w(fallback), misses: uniq(fallback, "miss"), samples: fallback },
       restored: { linkMs: restored.ms, submit: afterRestore },
       routerStats: { ...stats, recent: (stats.recent ?? []).slice(-5) },
-      samples: { read, write, order, submit },
+      samples: { read, order, submit },
     });
   },
 
@@ -325,6 +344,10 @@ const sections: Record<string, () => Promise<void>> = {
       ["callback", [10, 31, 32, 33, 40, 100, 1000]],
       ["fn", [40, 100]],
       ["chain", [8, 16, 30, 31, 32, 33, 40]],
+      ["depth", [8, 16, 30, 31, 32, 33, 40, 64]],
+      ["fdepth", [8, 16, 30, 31, 32, 33, 40, 64]],
+      ["top", [500, 1000]],
+      ["callback", [5000]],
     ];
     const runs: any[] = [];
     for (const [kind, ns] of plan) for (const n of ns) runs.push({ kind, n, ...(await call(PROBE, "GET", `/rpc/${kind}?n=${n}`)).json });
