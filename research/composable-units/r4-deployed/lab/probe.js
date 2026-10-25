@@ -187,6 +187,18 @@ async function loader(url, env) {
     }
     return Response.json({ n: out.length, cold: out.filter((x) => x.cold).length, errors: out.filter((x) => x.error).length, loads: out });
   }
+  if (kind === "hold") {
+    // One long request keeps this parent isolate alive while one child idles for growing gaps: a cold
+    // re-hit here is the loader evicting a child whose parent is still running.
+    const id = url.searchParams.get("id") ?? `hold-${Date.now()}`;
+    const gaps = (url.searchParams.get("gaps") ?? "0,10,30,60").split(",").map(Number);
+    const out = [];
+    for (const g of gaps) {
+      await scheduler.wait(g * 1000);
+      out.push({ gapS: g, ...(await loadOne(env, id, pad)) });
+    }
+    return Response.json({ id, samples: out });
+  }
   if (kind === "load") {
     // load(): never cached.
     const t0 = Date.now();

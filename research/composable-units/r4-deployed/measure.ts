@@ -3,7 +3,7 @@
 //
 //   FORG38_SECRETS=/path/secrets.json node research/composable-units/r4-deployed/measure.ts <section>...
 //
-// Sections: rtt b-seed b c-nomanifest c-seed c rpc loader jspi eviction-b eviction-loader evict-many.
+// Sections: rtt b-seed b c-nomanifest c-seed c rpc loader jspi eviction-b eviction-loader eviction-hold evict-many.
 // Each writes results/<section>.json. The secrets file holds LAB_TOKEN, LINKER_ADMIN_TOKEN and
 // TIER_STATS_TOKEN (the values ForgeGraph synced to the lab Workers); it is never committed. URLs
 // default to the lab's workers.dev hostnames (lab/names.mjs) and can be overridden with B_URL, C_URL,
@@ -426,6 +426,13 @@ const sections: Record<string, () => Promise<void>> = {
       console.log(JSON.stringify(out.at(-1)));
     }
     save("eviction-loader", { samples: out });
+  },
+
+  /** Child eviction with the parent alive: one request holds the probe isolate while a child idles. */
+  async "eviction-hold"() {
+    const gaps = process.env["GAPS"] ?? "0,10,30,60,120,300";
+    const r = await call(PROBE, "GET", `/loader/hold?id=hold-${Date.now().toString(36)}&pad=100000&gaps=${gaps}`);
+    save("eviction-hold", { status: r.status, clientMs: r.ms, probeIsolate: r.h["x-lab-isolate"], ...r.json });
   },
 
   /** Induced eviction: load N distinct children, then re-hit them all. */
