@@ -17,7 +17,8 @@ import host from "../../../../packages/linker-dynamic/src/host.ts";
 import { labGate } from "../../r4-deployed/lab/gate.js";
 import { SECRETS } from "./names.mjs";
 
-export { D1Gate, Egress, ObjectsGate, QueueGate, WorkflowGate } from "../../../../packages/linker-dynamic/src/host.ts";
+// FORG-47: the manifest pointer's Durable Object, bound as LINKER_POINTER (build.mjs).
+export { D1Gate, Egress, ManifestPointer, ObjectsGate, QueueGate, WorkflowGate } from "../../../../packages/linker-dynamic/src/host.ts";
 
 const renamed = new WeakMap();
 function labEnv(env) {

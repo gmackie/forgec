@@ -75,7 +75,11 @@ export type LinkErrorCode =
   | "UnlinkedEntryPoint"
   | "LoaderUnavailable"
   | "LoadFailed"
-  | "CapabilityDenied";
+  | "CapabilityDenied"
+  /** FORG-47: the host cannot know what to serve (the pointer's Durable Object is unreachable, or unbound). `reason` says which. */
+  | "LinkerRefused"
+  /** FORG-47: a manifest swap named a pointer version that is no longer current. */
+  | "StalePointer";
 
 const STATUS: Record<LinkErrorCode, number> = {
   UnsupportedManifest: 422,
@@ -91,6 +95,8 @@ const STATUS: Record<LinkErrorCode, number> = {
   LoaderUnavailable: 503,
   LoadFailed: 503,
   CapabilityDenied: 403,
+  LinkerRefused: 503,
+  StalePointer: 409,
 };
 
 /** Every refusal the linker makes. Problems are listed, never truncated to the first. */
@@ -98,15 +104,18 @@ export class LinkError extends Error {
   readonly status: number;
   readonly code: LinkErrorCode;
   readonly problems: string[];
-  constructor(code: LinkErrorCode, problems: string[]) {
+  /** Extra problem fields (FORG-47: `reason` of a LinkerRefused, the versions of a StalePointer). */
+  readonly extra: Record<string, unknown>;
+  constructor(code: LinkErrorCode, problems: string[], extra: Record<string, unknown> = {}) {
     super(`${code}: ${problems.join("; ")}`);
     this.name = "LinkError";
     this.code = code;
     this.problems = problems;
     this.status = STATUS[code];
+    this.extra = extra;
   }
   problem(): Record<string, unknown> {
-    return { type: `https://forge.dev/errors/linker/${this.code}`, title: this.code, status: this.status, code: this.code, detail: this.problems.join("; "), problems: this.problems };
+    return { type: `https://forge.dev/errors/linker/${this.code}`, title: this.code, status: this.status, code: this.code, detail: this.problems.join("; "), problems: this.problems, ...this.extra };
   }
 }
 

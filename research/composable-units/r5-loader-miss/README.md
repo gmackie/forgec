@@ -218,21 +218,36 @@ appeared on the account during the run; they were not touched.
 | 19:05:03 | Cloudflare API: no `forge-lab-miss*` Worker scripts (275 on the account, `forge-console` present), no `*miss*` D1 database or R2 bucket |
 | 19:05:04 | `forge target list --stage production --json` byte-identical to the snapshot from before the run (sha1 `9843aa23…`); `forge.gmac.io/healthz` 200 |
 
-## For FORG-47 (the manifest pointer and stats in a Durable Object)
+## Merged with FORG-47 (the manifest pointer in a Durable Object)
 
-- **Changed in `host.ts`:**
-  - `link(store, kit, manifest, env)` gained `env`, so it can read `LINKER_UNIT_CACHE`.
-  - Its existence checks go through `missingBlobs()` (in parallel). Its app-bundle read goes through `UnitFetcher.json()`.
-  - `childFor` and `dispatchChild` take `HostCtx` (`exports` plus an optional `waitUntil`).
-  - `ClosureStats` has `fetches`.
-  - `GET /_linker/stats` adds `unitFetch`.
-  - `evict-host-cache` takes `?layers=` and bumps a `generation` that is part of every child id (only when non-zero, so
-    ids are unchanged otherwise).
-  - The fetch handler times `current()` as `resolve` in `x-forge-link-breakdown`.
-- **`current()` is untouched.** It is 410 ms of a fresh isolate's 531 ms first request: three serial R2 reads (pointer,
-  kit, the 467 KB manifest) plus parallel heads. When the pointer moves into the Durable Object, read the manifest blob
-  through `new UnitFetcher(store, { config: unitFetchConfig(env.LINKER_UNIT_CACHE), cache: await openUnitCache() }).json(digest, "manifest")`.
-  The manifest is content-addressed too, so it gets the Cache API and the memory layer for free, verified. Fetch the kit
-  alongside it, not after it.
-- If stats move to the Durable Object, `fetches` (per-build `FetchReport`: layer counts, store bytes, per-blob ms) is the
-  field to carry.
+FORG-47 (`origin/FORG-47-manifest-pointer`, code final at ba357de) was merged into this branch, not rebased. The
+deployed numbers above predate the merge: they were measured with the old R2 pointer.
+
+- **Resolution.** `link(store, kit, manifest, env, checkStore = true)` takes FORG-47's `checkStore`. A pointer reader
+  (`checkStore = false`) skips the existence checks as FORG-47 does, and still reads the app bundle through the unit
+  fetcher. A writer (`PUT /_linker/manifest`, FORG-47's CAS and kit pinning, unchanged) runs the parallel `missingBlobs`
+  checks. The fetch handler keeps FORG-47's `resolveCurrent()` and `x-forge-pointer*` headers, and adds
+  `x-forge-link-breakdown` (`resolve` now times `resolveCurrent()`). `GET /_linker/stats` keeps FORG-47's `pointer` block
+  and adds `unitFetch`; `closures[].fetches` carries the per-build reports. These are B's own stats; C's `TierStats`
+  object counts routing, not builds. `evict-host-cache`'s `cache` layer reads the current linked manifest through
+  `current()`, because the per-isolate `linked` variable is gone.
+- **Applied on FORG-47's path.** `materialise()` reads the pinned kit blob and the manifest blob together through one
+  `UnitFetcher`: memory, then the Cache API, then R2, verified against their digests. Before, they were two serial,
+  uncached R2 reads.
+- **Lab.** `build.mjs` binds `LINKER_POINTER` (`ManifestPointer`, migration `forge-linker-pointer-v1`), and
+  `lab/linker-b.js` exports the class. `wrangler deploy --dry-run` lists the binding for all three targets. No new
+  deployment.
+- **Fresh isolate, *local only*.** Five restarts of `wrangler dev` per Worker, with R2, the pointer and the Cache API
+  persisted: link ms base 196–566 and new 193–523, resolve 28–203 and 32–141. Local reads are about 5 ms, so this is
+  CPU and noise, not a measurable change. The deployed saving, *estimated, not measured*, is two serial R2 GETs of the kit
+  and the 467 KB manifest (about 80–100 ms each, `results/r2.json`) replaced by one Cache API round (about 10 ms) in a
+  colo that has served the manifest before.
+- **Checks after the merge.**
+  - linker-dynamic 61/61.
+  - linker-tiered 32 passed, 7 skipped (the opt-in differential), including FORG-47's multi-isolate
+    `test/pointer.test.ts` (9/9).
+  - linker-packed 36 passed, 6 skipped.
+  - units 40/40.
+  - Build, typecheck, frozen lockfile and refresh-fixtures pass, and the tree is clean.
+  - Differential (`results/differential.local.json`, re-linked): 15/15 for whole-app, its repeat, A, B, C and C's
+    fallback, with no unexplained differences.

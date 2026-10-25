@@ -84,6 +84,7 @@ linker-tiered's Linker B tier runs the same host bundle in Miniflare directly (`
 | policy and gate | `src/policy.ts`, `src/sql-gate.ts` | Capability policy per entry point, derived from the manifest and the app's SQL schema. A table-level SQL gate. |
 | child code | `src/child.ts` | The child's `WorkerCode`: unit modules (sealed bytes, unchanged), the shared libraries, the app bundle and a generated `main.js`. |
 | host Worker | `src/host.ts`, `host/acme.ts`, `host/wrangler.jsonc` | Routing, the closure cache, capability stubs (`D1Gate`, `ObjectsGate`, `QueueGate`, `WorkflowGate`, `Egress`), queue/cron/Workflows wiring and `/_linker/*` administration (local only, token-gated). `acme.ts` exports the one Workflows class the platform binds by name. |
+| manifest pointer (FORG-47) | `src/pointer.ts`, `src/pointer-object.ts` | The current manifest per scope, in a Durable Object (`ManifestPointer`, bound as `LINKER_POINTER`), with a versioned compare-and-swap and a bounded cache in each host isolate. See "The manifest pointer" below. |
 | unit store | `src/store.ts` | A content-addressed blob store over a (local) R2 bucket `UNITS`. Every read is checked against its digest. An in-memory store is used by the unit tests. |
 | shared libraries | `scripts/build-libs.mjs` | `effect@4.0.3` and `@forgegraph/runtime@0.5.0` as content-addressed blobs: the libraries the unit modules leave as imports (`implementation.libraries`). |
 | runtime | `packages/runtime/src/hosts/cloudflare.ts` | No change of its own. Linker B uses the dispatch hand-off FORG-29 added: `WorkerOptions.postCommit` and `createWorker().dispatch()` (see "Dispatch: one mechanism with FORG-29"). |
@@ -98,6 +99,35 @@ linker-tiered's Linker B tier runs the same host bundle in Miniflare directly (`
 5. Forward the request to the child's default entrypoint. Then `waitUntil` calls the runtime's `dispatch(tenant, { sweep })` in the dispatch child, which holds the whole app and every queue binding: `sweep` is true after a 2xx mutation, and a tenant this host isolate has not seen yet gets `sweep: false` (the schedule-index record a whole-app Worker makes for every tenant it serves).
 
 Linking (`PUT /_linker/manifest`) resolves the manifest, then checks that every module, library and app blob it names is in the store and that the app bundle's `buildHash` matches. Only then does it move the pointer, so a broken manifest never serves.
+
+### The manifest pointer (FORG-47)
+
+Deployed, a host runs as several isolates at once, and before FORG-47 each held the pointer in module scope: a swap reached only the isolate that took the PUT, so the others kept serving the old closures with no bound ([R4 deployed](../r4-deployed/README.md), "Swap and multiple host isolates"). That answers design question 6 below. The pointer now lives in a Durable Object.
+
+**Layout.** One `ManifestPointer` object per scope, named `pointer:<scope>`. It stores one record:
+
+| field | |
+| --- | --- |
+| `version` | 0 before the first swap, then +1 per swap |
+| `manifestHash`, `manifestBlob` | the manifest's identity and its exact bytes in the unit store |
+| `kitBlob` | the kit (libraries and app bundles) pinned with it. `PUT /_linker/kit` stages a kit; the next manifest swap pins it. |
+| `closures` | entry point id → `closureHash`, for every entry point |
+| `dynamic` | linker C only: the entry points the tier host serves dynamically, with their closures |
+| `updatedAt`, `history` | when, and the last 10 pointers (version, manifest, kit) |
+
+**Compare-and-swap.** `PUT /_linker/manifest` takes `If-Match: "<version>"` (or `x-linker-pointer-version`), the version it replaces. Without one the host uses the version it reads just before swapping, so even an unconditional PUT cannot overwrite a swap it did not see. If the pointer has moved, the answer is 409 `StalePointer` with `expected`, `current` and the current `manifestHash`, and nothing changes. The swap itself is one DO method doing a storage read and a write, so the DO's input gate makes it atomic. The answer adds `version`, `previousVersion`, `scope`, `kitBlob` and an `ETag`. `GET /_linker/pointer` reads the pointer from the DO, bypassing every cache, with this isolate's cached view.
+
+**Revalidation bound.** Each isolate caches the pointer for `LINKER_POINTER_TTL_MS` (default 1000 ms; 0 reads the DO on every request). A request that finds its isolate's copy older than that reads the DO first; concurrent requests in the isolate share one read. So a swap whose PUT has answered at time T is served by every request that *starts* after T + TTL, on every isolate. The writer's own isolate serves it at once. Requests that start within the window may still get the previous manifest, and that previous manifest is complete and verified. Each answer says which version served it: `x-forge-pointer: cached|revalidated|changed; v=<n>` and `x-forge-pointer-ms` (the DO read). Deployed, `Date.now()` at the start of a request is the request's arrival time, so the bound holds there too.
+
+**Re-linking.** An isolate that sees a new version reads the manifest and kit blobs (digest-verified) and the app bundle, and resolves the manifest. It skips the writer's existence checks, because blobs are immutable and every blob a child loads is verified then. It keeps the linked state of its last 4 pointers, so a swap-back needs no re-link.
+
+**Fail closed.** If a revalidation is due and the DO cannot be read, the request is refused with 503 `LinkerRefused` and `reason: "PointerUnavailable"` (`x-forge-linker-refused: LinkerRefused`, `x-forge-linker-refused-reason: PointerUnavailable`). It is never served from a copy older than the bound. A host with no `LINKER_POINTER` binding refuses with `NoPointerBinding`. A swap while the DO is unreachable is refused too, never applied locally. Linker C's router falls back to the packed script on these refusals, logs them and counts them as `LinkerRefused/PointerUnavailable`. Queue batches are retried, as for any other refusal.
+
+**Scopes.** A host serves `LINKER_SCOPE` (default `default`). The admin API takes `?scope=<name>` (`[a-z0-9][a-z0-9:._-]{0,63}`), so `PUT /_linker/manifest?scope=session:<id>` keeps a separate pointer. LOOM-19 can give each Loom Session its own scope, and map a preview host to it, without a new layout. Sessions are not built here.
+
+**Cost.** No DO call for a request within the bound. At most one DO read per isolate per bound when it is busy, and one on the first request after it is idle. Measured locally and deployed: `research/composable-units/r4-manifest-pointer/`.
+
+**Config.** `host/wrangler.jsonc` binds `LINKER_POINTER` to the `ManifestPointer` class the script exports (a `new_sqlite_classes` migration, tag `forge-linker-pointer-v1`). Other scripts can bind it by `script_name`. Linker C's tier host binds it the same way. The old R2 key `pointer/current` is no longer read.
 
 ### What a child gets
 
@@ -181,6 +211,8 @@ Tested in `packages/linker-dynamic/test/host.test.ts`. A hostile `AuthorizePayme
 | closure naming an unknown unit / not closed under dependencies | resolve | `MissingUnit` | `resolve.test.ts` |
 | `closureHash` or `manifestHash` not matching content | resolve | `ClosureHashMismatch` / `ManifestHashMismatch` (HTTP 422 at link) | `resolve.test.ts`, `host.test.ts` |
 | module hash listed but bytes missing from the store | link | `MissingModule` (503); pointer unchanged; the previous manifest keeps serving | `host.test.ts` |
+| swap naming a pointer version that is no longer current | link | 409 `StalePointer`; pointer unchanged | `pointer.test.ts`, `host.test.ts`, linker-tiered `pointer.test.ts` |
+| pointer DO unreachable once an isolate's copy is older than the bound (or no binding) | request | 503 `LinkerRefused`, reason `PointerUnavailable` (`NoPointerBinding`); a swap is refused too | `pointer.test.ts`, linker-tiered `pointer.test.ts` |
 | bytes present but corrupted | child build | `ModuleDigestMismatch` (503) | `resolve.test.ts` (store) |
 | library or app bundle not in the kit | child build | `MissingLibrary` | `resolve.test.ts` |
 | unknown entry point (route, changesets, …) | request | 404 `UnknownEntryPoint` | `host.test.ts` |
@@ -275,7 +307,7 @@ Tests:
 3. Should egress be a manifest field (as proposed here, `entryPoints[].egress`) or a capability import (`net:<origin>`)? Who declares it: the unit's interface or the deployment?
 4. Should the app model be sliced per closure, or shipped as a content-addressed library keyed by `buildHash` so that `impl/`-only swaps stay warm?
 5. How should `closureHash` relate to isolate identity? Should the manifest pin library bytes, or only versions?
-6. How should the current-manifest pointer propagate across host isolates? Here it is held per isolate and re-read from R2 when an isolate starts; a deployed host would need KV or a Durable Object.
+6. How should the current-manifest pointer propagate across host isolates? Here it is held per isolate and re-read from R2 when an isolate starts; a deployed host would need KV or a Durable Object. **Answered by FORG-47:** a Durable Object per scope, a versioned compare-and-swap, and a cache bounded by `LINKER_POINTER_TTL_MS` in each isolate (see "The manifest pointer").
 7. Cron and sweep entry points are privileged because `scheduled()` does everything at once. Should the runtime split sweep, schedules and workflow sweep so that each cron entry point can be narrowed?
 8. Under Linker C, should the `uncovered` fallback to the whole-app runtime remain (it is reported), or should every surface become an entry point?
 

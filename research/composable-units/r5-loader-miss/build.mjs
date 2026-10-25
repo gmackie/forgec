@@ -49,6 +49,9 @@ const config = {
   compatibility_date: "2026-09-25",
   workers_dev: true,
   worker_loaders: [{ binding: "LOADER" }],
+  // FORG-47: the shared manifest pointer (packages/linker-dynamic/src/pointer.ts); without it B refuses (NoPointerBinding).
+  durable_objects: { bindings: [{ name: "LINKER_POINTER", class_name: "ManifestPointer" }] },
+  migrations: [{ tag: "forge-linker-pointer-v1", new_sqlite_classes: ["ManifestPointer"] }],
   // miss-smart's placement: LAB_PLACEMENT (JSON, set in the target's buildCommand), default Smart Placement.
   ...(target === "miss-smart" ? { placement: JSON.parse(process.env.LAB_PLACEMENT ?? '{"mode":"smart"}') } : {}),
   r2_buckets: [{ binding: "UNITS", bucket_name: R2[target] }],

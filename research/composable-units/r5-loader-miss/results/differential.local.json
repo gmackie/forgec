@@ -57,7 +57,7 @@
       "name": "whole-app",
       "describe": "today's Worker: deploy/cloudflare/worker.ts with the whole app.json",
       "scripts": 1,
-      "startupMs": 829,
+      "startupMs": 1902,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -161,7 +161,7 @@
       "name": "whole-app-repeat",
       "describe": "A/A control: today's Worker again, fresh instance; its differences from whole-app are run-to-run nondeterminism",
       "scripts": 1,
-      "startupMs": 654,
+      "startupMs": 2691,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -265,7 +265,7 @@
       "name": "packed",
       "describe": "linker A, per-entry-point: 87 sliced scripts, router + dispatch owner",
       "scripts": 88,
-      "startupMs": 5483,
+      "startupMs": 21670,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -369,7 +369,7 @@
       "name": "dynamic",
       "describe": "linker B: the host (host/acme.ts) and its children from the Worker Loader, every entry point dynamic, its own dispatch child",
       "scripts": 1,
-      "startupMs": 915,
+      "startupMs": 1429,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -466,7 +466,7 @@
       "failed": 0,
       "realtime": {
         "passed": false,
-        "detail": "     × subscribe -> hello; a publication arrives as an event with a sequence number; a new connection resumes by position 38ms\n FAIL  test/realtime.test.ts > realtime profile against a live deployment > subscribe -> hello; a publication arrives as an event with a sequence number; a new connection resumes by position\nError: websocket error: \n     28|     ws.addEventListener(\"error\", (e) => reject(new Error(`websocket er…\n Test Files  1 failed (1)\n      Tests  1 failed (1)"
+        "detail": "     × subscribe -> hello; a publication arrives as an event with a sequence number; a new connection resumes by position 94ms\n FAIL  test/realtime.test.ts > realtime profile against a live deployment > subscribe -> hello; a publication arrives as an event with a sequence number; a new connection resumes by position\nError: websocket error: \n     28|     ws.addEventListener(\"error\", (e) => reject(new Error(`websocket er…\n Test Files  1 failed (1)\n      Tests  1 failed (1)"
       },
       "dynamicHost": {
         "distinctChildren": 53,
@@ -482,7 +482,7 @@
       "name": "tiered",
       "describe": "linker C: the order write path and ProcessOrder dynamic (linker B's host), everything else packed (linker A); one dispatch owner",
       "scripts": 89,
-      "startupMs": 6862,
+      "startupMs": 21250,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -590,6 +590,8 @@
           "byReason": {}
         },
         "workflow": {
+          "scope": "shared",
+          "since": "2026-10-25T19:49:42.347Z",
           "workflowAdvances": {
             "dynamic": 8,
             "fallback": 0
@@ -609,7 +611,7 @@
       "name": "tiered-fallback",
       "describe": "linker C with no dynamic manifest linked: every dynamic entry point and workflow step falls back to its packed script",
       "scripts": 89,
-      "startupMs": 6367,
+      "startupMs": 19839,
       "scenarios": [
         {
           "id": "m4.blobs",
@@ -719,55 +721,57 @@
           }
         },
         "workflow": {
+          "scope": "shared",
+          "since": "2026-10-25T19:50:23.514Z",
           "workflowAdvances": {
             "dynamic": 0,
             "fallback": 8
           },
           "fallbacks": [
             {
-              "at": "2026-10-25T18:57:31.029Z",
+              "at": "2026-10-25T19:50:29.619Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
             },
             {
-              "at": "2026-10-25T18:57:31.197Z",
+              "at": "2026-10-25T19:50:29.730Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
             },
             {
-              "at": "2026-10-25T18:57:36.184Z",
+              "at": "2026-10-25T19:50:34.722Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
             },
             {
-              "at": "2026-10-25T18:57:36.417Z",
+              "at": "2026-10-25T19:50:34.972Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
             },
             {
-              "at": "2026-10-25T18:57:36.497Z",
+              "at": "2026-10-25T19:50:35.047Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
             },
             {
-              "at": "2026-10-25T18:57:36.554Z",
+              "at": "2026-10-25T19:50:35.098Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
             },
             {
-              "at": "2026-10-25T18:57:36.673Z",
+              "at": "2026-10-25T19:50:35.409Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
             },
             {
-              "at": "2026-10-25T18:57:36.738Z",
+              "at": "2026-10-25T19:50:35.442Z",
               "className": "ProcessOrderWorkflow",
               "reason": "UnknownEntryPoint",
               "detail": "UnknownEntryPoint: workflow class ProcessOrderWorkflow is not an entry point"
@@ -805,7 +809,7 @@
       "a": "whole-app",
       "b": "packed",
       "compared": 221,
-      "explained": 100,
+      "explained": 104,
       "explainedKeys": [
         "at",
         "freshUntil",
@@ -821,7 +825,7 @@
       "a": "whole-app",
       "b": "dynamic",
       "compared": 221,
-      "explained": 92,
+      "explained": 101,
       "explainedKeys": [
         "at",
         "freshUntil",
@@ -837,7 +841,7 @@
       "a": "whole-app",
       "b": "tiered",
       "compared": 221,
-      "explained": 105,
+      "explained": 100,
       "explainedKeys": [
         "at",
         "freshUntil",
@@ -853,7 +857,7 @@
       "a": "whole-app",
       "b": "tiered-fallback",
       "compared": 221,
-      "explained": 100,
+      "explained": 104,
       "explainedKeys": [
         "at",
         "freshUntil",

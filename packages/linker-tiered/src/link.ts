@@ -25,10 +25,17 @@ import pkg from "../package.json" with { type: "json" };
 
 export const LINKER = `${pkg.name}@${pkg.version}`;
 const TIER_HOST = resolve(import.meta.dirname, "host.ts");
+const TIER_STATS = resolve(import.meta.dirname, "stats.ts");
 const DYNAMIC_HOST = resolve(import.meta.dirname, "../../linker-dynamic/src/host.ts");
 const DYNAMIC_INDEX = resolve(import.meta.dirname, "../../linker-dynamic/src/index.ts");
 /** B's refusal header (linker-dynamic REFUSED_HEADER): the router falls back on it and only on it. */
 export const REFUSED_HEADER = "x-forge-linker-refused";
+/** B's reason for a LinkerRefused (FORG-47: `PointerUnavailable`): the router counts `<code>/<reason>`. */
+export const REFUSED_REASON_HEADER = "x-forge-linker-refused-reason";
+/** FORG-47: the Durable Objects the tier host defines (the router binds the stats one by script_name). */
+export const POINTER_BINDING = "LINKER_POINTER";
+export const STATS_BINDING = "FORGE_TIER_STATS";
+export const LINKER_MIGRATION = "forge-linker-pointer-v1";
 export const DYNAMIC_BINDING = "FORGE_DYNAMIC";
 export const STATS_PATH = "/_forge/tiered/stats";
 
@@ -111,7 +118,7 @@ export async function linkTiered(options: TieredLinkOptions): Promise<TieredLink
   mkdirSync(routerDir, { recursive: true });
   const targets = [...new Set([...table.map((r) => r.script), packed.router.fallback])].sort();
   writeFileSync(join(routerDir, "entry.mjs"), routerSource(table, packed.router.fallback, manifest.manifestHash));
-  writeFileSync(join(routerDir, "wrangler.jsonc"), `${JSON.stringify({ name: routerName, main: "worker.js", no_bundle: true, compatibility_date: env.compatibility_date, workers_dev: true, services: [...targets.map((s) => ({ binding: bindingOf(s), service: s })), { binding: DYNAMIC_BINDING, service: hostName }], "//secrets": ["TIER_STATS_TOKEN"] }, null, 2)}\n`);
+  writeFileSync(join(routerDir, "wrangler.jsonc"), `${JSON.stringify({ name: routerName, main: "worker.js", no_bundle: true, compatibility_date: env.compatibility_date, workers_dev: true, services: [...targets.map((s) => ({ binding: bindingOf(s), service: s })), { binding: DYNAMIC_BINDING, service: hostName }], durable_objects: { bindings: [{ name: STATS_BINDING, class_name: "TierStats", script_name: hostName }] }, "//secrets": ["TIER_STATS_TOKEN"] }, null, 2)}\n`);
 
   const hostDir = join(options.out, hostName);
   mkdirSync(hostDir, { recursive: true });
@@ -157,8 +164,11 @@ function routerSource(table: TieredLink["router"]["table"], fallback: string, ma
 // (method, path) -> the packed script, by service binding; a dynamic entry point goes to the dynamic
 // host first and falls back to its packed script when the host refuses it before any unit code ran
 // (the ${REFUSED_HEADER} header). Every answer says which tier served it (x-forge-tier).
+// Counts are reported to the tier host's TierStats Durable Object (${STATS_BINDING}), batched from
+// waitUntil, so no request waits on it (FORG-47, @forgegraph/linker-tiered/stats).
+import { StatsReporter } from "@forgegraph/linker-tiered/stats";
 const table = ${JSON.stringify(rows)}.map(([m, re, s, d]) => [m, new RegExp(re), s, d]);
-const stats = { since: new Date().toISOString(), dynamic: 0, packed: 0, fallback: 0, errors: 0, byReason: {}, byEntryPoint: {}, recent: [] };
+const stats = new StatsReporter("router");
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
 function tagged(res, tier, miss) {
   if (res.status === 101 || res.webSocket) return res;
@@ -168,13 +178,14 @@ function tagged(res, tier, miss) {
   return out;
 }
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname;
     if (path === ${JSON.stringify(STATS_PATH)}) {
       if (!env.TIER_STATS_TOKEN || request.headers.get("x-forge-tier-token") !== env.TIER_STATS_TOKEN) return json({ code: "NotFound" }, 404);
-      if (request.method === "DELETE") { Object.assign(stats, { since: new Date().toISOString(), dynamic: 0, packed: 0, fallback: 0, errors: 0, byReason: {}, byEntryPoint: {}, recent: [] }); return json({ ok: true }); }
-      return json(stats);
+      if (request.method === "DELETE") { await stats.reset(env); return json({ ok: true }); }
+      const r = await stats.read(env);
+      return json(r.body, r.status);
     }
     // An exact (method, path) entry; else the packed script owning the path, whose runtime answers 405
     // or a CORS preflight; else the residual, which authenticates and answers 404. Only an exact match
@@ -188,7 +199,7 @@ export default {
     const again = () => (body === null ? new Request(request) : new Request(request, { body }));
     const entry = exact && exact[3];
     if (!entry || request.headers.get("upgrade")) {
-      stats.packed++;
+      stats.record(env, ctx, (d) => d.packed++);
       return tagged(await packed.fetch(again()), "packed");
     }
     let reason = null;
@@ -198,23 +209,26 @@ export default {
       try {
         res = await env.${DYNAMIC_BINDING}.fetch(again());
         reason = res.headers.get(${JSON.stringify(REFUSED_HEADER)});
+        const why = reason && res.headers.get(${JSON.stringify(REFUSED_REASON_HEADER)});
+        if (why) reason = reason + "/" + why;
       } catch (e) {
         // Not a refusal: the host may have run unit code before it failed, so replaying is unsafe.
-        stats.errors++;
+        stats.record(env, ctx, (d) => d.errors++, true);
         console.error("linker-tiered: dynamic tier failed", request.method, path, String(e));
         return json({ type: "https://forge.dev/errors/linker/DynamicTierFailed", title: "DynamicTierFailed", status: 502, code: "DynamicTierFailed", detail: String(e).slice(0, 300), retryable: true }, 502);
       }
     }
     if (!reason) {
-      stats.dynamic++;
+      stats.record(env, ctx, (d) => d.dynamic++);
       return tagged(res, "dynamic");
     }
     if (res) await res.body?.cancel();
-    stats.fallback++;
-    stats.byReason[reason] = (stats.byReason[reason] ?? 0) + 1;
-    stats.byEntryPoint[entry] = (stats.byEntryPoint[entry] ?? 0) + 1;
-    stats.recent.push({ at: new Date().toISOString(), entry, reason });
-    if (stats.recent.length > 50) stats.recent.shift();
+    stats.record(env, ctx, (d) => {
+      d.fallback++;
+      d.byReason[reason] = 1;
+      d.byEntryPoint[entry] = 1;
+      d.recent.push({ at: new Date().toISOString(), entry, reason });
+    }, true);
     console.warn("linker-tiered: FALLBACK " + entry + " -> packed (" + reason + ")");
     return tagged(await packed.fetch(again()), "packed-fallback", reason);
   },
@@ -227,7 +241,8 @@ function hostSource(config: TierConfig): string {
     `// Generated by ${LINKER} from manifest ${config.manifestHash}: the dynamic tier. Do not edit.`,
     ...(config.workflows.length ? [`import { WorkflowEntrypoint } from "cloudflare:workers";`] : []),
     `import { tier } from "@forgegraph/linker-tiered/host";`,
-    `export { D1Gate, Egress, ObjectsGate, QueueGate, WorkflowGate } from "@forgegraph/linker-dynamic/host";`,
+    `export { D1Gate, Egress, ManifestPointer, ObjectsGate, QueueGate, WorkflowGate } from "@forgegraph/linker-dynamic/host";`,
+    `export { TierStats } from "@forgegraph/linker-tiered/host";`,
     `const host = tier(${JSON.stringify(config)});`,
     `export default host.worker;`,
     ...config.workflows.map((w) => `export class ${w.className} extends host.workflow(WorkflowEntrypoint, ${JSON.stringify(w.className)}) {}`),
@@ -248,6 +263,9 @@ function hostWrangler(name: string, env: Environment, bindings: string[], servic
   const producers = (env.queues?.producers ?? []).filter((q) => has(q.binding));
   if (producers.length) out["queues"] = { producers };
   out["services"] = Object.entries(services).map(([binding, service]) => ({ binding, service }));
+  // FORG-47: the shared manifest pointer and the tier stats (the router binds TierStats by script_name).
+  out["durable_objects"] = { bindings: [{ name: POINTER_BINDING, class_name: "ManifestPointer" }, { name: STATS_BINDING, class_name: "TierStats" }] };
+  out["migrations"] = [{ tag: LINKER_MIGRATION, new_sqlite_classes: ["ManifestPointer", "TierStats"] }];
   out["//secrets"] = [...bindings.filter((b) => b === "CURSOR_SECRET"), "LINKER_ADMIN_TOKEN"];
   out["//dispatch"] = `post-commit dispatch is handed to ${services["FORGE_DISPATCH"]} (${DISPATCH_PATH}); this script runs no sweep and no cron`;
   return out;
@@ -266,7 +284,7 @@ async function bundle(dir: string, appRoot: string, minify: boolean): Promise<{ 
     conditions: ["source", "workerd", "worker", "browser", "import"],
     external: ["cloudflare:*", "node:*"],
     nodePaths: [join(resolve(appRoot), "node_modules")],
-    alias: { "@forgegraph/linker-tiered/host": TIER_HOST, "@forgegraph/linker-dynamic/host": DYNAMIC_HOST, "@forgegraph/linker-dynamic": DYNAMIC_INDEX },
+    alias: { "@forgegraph/linker-tiered/host": TIER_HOST, "@forgegraph/linker-tiered/stats": TIER_STATS, "@forgegraph/linker-dynamic/host": DYNAMIC_HOST, "@forgegraph/linker-dynamic": DYNAMIC_INDEX },
     minify,
     legalComments: "none",
     charset: "utf8",
