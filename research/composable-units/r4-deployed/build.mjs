@@ -73,8 +73,15 @@ async function bundle(entry, file, options = {}) {
   return r.outputFiles[0].contents.byteLength;
 }
 
+// ForgeGraph's agent writes FG_COMMIT_HASH into the wrangler config it finds in appDir, before the
+// build. These configs are written by the build under dist/, so the agent never sees them; without the
+// var, the source-order guard refuses every later deploy of the Worker ("serving version ... has no
+// immutable FG_COMMIT_HASH"). The build therefore sets it to the commit it built.
+const source = { FG_APP: "forge-console", FG_COMMIT_HASH: execFileSync("git", ["rev-parse", "HEAD"], { cwd: root, encoding: "utf8" }).trim() };
+
 function writeConfig(config) {
-  writeFileSync(join(out, "wrangler.jsonc"), `${JSON.stringify({ name: WORKERS[target], main: "worker.js", observability: OBSERVABILITY, ...config }, null, 2)}\n`);
+  const vars = { ...(config.vars ?? {}), ...source };
+  writeFileSync(join(out, "wrangler.jsonc"), `${JSON.stringify({ name: WORKERS[target], main: "worker.js", observability: OBSERVABILITY, ...config, vars }, null, 2)}\n`);
 }
 
 const acmeD1 = { binding: "DB", database_name: D1.acme };
