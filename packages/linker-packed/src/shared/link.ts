@@ -7,31 +7,25 @@
 //   - the realtime Durable Object (it holds the sockets and runs the session protocol);
 //   - the realtime upgrade route (it returns a 101 with a WebSocket, which cannot cross RPC);
 //   - the dispatch owner (it sweeps the outbox for everyone: FORG-29/33 dispatch, unchanged).
-// And, because a shared request may make at most INVOCATION_BUDGET cross-script calls (script.ts), the
-// entry points whose work per invocation has no bound the link can see:
-//   - workflow start and signal routes (rooted at a workflow unit: they advance the instance inline,
-//     up to 33 calls in the conformance suite);
-//   - queue consumers (one invocation per batch of up to max_batch_size messages);
-//   - crons (one invocation sweeps every due schedule of every tenant).
-// Anything else that exceeds the budget at request time fails closed with RpcBudgetExceeded.
+// Nothing else: queue consumers, crons and workflow start and signal routes are shared too (FORG-49).
+// FORG-42 kept them in process because their calls per invocation have no bound the link can see, under
+// a 29-call budget. FORG-38 measured that the platform limits nesting depth, not calls, and the shared
+// strategy's depth is fixed (script.ts, MAX_DEPTH), so their call counts no longer matter.
 import { createHash } from "node:crypto";
 import type { ManifestEntryPoint } from "../manifest.ts";
 import type { HostConfig } from "../host.ts";
 import type { Binding } from "../capabilities.ts";
 import type { SharedMeta } from "./protocol.ts";
-import { RUNTIME_BINDING } from "./protocol.ts";
+import { DEPTH_HEADER, RUNTIME_BINDING } from "./protocol.ts";
 
-export { RUNTIME_BINDING };
+export { DEPTH_HEADER, RUNTIME_BINDING };
 
 /** Why a group keeps the in-process runtime, or null when it can use the shared runtime Worker. */
-export function inProcessReason(eps: ManifestEntryPoint[], dispatchOwner: boolean, roleOf: (unit: string) => string | undefined = () => undefined): string | null {
+export function inProcessReason(eps: ManifestEntryPoint[], dispatchOwner: boolean): string | null {
   if (dispatchOwner) return "dispatch owner";
   if (eps.some((e) => e.kind === "workflow")) return "workflow class";
   if (eps.some((e) => e.kind === "durable-object")) return "realtime object";
   if (eps.some((e) => (e as { runtimeService?: string }).runtimeService === "realtime-upgrade")) return "websocket upgrade";
-  if (eps.some((e) => e.kind === "http-route" && e.root && roleOf(e.root) === "workflow")) return "workflow start or signal";
-  if (eps.some((e) => e.kind === "queue-consumer")) return "queue consumer";
-  if (eps.some((e) => e.kind === "cron")) return "cron";
   return null;
 }
 
@@ -52,7 +46,7 @@ export function sharedMeta(host: HostConfig, injected: Binding[], sliceJson: str
 }
 
 /** The generated entry of a shared script: routing, units and slice; no engine. */
-export function sharedEntry(o: { header: string; imports: string[]; functions: string[]; externals: string[]; host: HostConfig; meta: Omit<SharedMeta, "functions" | "externals"> }): string[] {
+export function sharedEntry(o: { header: string; imports: string[]; functions: string[]; externals: string[]; host: HostConfig; meta: Omit<SharedMeta, "functions" | "externals">; maxDepth?: number }): string[] {
   const units = o.functions.length || o.externals.length;
   return [
     o.header,
@@ -61,7 +55,7 @@ export function sharedEntry(o: { header: string; imports: string[]; functions: s
     ...(units ? [`import { unitHost } from "@forgegraph/linker-packed/shared/units";`] : []),
     `import app from "./app.slice.json";`,
     ...o.imports,
-    `const host = packedShared(RpcTarget, app, ${units ? `unitHost([${o.functions.join(", ")}], { ${o.externals.join(", ")} })` : "null"}, ${JSON.stringify(o.host)}, ${JSON.stringify(o.meta)});`,
+    `const host = packedShared(RpcTarget, app, ${units ? `unitHost([${o.functions.join(", ")}], { ${o.externals.join(", ")} })` : "null"}, ${JSON.stringify(o.host)}, ${JSON.stringify(o.meta)}${o.maxDepth === undefined ? "" : `, ${JSON.stringify({ maxDepth: o.maxDepth })}`});`,
     `export default host.worker;`,
     "",
   ];

@@ -76,6 +76,9 @@ export interface SharedRuntime {
 /** The service binding a shared script reaches the runtime Worker through. */
 export const RUNTIME_BINDING = "FORGE_RUNTIME";
 
+/** The header that carries a shared request's Workers stage across a fetch hop: router -> script, script -> dispatch owner or Durable Object (FORG-49). */
+export const DEPTH_HEADER = "x-forge-depth";
+
 /** A ForgeError's fields as plain data (an RPC hop keeps only an Error's message). */
 export function serializeError(e: unknown): SerializedError {
   const x = e as Partial<SerializedError> & { message?: string };

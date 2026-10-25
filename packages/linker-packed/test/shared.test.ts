@@ -15,7 +15,7 @@ import { seal, writeSealed, type UnitPlan } from "@forgegraph/units";
 import { link, readJsonc } from "../src/index.ts";
 import type { HostConfig } from "../src/host.ts";
 import { sharedRuntime } from "../src/shared/runtime.ts";
-import { INVOCATION_BUDGET, packedShared } from "../src/shared/script.ts";
+import { DEPTH_HEADER, MAX_DEPTH, packedShared } from "../src/shared/script.ts";
 import { unitHost } from "../src/shared/units.ts";
 import { Effect } from "effect";
 import type { FunctionImpl } from "@forgegraph/runtime";
@@ -58,20 +58,34 @@ describe("per-entry-point-shared over examples/acme", async () => {
     expect(shared.router?.table).toEqual(per.router?.table);
   });
 
-  it("keeps the engine in process where the platform or dispatch needs it, or the invocation budget cannot be bounded", () => {
+  it("keeps the engine in process only where the platform or dispatch needs it", () => {
     const inProcess = shared.scripts.filter((s) => s.runtime?.mode === "in-process").map((s) => [s.members[0], s.runtime!.reason]);
     expect(inProcess.sort()).toEqual([
-      ["@acme/commerce/_/NightlyReconciliation", "cron"],
       ["@acme/commerce/_/ProcessOrder", "workflow class"],
       ["ForgeRealtime", "realtime object"],
       ["GET /v1/live/orders", "websocket upgrade"],
-      ["POST /v1/orders/{order}/process", "workflow start or signal"],
-      ["POST /v1/workflows/process-order/signals/{message}", "workflow start or signal"],
       ["forge:sweep", "dispatch owner"],
-      ["fulfill-order", "queue consumer"],
     ]);
-    expect(shared.scripts.filter((s) => s.runtime?.mode === "shared")).toHaveLength(shared.scripts.length - 8);
+    // FORG-49: with a depth guard instead of a call budget, these are shared again.
+    for (const id of ["@acme/commerce/_/NightlyReconciliation", "fulfill-order", "POST /v1/orders/{order}/process", "POST /v1/workflows/process-order/signals/{message}"]) expect(script(id).runtime).toEqual({ mode: "shared" });
+    expect(shared.scripts.filter((s) => s.runtime?.mode === "shared")).toHaveLength(shared.scripts.length - 4);
     expect(per.scripts.every((s) => s.runtime === undefined) && per.runtime === undefined).toBe(true);
+  });
+
+  it("the shared router stamps the stage of the script it calls; per-entry-point's router does not", () => {
+    const router = (strategy: string, l: typeof per) => readFileSync(join(out, strategy, l.router!.name, "entry.mjs"), "utf8");
+    expect(router("per-entry-point-shared", shared)).toContain(`headers.set(${JSON.stringify(DEPTH_HEADER)}, "2")`);
+    expect(router("per-entry-point", per)).not.toContain(DEPTH_HEADER);
+  });
+
+  it("maxDepth is a link option: emitted into every shared script, and checked", async () => {
+    const dir = join(out, "shared-depth");
+    const l = await link({ app: acme.app, manifestDir: acme.units, environment: acme.env, strategy: "per-entry-point-shared", out: dir, maxDepth: 12, bundle: false });
+    const entries = l.scripts.filter((s) => s.runtime?.mode === "shared").map((s) => readFileSync(join(dir, s.name, "entry.mjs"), "utf8"));
+    expect(entries.length).toBeGreaterThan(0);
+    expect(entries.every((e) => e.includes(', {"maxDepth":12});'))).toBe(true);
+    expect(readFileSync(join(out, "per-entry-point-shared", script("GET /v1/customers/{id}").name, "entry.mjs"), "utf8")).not.toContain("maxDepth");
+    for (const bad of [2, 33, 4.5]) await expect(link({ app: acme.app, manifestDir: acme.units, environment: acme.env, strategy: "per-entry-point-shared", out: join(out, "shared-bad"), maxDepth: bad, bundle: false })).rejects.toThrow(/maxDepth must be an integer from 3 to 32/);
   });
 
   it("a shared script carries routing, units and its slice, and no engine; with no js unit, no Effect either", () => {
@@ -101,7 +115,7 @@ describe("per-entry-point-shared over examples/acme", async () => {
     expect(rt.bytes!.raw).toBeGreaterThan(200_000);
     expect(Object.keys(rt.composition!).sort()).toEqual(["effect", "entry", "host", "runtime"]);
     const viaRuntime = shared.scripts.filter((s) => s.linkerBindings.some((b) => b.name === "FORGE_RUNTIME" && b.script === rt.name));
-    expect(viaRuntime).toHaveLength(shared.scripts.length - 8);
+    expect(viaRuntime).toHaveLength(shared.scripts.length - 4);
   });
 });
 
@@ -218,70 +232,140 @@ describe("shared host: narrowing stays per script (FORG-34 through the runtime W
   });
 });
 
-// --- The invocation budget (FORG-42 follow-up) ---------------------------------------------------
+// --- The depth guard (FORG-49, replacing FORG-42's call budget) ---------------------------------
 
-describe("shared host: no request exceeds the invocation budget unnoticed", () => {
-  const cfg = { ...config(["DB", "CURSOR_SECRET", "FORGE_AUTH"], []), routes: null };
-  const meta = { script: cfg.script, sliceHash: "x", features: [], objects: false, bindings: [{ name: "DB", type: "d1" }, { name: "CURSOR_SECRET", type: "secret" }, { name: "FORGE_AUTH", type: "var" }], withheld: [], sweeps: cfg.sweeps };
+describe("shared host: depth is guarded, calls are not", () => {
+  const cfg = { ...config(["DB", "ROOM", "CURSOR_SECRET", "FORGE_AUTH"], []), routes: null };
+  const meta = { script: cfg.script, sliceHash: "x", features: [], objects: false, bindings: [{ name: "DB", type: "d1" }, { name: "ROOM", type: "durable-object" }, { name: "CURSOR_SECRET", type: "secret" }, { name: "FORGE_AUTH", type: "var" }], withheld: [], sweeps: cfg.sweeps };
   const h = { "x-forge-tenant": "t1", "x-forge-actor": "a" };
+  const ctx = { waitUntil: (p: Promise<unknown>) => void p.catch(() => undefined) };
   const counting = () => {
     const db = d1();
     let statements = 0;
     return { db: { ...db, prepare: (sql: string) => ((statements += 1), db.prepare(sql)) }, statements: () => statements };
   };
+  type Caps = { d1: (...a: unknown[]) => Promise<unknown>; durable: (b: string, n: string, r: Request) => Promise<Response>; invoke: (...a: unknown[]) => Promise<unknown> };
 
-  it("refuses the 30th cross-script call and fails closed with RpcBudgetExceeded, never the runtime's answer", async () => {
+  it("the default refuses the call that would start stage 30, three stages short of the platform's 33rd", () => {
+    expect(MAX_DEPTH).toBe(29);
+  });
+
+  it("allows unlimited callbacks: 5,000 in one request (FORG-38 measured 5,000 deployed)", async () => {
     const { db, statements } = counting();
-    let refusedAt: string | null = null;
-    // A runtime that keeps reading until a callback is refused, then swallows the refusal and answers 200.
-    const runtime = { serve: async (_r: Request, caps: { d1: (...a: unknown[]) => Promise<unknown> }) => {
-      for (let i = 0; i < 100; i++) await caps.d1("DB", "first", "SELECT 1 AS x", []).catch((e: Error) => { refusedAt ??= e.message; i = 100; });
+    const runtime = { serve: async (_r: Request, caps: Caps) => {
+      for (let i = 0; i < 5_000; i++) await caps.d1("DB", "first", "SELECT 1 AS x", []);
       return { response: new Response("{}", { status: 200 }), dispatch: [] };
     } };
     const { worker } = packedShared(Rpc, bundle, null, cfg, meta);
-    const res = await worker.fetch(new Request("https://forge.test/v1/customers/x", { headers: h }), { DB: db, CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime }, { waitUntil: (p) => void p.catch(() => undefined) });
-    expect(res.status).toBe(500);
-    const body = (await res.json()) as Record<string, unknown>;
-    expect(body).toMatchObject({ code: "RpcBudgetExceeded", retryable: false });
-    expect(String(body["detail"])).toMatch(/Nothing was written/);
-    // 29 = the router's call + the schedule-index hand-off + the call to the runtime + 26 callbacks.
-    expect(statements()).toBe(INVOCATION_BUDGET - 3);
-    expect(refusedAt).toMatch(/callback d1 would be cross-script call 30 of this request/);
+    const res = await worker.fetch(new Request("https://forge.test/v1/customers/x", { headers: { ...h, [DEPTH_HEADER]: "2" } }), { DB: db, CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime }, ctx);
+    expect(res.status).toBe(200);
+    expect(statements()).toBe(5_000);
   });
 
-  it("counts a unit's deps calls back into the engine, and reserves the post-commit hand-off of a write", async () => {
+  it("allows unlimited sequential calls: 1,000 Durable Object fetches and 1,000 unit deps calls, and every post-commit hand-off", async () => {
     let depsCalls = 0;
     const loop: FunctionImpl = { id: "loop", body: (deps) => Effect.gen(function* () {
-      for (let i = 0; i < 100; i++) yield* deps.resources["Customer"]!.get(`c${i}`);
+      for (let i = 0; i < 1_000; i++) yield* deps.resources["Customer"]!.get(`c${i}`);
       return {};
     }) };
-    const runtime = { serve: async (_r: Request, caps: { invoke: (...a: unknown[]) => Promise<unknown> }) => {
-      await caps.invoke("loop", {}, {}, { call: async () => ((depsCalls += 1), { ok: true, value: {} }) }, { resources: ["Customer"], transitions: {} }).catch(() => undefined);
-      return { response: new Response("{}", { status: 201 }), dispatch: ["t1"] };
+    const stages: string[] = [];
+    const room = { idFromName: (n: string) => n, get: () => ({ fetch: async (r: Request) => (stages.push(r.headers.get(DEPTH_HEADER)!), new Response("ok")) }) };
+    const runtime = { serve: async (_r: Request, caps: Caps) => {
+      for (let i = 0; i < 1_000; i++) await caps.durable("ROOM", "r", new Request("https://do/"));
+      const out = (await caps.invoke("loop", {}, {}, { call: async () => ((depsCalls += 1), { ok: true, value: {} }) }, { resources: ["Customer"], transitions: {} })) as { ok: boolean };
+      expect(out.ok).toBe(true);
+      return { response: new Response("{}", { status: 201 }), dispatch: ["t2", "t3"] };
     } };
-    const forwards: string[] = [];
+    const forwards: Array<{ body: string; depth: string | null }> = [];
     const { worker } = packedShared(Rpc, bundle, unitHost([loop], {}), cfg, meta);
-    const env = { DB: d1(), CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime, FORGE_DISPATCH: { fetch: async (u: string, init: RequestInit) => (forwards.push(String(init.body)), new Response(null, { status: 204 })) } };
-    const res = await worker.fetch(new Request("https://forge.test/v1/loop", { method: "POST", headers: { ...h, "x-forge-tenant": "t2" }, body: "{}" }), env, { waitUntil: (p) => void p.catch(() => undefined) });
-    expect(res.status).toBe(500);
-    expect(((await res.json()) as { code: string }).code).toBe("RpcBudgetExceeded");
-    // 29 = router + schedule-index hand-off + post-commit reserve + runtime call + the invoke callback + 24 deps calls.
-    expect(depsCalls).toBe(INVOCATION_BUDGET - 5);
-    expect(forwards).toEqual([JSON.stringify({ tenant: "t2", sweep: false })]); // no post-commit hand-off for a failed request
+    const env = { DB: d1(), ROOM: room, CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime, FORGE_DISPATCH: { fetch: async (_u: string, init: RequestInit) => (forwards.push({ body: String(init.body), depth: new Headers(init.headers).get(DEPTH_HEADER) }), new Response(null, { status: 204 })) } };
+    const res = await worker.fetch(new Request("https://forge.test/v1/loop", { method: "POST", headers: { ...h, "x-forge-tenant": "t2", [DEPTH_HEADER]: "2" }, body: "{}" }), env, ctx);
+    expect(res.status).toBe(201);
+    expect(depsCalls).toBe(1_000);
+    // Each fetch from a callback starts the stage below the script's (2), never deeper: callbacks run at the script's stage.
+    expect(stages).toHaveLength(1_000);
+    expect(new Set(stages)).toEqual(new Set(["3"]));
+    await new Promise((r) => setTimeout(r, 0));
+    expect(forwards).toEqual([
+      { body: JSON.stringify({ tenant: "t2", sweep: false }), depth: "3" },
+      { body: JSON.stringify({ tenant: "t2", sweep: true }), depth: "3" },
+      { body: JSON.stringify({ tenant: "t3", sweep: true }), depth: "3" },
+    ]);
   });
 
-  it("a queue batch over budget throws, so every message is retried", async () => {
-    const runtime = { queue: async (_q: string, _b: unknown[], caps: { d1: (...a: unknown[]) => Promise<unknown> }) => {
-      for (let i = 0; i < 40; i++) await caps.d1("DB", "first", "SELECT 1", []).catch(() => undefined);
-      return ["ack"];
-    } };
+  it("a queue batch and a cron are stage 1, and make unlimited calls", async () => {
+    const { db, statements } = counting();
+    const runtime = {
+      queue: async (_q: string, _b: unknown[], caps: Caps) => {
+        for (let i = 0; i < 1_000; i++) await caps.d1("DB", "first", "SELECT 1", []);
+        return ["ack"];
+      },
+      scheduled: async (_e: unknown, caps: Caps) => {
+        for (let i = 0; i < 1_000; i++) await caps.d1("DB", "first", "SELECT 1", []);
+      },
+    };
     const { worker } = packedShared(Rpc, bundle, null, cfg, meta);
     const acked: string[] = [];
-    await expect(worker.queue({ queue: "q", messages: [{ body: 1, ack: () => acked.push("ack"), retry: () => acked.push("retry") }] }, { DB: d1(), FORGE_RUNTIME: runtime })).rejects.toThrow(/RpcBudgetExceeded|limit 29/);
-    expect(acked).toEqual([]);
+    await worker.queue({ queue: "q", messages: [{ body: 1, ack: () => acked.push("ack"), retry: () => acked.push("retry") }] }, { DB: db, FORGE_RUNTIME: runtime });
+    await worker.scheduled({ cron: "0 3 * * *" }, { DB: db, FORGE_RUNTIME: runtime });
+    expect(acked).toEqual(["ack"]);
+    expect(statements()).toBe(2_000);
   });
 
-  it("a real request stays well inside the budget", async () => {
+  /**
+   * A chain of shared scripts, each nested one stage below the last: script -> runtime -> (callback, the
+   * script's stage) -> Durable Object fetch -> the next script. The router starts it at stage 2.
+   */
+  async function chain(options: { maxDepth?: number } = {}) {
+    const seen: number[] = [];
+    let serves = 0;
+    let runtimeAnswered = 0;
+    const runtime = { serve: async (r: Request, caps: Caps) => {
+      serves += 1;
+      expect(r.headers.has(DEPTH_HEADER)).toBe(false); // the engine never sees the linker's header
+      const inner = await caps.durable("ROOM", "next", new Request("https://next/v1/customers/x", { headers: h }));
+      runtimeAnswered += 1;
+      return { response: inner, dispatch: [] };
+    } };
+    const { worker } = packedShared(Rpc, bundle, null, cfg, meta, options);
+    const env: Record<string, unknown> = { DB: d1(), CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime };
+    env["ROOM"] = { idFromName: (n: string) => n, get: () => ({ fetch: (r: Request) => (seen.push(Number(r.headers.get(DEPTH_HEADER))), worker.fetch(r, env, ctx)) }) };
+    const res = await worker.fetch(new Request("https://forge.test/v1/customers/x", { headers: { ...h, [DEPTH_HEADER]: "2" } }), env, ctx);
+    return { res, body: (await res.json()) as Record<string, unknown>, seen, serves, runtimeAnswered };
+  }
+
+  it("counts a script -> runtime -> script chain by depth, and refuses the call that would start stage 30", async () => {
+    const r = await chain();
+    // Scripts at stages 2..29: those at 2..28 call the runtime (stages 3..29); the one at 29 is refused before it.
+    expect(r.seen).toEqual(Array.from({ length: 27 }, (_, i) => i + 3));
+    expect(r.serves).toBe(27);
+    expect(r.res.status).toBe(500);
+    expect(r.body).toMatchObject({ type: "https://forge.dev/errors/rpc-budget-exceeded", status: 500, code: "RpcBudgetExceeded", retryable: false });
+    expect(String(r.body["detail"])).toMatch(/at Workers stage 29 refused the call to the runtime Worker: it would start stage 30, and a shared script allows 29/);
+    expect(String(r.body["detail"])).toMatch(/Nothing was written/);
+  });
+
+  it("the limit is configurable", async () => {
+    const r = await chain({ maxDepth: 10 });
+    expect(r.seen.at(-1)).toBe(10);
+    expect(r.serves).toBe(8);
+    expect(String(r.body["detail"])).toMatch(/at Workers stage 10 refused .* allows 10/);
+  });
+
+  it("a request arriving at the limit never reaches the runtime; a client cannot lower its stage below 1", async () => {
+    let served = 0;
+    const runtime = { serve: async () => ((served += 1), { response: new Response("{}", { status: 200 }), dispatch: [] }) };
+    const { worker } = packedShared(Rpc, bundle, null, cfg, meta);
+    const env = { DB: d1(), CURSOR_SECRET: "t", FORGE_AUTH: "dev-headers", FORGE_RUNTIME: runtime };
+    const at = (depth: string) => worker.fetch(new Request("https://forge.test/v1/customers/x", { headers: { ...h, [DEPTH_HEADER]: depth } }), env, ctx);
+    expect((await at("28")).status).toBe(200);
+    expect((await at("29")).status).toBe(500);
+    expect((await at("40")).status).toBe(500);
+    for (const junk of ["0", "-5", "x", "1.5"]) expect((await at(junk)).status).toBe(200);
+    expect(served).toBe(5);
+  });
+
+  it("a real request stays far inside the limit", async () => {
     const r = await finalizeWithoutBytes(config(["DB", "BLOBS", "CURSOR_SECRET", "FORGE_AUTH"], []));
     expect(r.status).toBe(422);
   });
