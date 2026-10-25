@@ -28,6 +28,42 @@ RUNS=30 node research/composable-units/t4-linker-dynamic/measure.ts   # results.
 
 Versions: wrangler 4.135.0, workerd 1.20260918.1, miniflare 5.20260918.0-alpha (all from `pnpm-lock.yaml`), Node 24.14.0, Apple M2 Max. Compatibility date 2026-09-25 for host and children, the same as `research/cf-forge` and T1. The whole-app Worker keeps its own date, 2026-09-01.
 
+### Test harness: dropped connections under load (FORG-45)
+
+`host.test.ts` failed once in Forgejo CI (run 204, d881e80) with `blob upload failed: 500 Error: Network connection lost.` in the sandbox test, and passed on every other run. What is known:
+
+- **Where the error comes from.** `wrangler dev` runs two workerd processes: a ProxyWorker on the test's port, which forwards every request over keep-alive HTTP to the user Worker's own workerd. The 500's body is the stack of the proxy's `entry.worker.js` catch around that forward (miniflare `entry.worker.ts:648`). wrangler's ProxyWorker retries a forward that drops its connection only for GET and HEAD (it logs `recovered on attempt N after a dropped connection to the UserWorker`). Any other method gets that 500. So the PUT was lost on the proxy-to-user hop. It was not lost inside the host (`src/`) or in R2. A restart of the user Worker would have answered 503 `Your worker restarted mid-request`.
+- **The runner was overloaded.** Run 202's `composable units and runtime` job (the 166-file runtime suite) ran on the same runner at the same time. In run 204, three tests that take about 0.6 s took about 9 s each ("refuses a manifest that does not match its hash", egress, undeclared). In runs 201, 202, 205, 208 and 209 the same tests took 0.5 to 1.3 s.
+- **workerd drops a keep-alive connection after 5 s idle.** A probe script (not committed) shows this on the Node hop deterministically. Block the event loop for 3 or 4.5 s after a request, and the next request succeeds (12/12). Block it for 5.5 or 7 s, and the next request fails with `ECONNRESET` (12/12), GET and PUT alike, because undici could not expire its pooled socket at 4 s. That is the second failure mode below.
+- **Not reproduced: the proxy hop itself.** Idle gaps of 0 to 11 s between admin PUTs, including 56 PUTs at 4960 to 5040 ms under CPU stress, never lost one. The proxy-to-user race is rare, and probably needs both workerd processes starved, as on the CI runner. Confidence that the CI failure is this hop dropping a pooled connection: high for the hop (the error text and stack), medium for the idle-timeout race as the cause.
+
+Two more failure modes showed up in local loops. The machine was already at a load average of 130 to 270 from other work, and the stressed loops added 24 busy processes on its 12 cores:
+
+1. **The manifest-swap test blocked its own event loop.** It called `acmeManifest()` (a 467 KB `JSON.parse`) once per entry point and once per closure unit checked: 529 parses, about 4.6 s of synchronous CPU under that load. Past 5 s, the next `GET /v1/customers` went out on a socket workerd had already closed: `fetch failed`, `ECONNRESET`, in 7 of 11 stressed runs. The test now parses the manifest once.
+2. **Another checkout's host on the same port.** The test always used port 8951. Twice, a run's requests reached a host this run had not started. Once its own wrangler logged nothing while the tests ran and they ended with `other side closed`. Once the very first request found a warm child. Both times matched, to the minute, `wrangler dev --port 8951` sessions that the FORG-44 worktree started at the same time (`~/.wrangler/logs`). On macOS, two hosts on `localhost:8951` can bind `::1` and `127.0.0.1` side by side, so neither fails to start. The fixes:
+   - The host test now takes a free port from the OS. `startWorker` listens on `127.0.0.1` only (`--ip`) and refuses a port something already serves.
+   - wrangler runs in its own process group, and `stop()` signals the whole group and waits for the port to close. Before, it sent SIGKILL to wrangler 500 ms after SIGTERM, which could leave its two workerd processes running.
+   - None of this applies to CI, where each job has its own container.
+
+What the harness does now (`packages/linker-dynamic/scripts/harness.mjs`):
+
+- It retries the two idempotent admin PUTs (blobs, which are content-addressed, and the kit, which is written whole). It retries only these failures: 500 `Network connection lost`, 503 `restarted mid-request`, and a `fetch failed` whose cause is a closed or reset socket.
+- There are at most 3 attempts, with 250 and 500 ms backoff. Each retry is logged as `[harness] … attempt N of 3 lost its connection (…)`, with any lines wrangler printed about it.
+- Manifest links are not retried, because a repeat would change `previous`. Product code in `src/` never retries.
+- `LINKER_HARNESS_PUT_ATTEMPTS=1` turns the retry off. `LINKER_HARNESS_WRANGLER_LOG=<file>` appends all of wrangler's output to a file. The retry log already quotes any line wrangler printed about the drop. The ProxyWorker reports a failed forward to wrangler as `<method> <url> (failed after 1 attempt): <message>`, so the next CI occurrence should show which hop failed.
+- `test/harness.test.ts` covers the retry, the give-up and the busy-port refusal against a fake server.
+
+Loops of `vitest run test/host.test.ts` on the M2 Max:
+
+| Configuration | Before | After |
+| --- | --- | --- |
+| No added stress | 30/30 passed | 30/30 passed, no retries |
+| 24 busy processes | 4/11 passed: 7 `ECONNRESET` in the swap test (loop stopped there) | 30/30 passed, no retries |
+
+"Before" ran with `LINKER_HARNESS_PUT_ATTEMPTS=1`. "After" is all of the changes above. The retry never fired in these 60 runs, so the passes come from the single parse and the isolated port, not from retrying. An intermediate stressed run, with the retry and the single parse but still on port 8951, passed 13 of 14 and 2 of 3. Both of its failures were the cross-checkout collision.
+
+linker-tiered's Linker B tier runs the same host bundle in Miniflare directly (`packages/linker-tiered/src/local.ts`), with one workerd and no proxy hop, so it was not affected.
+
 ## Is the Worker Loader available?
 
 | where | finding | source |
