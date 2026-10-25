@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/build-editor.mjs && vite --host 127.0.0.1",
-    "build": "node scripts/build-editor.mjs && vite build && node scripts/build.mjs",
+    "build": "node scripts/build-editor.mjs && vite build && node scripts/build.mjs && node scripts/carry-source-vars.mjs",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "start": "node dist/server.mjs",
