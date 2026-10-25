@@ -34,6 +34,12 @@ const ACME_VARS = { FORGE_AUTH: "dev-headers", FORGE_CORS: "http://localhost:517
 const OBSERVABILITY = { enabled: true, head_sampling_rate: 1 };
 const run = (cmd, args, cwd = root) => execFileSync(cmd, args, { cwd, stdio: "inherit", env: process.env });
 
+/** What `pnpm --filter "@forgegraph/linker-tiered^..." run build` does: the runtime's dist/ (linker A imports it) and B's libraries. */
+function workspaceDeps() {
+  run("node", [join(root, "packages/runtime/node_modules/typescript/bin/tsc"), "-p", "tsconfig.build.json"], join(root, "packages/runtime"));
+  run("node", [join(root, "packages/linker-dynamic/scripts/build-libs.mjs")]);
+}
+
 function forgec() {
   const dir = process.env.CARGO_TARGET_DIR ?? join(root, "target");
   run("cargo", ["build", "--locked", "-p", "forgegraph-cli"]);
@@ -94,6 +100,7 @@ if (target === "rpc-callee") {
 
 // ------------------------------------------------------------------------------------- the probe
 if (target === "probe") {
+  workspaceDeps();
   const bin = forgec();
   const { seal } = await import("../../../packages/units/src/seal.ts");
   const { bindUnit, D1_RESOURCE_HOST, D1_RESOURCE_HOST_SCHEMA } = await import("../../../packages/units/src/harness.ts");
@@ -146,6 +153,7 @@ if (target === "probe") {
 // resources, and no Durable Object, Workflows, cron or queue consumer (none of those scripts is
 // deployed). The router's other routes therefore have no service binding and answer 500.
 if (target.startsWith("c-")) {
+  workspaceDeps();
   const bin = forgec();
   run(bin, ["build", ".", "--units"], acme);
   run("node", [join(root, "packages/units/src/cli.ts"), "."], acme);
