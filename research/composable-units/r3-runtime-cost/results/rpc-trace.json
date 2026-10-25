@@ -1,0 +1,68 @@
+{
+  "version": "r3-rpc-trace/1",
+  "issue": "FORG-42",
+  "measured": true,
+  "how": "the 15 conformance scenarios against per-entry-point-shared in local workerd with FORGE_RPC_TRACE=1; invocations = cross-script calls of one request, batch or cron as the shared host's budget counts them (the starting invocation, the call to the runtime, callbacks, unit deps calls, reserved dispatch hand-offs); the budget refuses the 30th",
+  "budget": 29,
+  "scenariosFailed": [],
+  "requests": 229,
+  "invocations": {
+    "min": 2,
+    "median": 5,
+    "p95": 11,
+    "max": 20
+  },
+  "refused": [],
+  "top": [
+    {
+      "invocations": 20,
+      "what": "POST /v1/schedules/nightly-reconciliation/tick",
+      "script": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1"
+    },
+    {
+      "invocations": 17,
+      "what": "POST /v1/changesets/{id}/commit",
+      "script": "acme-commerce-post-v1-changesets-id-commit-ec9a99"
+    },
+    {
+      "invocations": 15,
+      "what": "POST /v1/orders/{id}/submit",
+      "script": "acme-commerce-post-v1-orders-order-submit-19d055"
+    },
+    {
+      "invocations": 14,
+      "what": "POST /v1/changesets/{id}/commit",
+      "script": "acme-commerce-post-v1-changesets-id-commit-ec9a99"
+    },
+    {
+      "invocations": 14,
+      "what": "POST /v1/orders/{id}/submit",
+      "script": "acme-commerce-post-v1-orders-order-submit-19d055"
+    },
+    {
+      "invocations": 14,
+      "what": "POST /v1/orders/{id}/submit",
+      "script": "acme-commerce-post-v1-orders-order-submit-19d055"
+    },
+    {
+      "invocations": 14,
+      "what": "POST /v1/orders/{id}/submit",
+      "script": "acme-commerce-post-v1-orders-order-submit-19d055"
+    },
+    {
+      "invocations": 13,
+      "what": "POST /v1/departments/{id}/move",
+      "script": "acme-commerce-post-v1-departments-id-move-24a6b1"
+    },
+    {
+      "invocations": 12,
+      "what": "POST /v1/orders/{id}/submit",
+      "script": "acme-commerce-post-v1-orders-order-submit-19d055"
+    },
+    {
+      "invocations": 12,
+      "what": "POST /v1/departments/{id}/move",
+      "script": "acme-commerce-post-v1-departments-id-move-24a6b1"
+    }
+  ]
+}

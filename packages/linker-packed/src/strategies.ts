@@ -17,6 +17,11 @@ export interface GroupingStrategy {
   description: string;
   /** Partition the members (manifest entry points plus RESIDUAL) into groups of member ids. */
   group(members: Member[], manifest: Manifest): string[][];
+  /**
+   * Where a group's engine runs (FORG-42). `in-process` (default): in the script. `shared`: in one
+   * runtime Worker the script calls over a service binding, wherever the platform allows it.
+   */
+  runtime?: "in-process" | "shared";
 }
 
 export const perEntryPoint: GroupingStrategy = {
@@ -31,7 +36,15 @@ export const single: GroupingStrategy = {
   group: (members) => [members.map((m) => m.id)],
 };
 
-export const STRATEGIES: Record<string, GroupingStrategy> = { [perEntryPoint.name]: perEntryPoint, [single.name]: single };
+/** FORG-42: per-entry-point grouping, with the engine in one shared runtime Worker (src/shared/). */
+export const perEntryPointShared: GroupingStrategy = {
+  name: "per-entry-point-shared",
+  description: "Per-entry-point scripts holding only routing, units and their slice; the engine runs in one shared runtime Worker reached over a service binding (RPC). Workflow classes, the realtime object, the upgrade route and the dispatch owner keep the in-process runtime.",
+  group: perEntryPoint.group,
+  runtime: "shared",
+};
+
+export const STRATEGIES: Record<string, GroupingStrategy> = { [perEntryPoint.name]: perEntryPoint, [single.name]: single, [perEntryPointShared.name]: perEntryPointShared };
 
 /**
  * Cloudflare placement rules. A workflow step runs inside its workflow's `WorkflowEntrypoint.run`,

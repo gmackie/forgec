@@ -35,9 +35,25 @@ hash that does not recompute, a missing unit or module, an import provided outsi
 capability the model would grant but the manifest does not, a binding the group's runtime needs
 but the manifest does not declare, and a module finding that bypasses capability handles.
 
-Grouping is a strategy (`src/strategies.ts`): `per-entry-point` and `single` exist. Add one by
+Grouping is a strategy (`src/strategies.ts`): `per-entry-point`, `per-entry-point-shared` and
+`single` exist. Add one by
 implementing `GroupingStrategy` and registering it in `STRATEGIES`. Cloudflare's placement rules
 (workflow steps run inside their workflow class) are applied after any strategy.
+
+**`per-entry-point-shared` (FORG-42, `src/shared/`).** The same groups, slices and narrowing as
+`per-entry-point`, but a script holds no engine: it routes, then calls one runtime Worker over a
+`FORGE_RUNTIME` service binding (Workers RPC) with a capability object scoped to its own bindings.
+The runtime Worker (`<package>-runtime`) carries the engine, every feature and Effect, and has no
+bindings and no app code, so it can only use what the calling script hands it, and an app edit never
+re-uploads it. Function units and externals run in the script and reach the engine back over RPC.
+A shared request may make at most 29 cross-script calls, counted conservatively: the call that would
+be the 30th is refused, and the request fails closed with `RpcBudgetExceeded` (Workers allows 32
+invocations per request; `InvocationBudget` in `src/shared/script.ts`). Eight groups keep the
+in-process host. Four cannot leave their isolate: the Workflows class, the realtime Durable Object, the
+WebSocket upgrade route and the dispatch owner. Four have work per invocation the link cannot bound:
+workflow start and signal routes, queue consumers and crons. `link.json` records `runtime.mode` and the
+reason. Results:
+`research/composable-units/r3-runtime-cost/`.
 
 `src/local.ts` serves linked output in workerd through Miniflare, for tests and the research run.
 

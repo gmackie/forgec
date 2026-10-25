@@ -39,6 +39,8 @@ const TARGETS: Array<{ name: string; describe: string; scripts: () => LocalScrip
   { name: "single", describe: "linker A, strategy single: one script rebuilt from the manifest", scripts: fromLink("single") },
   { name: "per-entry-point", describe: "linker A, strategy per-entry-point, sliced app.json, router + dispatch owner", scripts: fromLink("per-entry-point") },
   { name: "per-entry-point-full", describe: "control: per-entry-point with the whole app.json in every script (separates splitting from slicing)", scripts: fromLink("per-entry-point-full") },
+  // FORG-42: run only when it has been linked (research/composable-units/r3-runtime-cost/run.sh).
+  ...(existsSync(join(linked, "per-entry-point-shared/link.json")) ? [{ name: "per-entry-point-shared", describe: "linker A, strategy per-entry-point-shared: per-entry-point scripts without the engine, one shared runtime Worker over service-binding RPC", scripts: fromLink("per-entry-point-shared") }] : []),
 ];
 
 function realtime(url: string): Promise<{ status: number | null; output: string }> {

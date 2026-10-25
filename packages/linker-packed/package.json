@@ -18,7 +18,10 @@
   "exports": {
     ".": "./src/index.ts",
     "./host": "./src/host.ts",
-    "./local": "./src/local.ts"
+    "./local": "./src/local.ts",
+    "./shared/script": "./src/shared/script.ts",
+    "./shared/units": "./src/shared/units.ts",
+    "./shared/runtime": "./src/shared/runtime.ts"
   },
   "bin": {
     "forge-link-packed": "./src/cli.ts"
@@ -30,6 +33,7 @@
   "dependencies": {
     "@forgegraph/runtime": "workspace:*",
     "@forgegraph/units": "workspace:*",
+    "effect": "4.0.3",
     "esbuild": "^0.27.0"
   },
   "devDependencies": {

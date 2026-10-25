@@ -1,0 +1,49 @@
+{
+  "version": "r3-rpc-probe/1",
+  "issue": "FORG-42",
+  "measured": true,
+  "compatibilityDate": "2026-09-01",
+  "result": {
+    "keys": [],
+    "useDb": {
+      "ok": true,
+      "r": {
+        "x": 1
+      }
+    },
+    "callback": {
+      "a": {
+        "y": 2
+      },
+      "b": {
+        "echoed": {
+          "deep": [
+            1,
+            2
+          ]
+        }
+      }
+    },
+    "respond": {
+      "status": 201,
+      "h": "1",
+      "body": "{\"z\":3}",
+      "tenants": [
+        "t1"
+      ]
+    },
+    "fnArg": 42,
+    "stream": "streamed-bytes",
+    "later": "returned",
+    "lateResult": {
+      "lateOk": null,
+      "lateErr": "Error: RPC stub used after being disposed."
+    },
+    "error": {
+      "name": "CapabilityDenied",
+      "message": "refused x"
+    },
+    "noop200ms": 6,
+    "callback200ms": 3
+  }
+}
