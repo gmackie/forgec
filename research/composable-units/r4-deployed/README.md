@@ -152,7 +152,9 @@ module scope).
 
 This settles T4's design question 6. The pointer cannot live in isolate memory. A deployed host must check
 it per request, with KV and a short TTL, or with a Durable Object, or by stamping the manifest hash into
-the request path. Until then a swap is eventually consistent, with no bound. The salted re-links used for
+the request path. Until then a swap is eventually consistent, with no bound. **FORG-47 fixed this
+with a Durable Object, a versioned compare-and-swap and a 1 s bound; measured on this lab in
+[r4-manifest-pointer](../r4-manifest-pointer/README.md).** The salted re-links used for
 cold samples were affected in the same way: several "cold" samples came back warm because the re-link had
 landed on another isolate. The tables above count only samples that were cold.
 
@@ -189,7 +191,8 @@ host or packed script it called. `results/c.json` and `results/c-nomanifest.json
   trips from ORD to ENAM.
 - **The fallback costs the refused trip plus the packed request.** `LoadFailed` needs the child probe
   (`Forge.ping`) to fail first. One sample paid a fresh tier isolate (2.7 s), which is the p95.
-- **The router's in-memory counters are per isolate and cannot be trusted deployed.** The
+- **The router's in-memory counters are per isolate and cannot be trusted deployed** (FORG-47 moved them into
+  a Durable Object; see [r4-manifest-pointer](../r4-manifest-pointer/README.md)). The
   `GET /_forge/tiered/stats` answer came from an isolate that had served 11 dynamic requests and no
   fallbacks, while other isolates had served the 10 fallbacks. Its `since` is `1970-01-01T00:00:00Z`,
   because `new Date()` runs at module scope, where the clock reads 0 on Workers. R3 expected Analytics

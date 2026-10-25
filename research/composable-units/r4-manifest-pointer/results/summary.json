@@ -1,0 +1,191 @@
+{
+  "version": "r4-manifest-pointer-summary/1",
+  "issue": "FORG-47",
+  "design": {
+    "pointer": "Durable Object ManifestPointer per scope (pointer:<scope>), versioned CAS (If-Match; 409 StalePointer)",
+    "ttlMsDefault": 1000,
+    "statsFlushMsDefault": 1000,
+    "failClosed": "503 LinkerRefused reason PointerUnavailable / NoPointerBinding; C falls back packed and counts LinkerRefused/PointerUnavailable"
+  },
+  "local": {
+    "label": "local",
+    "ttlMs": 500,
+    "b.visibility": {
+      "isolates": 3,
+      "swapMs": [
+        1,
+        171,
+        250
+      ],
+      "swapBackMs": [
+        466,
+        0,
+        399
+      ],
+      "boundMs": 500,
+      "note": "ms from the PUT's answer to the first request on each isolate that served the new version (polled every ~25 ms); the writer's own isolate sees it at once"
+    },
+    "b.staleCas": {
+      "status": 409,
+      "code": "StalePointer"
+    },
+    "b.pointerDown": {
+      "request": {
+        "status": 503,
+        "code": "LinkerRefused",
+        "reason": "PointerUnavailable"
+      },
+      "swap": {
+        "status": 503,
+        "code": "LinkerRefused"
+      }
+    },
+    "c.visibility": {
+      "isolates": 2,
+      "swapMs": [
+        0,
+        0
+      ],
+      "restoreMs": [
+        0,
+        3
+      ],
+      "boundMs": 500
+    },
+    "c.stats": {
+      "scope": "shared",
+      "since": "2026-10-25T18:06:19.804Z",
+      "dynamic": 26,
+      "packed": 35,
+      "fallback": 4,
+      "byReason": {
+        "LoadFailed": 2,
+        "LinkerRefused/PointerUnavailable": 2
+      },
+      "routerIsolates": 3
+    },
+    "differential": {
+      "whole-app": "15/15",
+      "whole-app-repeat": "15/15",
+      "packed": "15/15",
+      "dynamic": "15/15",
+      "tiered": "15/15",
+      "tiered-fallback": "15/15"
+    },
+    "unexplained": {
+      "whole-app-repeat": 0,
+      "packed": 0,
+      "dynamic": 0,
+      "tiered": 0,
+      "tiered-fallback": 0
+    },
+    "tieredDispatchChildren": 0
+  },
+  "deployed": {
+    "label": "measured-deployed",
+    "colo": "ORD",
+    "date": "2026-10-25",
+    "commit": "1ae7093",
+    "ttlMs": 1000,
+    "pointerRead": {
+      "cachedMs": 0,
+      "revalidatedDoReadMs": {
+        "max": 25,
+        "median": 12,
+        "min": 7,
+        "n": 113,
+        "p95": 18
+      },
+      "changedDoReadMs": {
+        "max": 40,
+        "median": 13,
+        "min": 8,
+        "n": 8,
+        "p95": 40
+      },
+      "changedLinkMs": {
+        "max": 1128,
+        "median": 1019,
+        "min": 746,
+        "n": 8,
+        "p95": 1128
+      },
+      "isolates": 7
+    },
+    "swapB": {
+      "cycles": 6,
+      "isolatesPerSwap": [
+        6,
+        7,
+        7,
+        7,
+        8,
+        7
+      ],
+      "allIsolatesNewByMs": [
+        597.25,
+        57.52,
+        727.76,
+        411.16,
+        478.31,
+        934.58
+      ],
+      "latestOldAnswerSentMs": [
+        -824.52,
+        -498.67,
+        76.24,
+        279.8,
+        -1411.08,
+        784.34
+      ],
+      "violationsAfterBound": 0,
+      "answers": 984,
+      "putMs": [
+        3186.94,
+        2747.86,
+        2329.73,
+        2214.16,
+        3568.88,
+        2423.23
+      ]
+    },
+    "staleCas": {
+      "status": 409,
+      "code": "StalePointer",
+      "versionUnchanged": true
+    },
+    "swapC": {
+      "swap": {
+        "allIsolatesNewByMs": 885.44,
+        "latestOldAnswerSentMs": -23.49,
+        "violationsAfterBound": 0,
+        "submitsFallback": 0,
+        "submits": 8
+      },
+      "break": {
+        "allIsolatesNewByMs": -2572.98,
+        "latestOldAnswerSentMs": -2965.4,
+        "violationsAfterBound": 0,
+        "submitsFallback": 8,
+        "submits": 8
+      },
+      "restore": {
+        "allIsolatesNewByMs": 907.2,
+        "latestOldAnswerSentMs": 656.44,
+        "violationsAfterBound": 0,
+        "submitsFallback": 0,
+        "submits": 8
+      }
+    },
+    "statsC": {
+      "scope": "shared",
+      "since": "2026-10-25T18:55:59.503Z",
+      "dynamic": 316,
+      "fallback": 8,
+      "byReason": {
+        "LoadFailed": 8
+      },
+      "routerIsolatesReporting": 7
+    }
+  }
+}

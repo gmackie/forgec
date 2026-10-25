@@ -1,0 +1,34 @@
+{
+  "after": {
+    "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+    "version": 7
+  },
+  "at": "2026-10-25T18:53:59.947Z",
+  "before": {
+    "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+    "version": 7
+  },
+  "issue": "FORG-47",
+  "measured": "deployed",
+  "run": null,
+  "section": "cas",
+  "stale": {
+    "body": {
+      "code": "StalePointer",
+      "current": 7,
+      "detail": "scope default: the swap replaces version 6, but the pointer is at version 7 (sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9); read it again and retry",
+      "expected": 6,
+      "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+      "problems": [
+        "scope default: the swap replaces version 6, but the pointer is at version 7 (sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9); read it again and retry"
+      ],
+      "scope": "default",
+      "status": 409,
+      "title": "StalePointer",
+      "type": "https://forge.dev/errors/linker/StalePointer"
+    },
+    "status": 409
+  },
+  "ttlMs": 1000,
+  "version": "r4-manifest-pointer/1"
+}

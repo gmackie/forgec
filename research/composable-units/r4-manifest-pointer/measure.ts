@@ -149,17 +149,21 @@ async function bursts(f: () => Promise<Answer>, n: number, rounds: number, gapMs
 }
 
 /**
- * After a swap answered at `at` (client clock) with `version`: probes in bursts until every isolate seen
- * answers the new version and `holdMs` has passed. Returns per isolate the first time it served the new
- * version, and every answer sent `TTL` or more after `at` that still served an older one (a violation).
+ * Probes in bursts from before the swap until `holdMs` after its answer, so isolates hold fresh copies
+ * when the DO commits. `at` is when the PUT answered (client clock; the commit precedes it). Returns per
+ * isolate the first time (relative to `at`) it served the new version and the last time it served an
+ * older one, and every answer sent `TTL` or more after `at` that still served an older one (a violation).
  */
-async function watch(probe: () => Promise<Answer>, at: number, version: number, holdMs = TTL + 2000, n = 8) {
+async function watch(probe: () => Promise<Answer>, doSwap: () => Promise<{ at: number; version: number }>, holdMs = TTL + 2000, n = 8) {
   const answers: Answer[] = [];
-  const until = at + holdMs;
-  while (performance.now() - t00 < until) {
+  let done: { at: number; version: number } | null = null;
+  const swapping = doSwap().then((d) => (done = d));
+  while (!done || performance.now() - t00 < done.at + holdMs) {
     answers.push(...(await Promise.all(Array.from({ length: n }, probe))));
     await sleep(40);
   }
+  await swapping;
+  const { at, version } = done;
   const first: Record<string, number> = {};
   const lastOld: Record<string, number> = {};
   for (const a of answers) {
@@ -215,18 +219,26 @@ const sections: Record<string, () => Promise<void>> = {
     for (let i = 0; i < REPS; i++) {
       await bursts(probe, 12, 4, () => 150); // warm several isolates on the current version
       const p0 = (await pointer(B)).pointer.version;
-      const sw = await link(B, v.text, p0);
-      if (sw.status !== 200) throw new Error(`swap: ${sw.status} ${JSON.stringify(sw.json)}`);
-      const swap = await watch(probe, sw.at, sw.json.version);
+      let sw: Awaited<ReturnType<typeof link>> | null = null;
+      const swap = await watch(probe, async () => {
+        sw = await link(B, v.text, p0);
+        if (sw.status !== 200) throw new Error(`swap: ${sw.status} ${JSON.stringify(sw.json)}`);
+        return { at: sw.at, version: sw.json.version };
+      });
+      if (!sw) throw new Error("no swap");
       // The new closure, on whichever isolates answer: a 1501.00 order is authorized.
       const subs: Answer[] = [];
       for (let k = 0; k < 6; k++) {
         const o = await a.draft("1501.00");
         subs.push(await a.submit(o.json.id));
       }
-      const back = await link(B, manifestText(), sw.json.version);
-      if (back.status !== 200) throw new Error(`swap back: ${back.status} ${JSON.stringify(back.json)}`);
-      const swapBack = await watch(probe, back.at, back.json.version);
+      let back: Awaited<ReturnType<typeof link>> | null = null;
+      const swapBack = await watch(probe, async () => {
+        back = await link(B, manifestText(), sw!.json.version);
+        if (back.status !== 200) throw new Error(`swap back: ${back.status} ${JSON.stringify(back.json)}`);
+        return { at: back.at, version: back.json.version };
+      });
+      if (!back) throw new Error("no swap back");
       const subsBack: Answer[] = [];
       for (let k = 0; k < 6; k++) {
         const o = await a.draft("1501.00");
@@ -261,9 +273,13 @@ const sections: Record<string, () => Promise<void>> = {
     const steps: Record<string, unknown> = {};
     for (const [name, text] of [["swap", swapped.text], ["break", broken.text], ["restore", manifestText()]] as const) {
       const p0 = (await pointer(TIER)).pointer.version;
-      const r = await link(TIER, text, p0);
-      if (r.status !== 200) throw new Error(`${name}: ${r.status} ${JSON.stringify(r.json)}`);
-      const seen = await watch(order, r.at, r.json.version, TTL + 1500, 6);
+      let r: Awaited<ReturnType<typeof link>> | null = null;
+      const seen = await watch(order, async () => {
+        r = await link(TIER, text, p0);
+        if (r.status !== 200) throw new Error(`${name}: ${r.status} ${JSON.stringify(r.json)}`);
+        return { at: r.at, version: r.json.version };
+      }, TTL + 1500, 6);
+      if (!r) throw new Error(`no ${name}`);
       const after = await submitMany(8);
       steps[name] = { version: r.json.version, putMs: r.ms, ...seen, submits: after.map((s) => ({ status: s.status, tier: s.tier, miss: s.miss, state: s.json?.status ?? s.json?.code, isolate: s.isolate, version: s.version })), fallbacks: after.filter((s) => s.tier === "packed-fallback").length };
     }
