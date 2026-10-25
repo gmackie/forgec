@@ -1,0 +1,24 @@
+// FORG-44: declared errors choose their HTTP status. Without `status` an error answers 409.
+shape ManifestInput {
+  manifest : text length 1..10000
+}
+
+shape ManifestResult {
+  accepted : boolean
+}
+
+/// Check a manifest before it is published.
+export function ValidateManifest
+  @http(POST, "/v1/manifests/validate")
+{
+  input ManifestInput
+  output ManifestResult
+  errors {
+    /// The manifest does not parse: the caller must fix it.
+    InvalidManifest status 422
+    /// The manifest names a release that was withdrawn.
+    ManifestRetired status 410
+    /// Another publication holds the manifest.
+    ManifestLocked
+  }
+}

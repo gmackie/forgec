@@ -5,7 +5,7 @@
  * Refresh them with scripts/refresh-fixtures.sh; scripts/validate-contracts.sh
  * sweeps every package in the repository the same way without committing output.
  */
-import { readdirSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -20,6 +20,7 @@ describe("forgec contract.json validates with ForgeGraph's validateContract", ()
       "acme.contract.json",
       "billing.contract.json",
       "console-playground.contract.json",
+      "error-status.contract.json",
       "studio-desk.contract.json",
     ]);
   });
@@ -34,6 +35,13 @@ describe("forgec contract.json validates with ForgeGraph's validateContract", ()
   it("the hand-written import fixture is a valid contract too", () => {
     const fixture = resolve(dir, "..", "..", "..", "crates", "forgegraph-codegen", "tests", "fixtures", "contract-import", "users-api.json");
     expect(validateFile(fixture).issues).toEqual([]);
+  });
+
+  it("declared error statuses are contracted where the runtime serves them (FORG-44)", () => {
+    const contract = JSON.parse(readFileSync(join(dir, "error-status.contract.json"), "utf8")) as { operations: { endpointId: string; errors: { status: number }[] }[] };
+    const op = contract.operations.find((o) => o.endpointId === "ValidateManifest")!;
+    // 409 for the error without `status`, 410 and 422 for the two that declare one.
+    expect(op.errors.map((e) => e.status)).toEqual([401, 403, 409, 410, 412, 422]);
   });
 
   it("studio-desk exposes every CRUD, function and workflow route", () => {

@@ -1235,14 +1235,7 @@ impl<'a> Parser<'a> {
                 "errors" if p.nth(1) == TokenKind::LBrace => {
                     p.start(K::ERRORS_BLOCK);
                     p.bump();
-                    p.block(|q| {
-                        if q.at(TokenKind::Ident) {
-                            q.start_decl(K::ERROR_DECL);
-                            q.bump();
-                            q.finish();
-                            q.end_item();
-                        }
-                    });
+                    p.block(|q| q.error_decl());
                     p.finish();
                 }
                 "slo" if p.nth(1) == TokenKind::LBrace => {
@@ -1405,17 +1398,25 @@ impl<'a> Parser<'a> {
             "errors" if self.nth(1) == TokenKind::LBrace => {
                 self.start(K::ERRORS_BLOCK);
                 self.bump();
-                self.block(|q| {
-                    if q.at(TokenKind::Ident) {
-                        q.start_decl(K::ERROR_DECL);
-                        q.bump();
-                        q.finish();
-                        q.end_item();
-                    }
-                });
+                self.block(|q| q.error_decl());
                 self.finish();
             }
             _ => self.workflow_step(),
+        }
+    }
+
+    /// One `errors { }` item: `Name` or `Name status 422` (FORG-44). The status is validated by the
+    /// compiler, so any integer parses here and a bad one gets a semantic diagnostic.
+    fn error_decl(&mut self) {
+        if self.at(TokenKind::Ident) {
+            self.start_decl(K::ERROR_DECL);
+            self.bump();
+            if self.at_kw("status") {
+                self.bump();
+                self.expect(TokenKind::Int, "HTTP status code");
+            }
+            self.finish();
+            self.end_item();
         }
     }
 

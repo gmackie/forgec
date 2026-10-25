@@ -172,6 +172,9 @@ pub struct FunctionContract {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub http: Option<HttpBinding>,
     pub errors: Vec<String>,
+    /// Declared errors that answer a status other than 409 (FORG-44); omitted when empty.
+    #[serde(skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub error_statuses: std::collections::BTreeMap<String, u16>,
     /// Input shape flattened to a JSON Schema object (references keep `x-forge-reference`).
     pub input: JsonSchema,
     /// Output schema: a `$ref` to a record/shape, a scalar schema, or an empty object.
@@ -218,6 +221,7 @@ pub fn plan(ir: &DomainIR) -> Contracts {
                 name: f.name.clone(),
                 http: f.http.clone(),
                 errors: f.errors.clone(),
+                error_statuses: f.error_statuses.clone(),
                 input,
                 output,
                 generated: f.generated,

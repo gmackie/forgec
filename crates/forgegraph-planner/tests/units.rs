@@ -187,6 +187,44 @@ fn interface_hash_moves_with_the_signature() {
 }
 
 #[test]
+fn interface_hash_covers_non_default_error_statuses() {
+    // FORG-44: a declared error's status is observable, so it enters the interface, but only when
+    // it is not the 409 default: a unit without `status` keeps the interface (and hash) it had.
+    let base = unit_plan(BASE);
+    assert!(
+        unit(&base, "Escalate")
+            .interface
+            .get("errorStatuses")
+            .is_none()
+    );
+    let declared = |status: &str| {
+        unit_plan(&BASE.replace(
+            "    AlreadyClosed\n",
+            &format!("    AlreadyClosed status {status}\n"),
+        ))
+    };
+    let (unprocessable, gone) = (declared("422"), declared("410"));
+    let (a, b, c) = (
+        unit(&base, "Escalate"),
+        unit(&unprocessable, "Escalate"),
+        unit(&gone, "Escalate"),
+    );
+    assert_eq!(
+        b.interface["errorStatuses"],
+        serde_json::json!({ "AlreadyClosed": 422 })
+    );
+    assert_ne!(a.interface_hash, b.interface_hash);
+    assert_ne!(b.interface_hash, c.interface_hash);
+    assert_eq!(a.implementation, b.implementation);
+    // The workflow calling it keeps its own interface (its unitHash follows the callee's
+    // interface hash at seal time).
+    assert_eq!(
+        unit(&base, "Resolve").interface_hash,
+        unit(&unprocessable, "Resolve").interface_hash
+    );
+}
+
+#[test]
 fn workflow_graph_is_implementation_not_interface() {
     let base = unit_plan(BASE);
     let edited = unit_plan(&BASE.replace("sleep 5s", "sleep 10s"));

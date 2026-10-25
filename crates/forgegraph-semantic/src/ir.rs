@@ -808,6 +808,11 @@ pub struct Function {
     pub uses: Vec<Use>,
     pub sends: Vec<Send>,
     pub errors: Vec<String>,
+    /// Declared errors with a non-default HTTP status (`Name status 422`, FORG-44), by name.
+    /// Absent errors answer 409; the map is omitted when empty, so undeclared statuses leave the IR,
+    /// and every hash over it, byte-identical.
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub error_statuses: std::collections::BTreeMap<String, u16>,
     pub slo: Vec<Slo>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub http: Option<HttpBinding>,
@@ -921,6 +926,38 @@ pub struct Subscription {
 }
 
 /// SHA-256 hex of arbitrary text (exposed so hosts can build composite identities).
+/// The HTTP status of a declared error without a `status` clause (FORG-44).
+pub const DEFAULT_ERROR_STATUS: u16 = 409;
+
+/// The statuses a declared error may choose (FORG-44): 4xx client classes that carry no protocol
+/// meaning of their own, so the runtime can serve them for a domain outcome without lying about
+/// authentication, preconditions, routing, admission or the transport.
+pub const DECLARABLE_ERROR_STATUSES: &[u16] = &[400, 402, 404, 410, 422, 423, 451];
+
+/// Why `status` may not be declared on an error, or `None` when it may.
+pub fn error_status_problem(status: u64) -> Option<String> {
+    if u16::try_from(status).is_ok_and(|s| DECLARABLE_ERROR_STATUSES.contains(&s)) {
+        return None;
+    }
+    let why = match status {
+        401 | 403 => "is reserved for authentication and authorization (`Unauthenticated`, `Forbidden`, `NotPermitted`, `CapabilityDenied`)".to_string(),
+        405 => "is reserved for routing (`MethodNotAllowed`)".to_string(),
+        409 => "is already the default for declared errors, and is shared with `IdempotencyMismatch` and `InvalidTransition`; omit `status`".to_string(),
+        412 | 428 => "is reserved for preconditions (`VersionConflict`, `PreconditionRequired`)".to_string(),
+        413 => "is reserved for request size (`PayloadTooLarge`)".to_string(),
+        429 => "is reserved for admission control (`RateLimited`, which is retryable)".to_string(),
+        400..=499 => "is a protocol or transport status the runtime does not serve for a domain error".to_string(),
+        500..=599 => "is a server error; a declared error is a business outcome the caller can act on (server failures are `Internal` or `DependencyUnavailable`)".to_string(),
+        100..=399 => "is not an error status; a declared error answers a 4xx client error".to_string(),
+        _ => "is not an HTTP status code".to_string(),
+    };
+    let allowed: Vec<String> = DECLARABLE_ERROR_STATUSES
+        .iter()
+        .map(u16::to_string)
+        .collect();
+    Some(format!("{why}; declare one of {}", allowed.join(", ")))
+}
+
 pub fn hash_hex(text: &str) -> String {
     use sha2::Digest;
     hex::encode(sha2::Sha256::digest(text.as_bytes()))

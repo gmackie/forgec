@@ -34,8 +34,12 @@ never invent new ones.
 | `Internal` | 500 | no | invariant violation; always logged with request id |
 
 Declared function errors (`errors { SiteDisabled PaymentDeclined }`) are
-**domain** errors: code = `<function stable id>.<name>`, HTTP 409 unless the
-declaration maps otherwise, `retryable: false`.
+**domain** errors: code = `<function stable id>.<name>`, `retryable: false`,
+and HTTP 409 unless the declaration chooses a status (`PaymentDeclined status
+402`). A declared status is one of 400, 402, 404, 410, 422, 423 or 451, so it
+never claims a meaning the runtime reserves (authentication, preconditions,
+routing, admission, transport, server failure); see
+[`docs/language.md`](../../docs/language.md#functions-channels-subscriptions).
 
 ## `CapabilityDenied`
 

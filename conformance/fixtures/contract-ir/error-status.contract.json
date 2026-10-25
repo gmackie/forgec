@@ -1,0 +1,315 @@
+{
+  "irVersion": 1,
+  "serviceId": "error-status",
+  "apiId": "@fixture/error-status",
+  "operations": [
+    {
+      "id": "error-status.functions.ValidateManifest",
+      "serviceId": "error-status",
+      "groupId": "functions",
+      "endpointId": "ValidateManifest",
+      "transport": {
+        "type": "http",
+        "method": "POST",
+        "path": "/v1/manifests/validate",
+        "openApiPath": "/v1/manifests/validate"
+      },
+      "policy": {
+        "isPublic": false,
+        "authentication": {
+          "mode": "service",
+          "derived": "service",
+          "mismatch": false,
+          "schemes": [
+            "bearer"
+          ]
+        },
+        "sla": {
+          "policy": {},
+          "provenance": {}
+        },
+        "slo": {
+          "availability": 0.999,
+          "latency": {
+            "good": 0.99,
+            "withinMs": 1000
+          },
+          "windowDays": 28
+        }
+      },
+      "request": {
+        "headers": {
+          "jsonSchema": {
+            "type": "object",
+            "properties": {
+              "X-Forge-Purpose": {
+                "type": "string"
+              },
+              "Idempotency-Key": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "fingerprint": "sha256:c737fc8f90f91aea8642eb049490fbfc45bb300a3e3fc8683e10b38c32ffa4e3"
+        },
+        "bodies": [
+          {
+            "contentType": "application/json",
+            "schema": {
+              "jsonSchema": {
+                "type": "object",
+                "properties": {
+                  "manifest": {
+                    "type": "string",
+                    "x-forge-type": "text",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  }
+                },
+                "additionalProperties": false,
+                "required": [
+                  "manifest"
+                ]
+              },
+              "fingerprint": "sha256:586d8305f5292b3c8b585b1c1baaac72c4f7f7c0762a4043bc9679df82093a9d"
+            }
+          }
+        ]
+      },
+      "successes": [
+        {
+          "status": 200,
+          "bodies": [
+            {
+              "contentType": "application/json",
+              "schema": {
+                "jsonSchema": {
+                  "type": "object",
+                  "properties": {
+                    "accepted": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "accepted"
+                  ],
+                  "additionalProperties": false
+                },
+                "fingerprint": "sha256:23271edbc52ade7cb696d43b61e2bc6b33fb1d2833a1f2e190bb473fe47574be"
+              }
+            }
+          ]
+        }
+      ],
+      "errors": [
+        {
+          "status": 401,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 403,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 409,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 410,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 412,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        },
+        {
+          "status": 422,
+          "bodies": [
+            {
+              "contentType": "application/problem+json",
+              "schema": {
+                "id": "Problem",
+                "jsonSchema": {
+                  "$ref": "#/components/schemas/Problem"
+                },
+                "fingerprint": "sha256:0b571d24869f949504b858404a8efc80cb2cfe2be71562b1c0dba56d1f11bbee"
+              }
+            }
+          ]
+        }
+      ],
+      "middleware": [
+        {
+          "key": "@forgegraph/runtime/AuthHost",
+          "security": true,
+          "schemes": [
+            "bearer"
+          ]
+        }
+      ],
+      "fingerprint": "sha256:39a2b177f96a6751a6769b8c80ba977acad9c168eb1d7cc149668fac4fbbaa31"
+    }
+  ],
+  "components": {
+    "Problem": {
+      "type": "object",
+      "required": [
+        "type",
+        "title",
+        "status",
+        "code"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "format": "uri"
+        },
+        "title": {
+          "type": "string"
+        },
+        "status": {
+          "type": "integer"
+        },
+        "code": {
+          "type": "string",
+          "description": "Stable machine-readable error code (see specs/portable-profile/errors.md)"
+        },
+        "detail": {
+          "type": "string"
+        },
+        "requestId": {
+          "type": "string"
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "WorkflowInstance": {
+      "type": "object",
+      "required": [
+        "id",
+        "workflow",
+        "version",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "workflow": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "running",
+            "waiting",
+            "sleeping",
+            "completed",
+            "failed",
+            "cancelled"
+          ]
+        },
+        "bindings": {
+          "type": "object"
+        },
+        "history": {
+          "type": "array"
+        },
+        "output": {},
+        "error": {
+          "type": "object"
+        }
+      }
+    }
+  },
+  "securitySchemes": {
+    "bearer": {
+      "type": "http",
+      "scheme": "bearer",
+      "bearerFormat": "JWT"
+    }
+  },
+  "fingerprint": "sha256:dd57a27c1cbb23d1350e97b38b1b6e4525c518c94cdcf2cb750d0ccb11b745c4",
+  "generator": {
+    "name": "forgec",
+    "version": "0.5.0"
+  }
+}

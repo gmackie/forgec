@@ -3812,6 +3812,7 @@ impl<'a> Ctx<'a> {
             }
         }
         let errors: Vec<String> = f.errors().iter().map(|t| t.text().to_string()).collect();
+        let error_statuses = self.error_statuses(&f.error_decls(), file);
         let slo = f
             .slo()
             .iter()
@@ -3838,6 +3839,7 @@ impl<'a> Ctx<'a> {
             uses,
             sends,
             errors,
+            error_statuses,
             slo,
             http,
             generated: false,
@@ -3953,6 +3955,56 @@ impl<'a> Ctx<'a> {
         (vec![], None)
     }
 
+    /// `Name status 422` (FORG-44): the non-default statuses, validated. A name declared twice with a
+    /// status is ambiguous and refused.
+    fn error_statuses(
+        &mut self,
+        decls: &[ast::ErrorDecl],
+        file: usize,
+    ) -> std::collections::BTreeMap<String, u16> {
+        let mut out = std::collections::BTreeMap::new();
+        for e in decls {
+            let (Some(name), Some(t)) = (e.name(), e.status()) else {
+                continue;
+            };
+            // Too large for u64 is as much "not a status code" as 99999.
+            let problem =
+                crate::ir::error_status_problem(t.text().parse::<u64>().unwrap_or(u64::MAX))
+                    .map(|why| format!("`status {}` {why}", t.text()));
+            if let Some(message) = problem {
+                self.err(
+                    "E-ERR-001",
+                    file,
+                    tok_range(&t),
+                    format!("error `{}`: {message}", name.text()),
+                    None,
+                );
+                continue;
+            }
+            let status = t.text().parse::<u16>().expect("validated");
+            if decls
+                .iter()
+                .filter(|d| d.name().is_some_and(|n| n.text() == name.text()))
+                .count()
+                > 1
+            {
+                self.err(
+                    "E-ERR-003",
+                    file,
+                    tok_range(&name),
+                    format!(
+                        "error `{}` is declared more than once; declare it once with its status",
+                        name.text()
+                    ),
+                    None,
+                );
+                continue;
+            }
+            out.insert(name.text().to_string(), status);
+        }
+        out
+    }
+
     // ------------------------------------------------------------ workflows
     fn workflow(
         &mut self,
@@ -3968,6 +4020,20 @@ impl<'a> Ctx<'a> {
             .output()
             .and_then(|n| self.type_ref_spec(&n, module, file));
         let errors: Vec<String> = w.errors().iter().map(|t| t.text().to_string()).collect();
+        for e in w.error_decls() {
+            if let Some(t) = e.status() {
+                self.err(
+                    "E-ERR-002",
+                    file,
+                    tok_range(&t),
+                    format!(
+                        "workflow error `{}` cannot declare `status`: a workflow error is an instance outcome, not an HTTP response",
+                        e.name().map(|n| n.text().to_string()).unwrap_or_default()
+                    ),
+                    Some("declare the status on the function error the workflow maps from".into()),
+                );
+            }
+        }
         let Some(version) = w.version().and_then(|t| t.text().parse::<u32>().ok()) else {
             self.err(
                 "E-WF-004",

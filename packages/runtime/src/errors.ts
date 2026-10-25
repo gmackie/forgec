@@ -49,6 +49,9 @@ export const ERROR_STATUS: Record<string, { status: number; retryable: boolean; 
   Internal: { status: 500, retryable: false, title: "Internal error" },
 };
 
+/** The status of a declared domain error without a `status` clause. */
+const DEFAULT_DECLARED_STATUS = 409;
+
 export class ForgeError extends Data.TaggedError("ForgeError")<{
   code: string;
   detail?: string;
@@ -58,17 +61,19 @@ export class ForgeError extends Data.TaggedError("ForgeError")<{
   budget?: Record<string, number>;
   /** `CapabilityDenied` only: what the gate refused and where. */
   denial?: CapabilityDenial;
+  /** Declared domain errors only: the status the declaration chose (`Name status 422`, FORG-44). */
+  declaredStatus?: number;
 }> {
   /** Declared domain errors (`<function id>.<Name>`) are 409 unless declared otherwise. */
   get status(): number {
-    return ERROR_STATUS[this.code]?.status ?? (this.code.includes("/") ? 409 : 500);
+    return ERROR_STATUS[this.code]?.status ?? (this.code.includes("/") ? (this.declaredStatus ?? DEFAULT_DECLARED_STATUS) : 500);
   }
   get retryable(): boolean {
     return ERROR_STATUS[this.code]?.retryable ?? false;
   }
   /** RFC 9457 body with the stable Forge extensions. */
   problem(requestId: string): Record<string, unknown> {
-    const meta = ERROR_STATUS[this.code] ?? (this.code.includes("/") ? { status: 409, retryable: false, title: this.code.split(".").pop() ?? this.code } : ERROR_STATUS["Internal"]!);
+    const meta = ERROR_STATUS[this.code] ?? (this.code.includes("/") ? { status: this.status, retryable: false, title: this.code.split(".").pop() ?? this.code } : ERROR_STATUS["Internal"]!);
     return {
       type: this.code.includes("/") ? `urn:forge:error:${this.code}` : `https://forge.dev/errors/${kebab(this.code)}`,
       title: meta.title,

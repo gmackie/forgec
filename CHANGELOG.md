@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Language: a function's declared error can choose its HTTP status
+  (`InvalidManifest status 422`). Allowed statuses are 400, 402, 404, 410, 422,
+  423 and 451. Statuses the runtime reserves (401, 403, 405, 409, 412, 413, 428
+  and 429), other 4xx codes, and non-4xx codes are rejected (`E-ERR-001`). The
+  runtime serves the declared status. OpenAPI, `contract.json`, the IR
+  (`errorStatuses`) and the unit `interfaceHash` reflect it. Errors without
+  `status` stay 409, and their output is byte-identical. (FORG-44)
 - Runtime: `WorkerArtifactWorkspace` prepares commits incrementally (only the
   trees on changed paths are read and rebuilt), accepts an `author`, and adds
   `merge` (tree-level three-way, unique merge base checked, optional

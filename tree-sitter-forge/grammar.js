@@ -309,7 +309,10 @@ module.exports = grammar({
       ),
     sends_block: ($) =>
       seq("sends", block(seq($.identifier, "to", $.qualified_name))),
-    errors_block: ($) => seq("errors", block($.identifier)),
+    errors_block: ($) => seq("errors", block($.error_declaration)),
+    // FORG-44: `InvalidManifest status 422`; the compiler validates the code.
+    error_declaration: ($) =>
+      seq(field("name", $.identifier), optional(seq("status", field("status", $.integer)))),
     slo_block: ($) =>
       seq(
         "slo",
