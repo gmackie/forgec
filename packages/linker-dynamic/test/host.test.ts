@@ -9,7 +9,6 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ClosureManifest } from "../src/manifest.ts";
 import { acmeManifest, acmeManifestText, entry, h, hostileAdapter, rehash, sealVariant, stableJson } from "./fixtures.ts";
 
-const PORT = 8951;
 const SUBMIT = "POST /v1/orders/{order}/submit";
 let host: Awaited<ReturnType<typeof h.startWorker>>;
 let egressServer: Server;
@@ -55,7 +54,7 @@ beforeAll(async () => {
     const f = join(impl, "payment-adapter.ts");
     writeFileSync(f, readFileSync(f, "utf8").replace("amount >= 1e3", "amount >= 2e3").replace("amount >= 1000", "amount >= 2000"));
   });
-  host = await h.startWorker({ kind: "host", port: PORT });
+  host = await h.startWorker({ kind: "host" }); // a free port (FORG-45)
   await h.seedKit(host.base);
 }, 240_000);
 
@@ -258,13 +257,17 @@ describe("Linker B host on local workerd", () => {
     expect(before.status).toBe(200);
     const r = await link(swapped.text, join(swapped.dir, "modules"));
     expect(r.status).toBe(200);
-    expect(r.body["previous"]).toBe(acmeManifest().manifestHash);
+    // Parse the acme manifest once (FORG-45): re-reading it per entry point and per closure unit
+    // took seconds of synchronous CPU, and past 5 s of a blocked event loop the next request
+    // went out on a keep-alive socket workerd had already closed (ECONNRESET).
+    const acme = acmeManifest();
+    expect(r.body["previous"]).toBe(acme.manifestHash);
     // Only AuthorizePayment's module is new; every other blob is byte-identical.
-    expect(Object.keys(swapped.manifest.modules).filter((b) => !acmeManifest().modules[b])).toHaveLength(1);
-    const changed = swapped.manifest.entryPoints.filter((e) => e.closureHash !== entry(acmeManifest(), e.id).closureHash).map((e) => e.id).sort();
+    expect(Object.keys(swapped.manifest.modules).filter((b) => !acme.modules[b])).toHaveLength(1);
+    const changed = swapped.manifest.entryPoints.filter((e) => e.closureHash !== entry(acme, e.id).closureHash).map((e) => e.id).sort();
     expect(changed).toContain(SUBMIT);
     expect(changed).not.toContain("GET /v1/customers");
-    expect(changed).toEqual(acmeManifest().entryPoints.filter((e) => e.closure.some((u) => acmeManifest().units[u]!.symbol === "@acme/payments/_/AuthorizePayment")).map((e) => e.id).sort());
+    expect(changed).toEqual(acme.entryPoints.filter((e) => e.closure.some((u) => acme.units[u]!.symbol === "@acme/payments/_/AuthorizePayment")).map((e) => e.id).sort());
     expect((await call("GET", "/v1/customers")).isolate).toBe("warm");
     const big = await draftOrder("SWP2", "1500.00");
     const after = await call("POST", `/v1/orders/${big}/submit`, { expectedVersion: 1 });
