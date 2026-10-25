@@ -202,14 +202,22 @@ export async function seedKit(base, { appJson = join(acme, "generated/app.json")
   return { libraries, apps };
 }
 
-/** Uploads module blobs from a sealed output dir (unless skipped) and links the manifest. */
-export async function linkManifest(base, { manifestText, modulesDir = join(unitsOut, "modules"), skipModules = [] } = {}) {
+/**
+ * Uploads module blobs from a sealed output dir (unless skipped) and links the manifest. FORG-47:
+ * `ifMatch` names the pointer version the swap replaces (a compare-and-swap); `scope` the pointer.
+ */
+export async function linkManifest(base, { manifestText, modulesDir = join(unitsOut, "modules"), skipModules = [], ifMatch, scope } = {}) {
   const text = manifestText ?? readFileSync(join(unitsOut, "manifest.json"), "utf8");
   if (modulesDir && existsSync(modulesDir)) {
     for (const f of readdirSync(modulesDir)) if (!skipModules.includes(`sha256:${f.replace(/\.js$/, "")}`)) await putBlob(base, readFileSync(join(modulesDir, f)));
   }
-  const r = await admin(base, "/_linker/manifest", { method: "PUT", body: text });
+  const r = await admin(base, `/_linker/manifest${scope ? `?scope=${encodeURIComponent(scope)}` : ""}`, { method: "PUT", body: text, headers: ifMatch === undefined ? {} : { "if-match": `"${ifMatch}"` } });
   return { status: r.status, body: await r.json() };
+}
+
+/** FORG-47: the shared pointer as its Durable Object holds it, and this isolate's cached view. */
+export async function pointer(base, { scope } = {}) {
+  return (await admin(base, `/_linker/pointer${scope ? `?scope=${encodeURIComponent(scope)}` : ""}`)).json();
 }
 
 export async function stats(base) {

@@ -84,6 +84,32 @@ describe("Linker B host on local workerd", () => {
     expect((await h.stats(host.base)).denials).toEqual([]);
   });
 
+  it("keeps the pointer in a Durable Object: versioned, compare-and-swap, a stale writer refused (FORG-47)", async () => {
+    const before = await h.pointer(host.base);
+    expect(before.scope).toBe("default");
+    expect(before.ttlMs).toBe(1000);
+    expect(before.pointer.manifestHash).toBe(acmeManifest().manifestHash);
+    expect(before.pointer.closures?.["GET /v1/customers"]).toBe(entry(acmeManifest(), "GET /v1/customers").closureHash);
+    const v = before.pointer.version;
+    // A writer that read version v swaps; a second writer that also read v is refused, and nothing moves.
+    const first = await h.linkManifest(host.base, { manifestText: swapped.text, modulesDir: join(swapped.dir, "modules"), ifMatch: v });
+    expect([first.status, first.body["version"], first.body["previousVersion"]]).toEqual([200, v + 1, v]);
+    const stale = await h.linkManifest(host.base, { manifestText: acmeManifestText(), modulesDir: null, ifMatch: v });
+    expect(stale.status).toBe(409);
+    expect(stale.body).toMatchObject({ code: "StalePointer", expected: v, current: v + 1, manifestHash: swapped.manifest.manifestHash });
+    const after = await h.pointer(host.base);
+    expect([after.pointer.version, after.pointer.manifestHash]).toEqual([v + 1, swapped.manifest.manifestHash]);
+    expect(after.pointer.history[0]).toMatchObject({ version: v, manifestHash: acmeManifest().manifestHash });
+    // Swap back, naming the current version; requests carry the pointer version they were served under.
+    const back = await h.linkManifest(host.base, { manifestText: acmeManifestText(), modulesDir: null, ifMatch: v + 1 });
+    expect([back.status, back.body["version"]]).toEqual([200, v + 2]);
+    const r = await fetch(`${host.base}/v1/customers`, { headers: H });
+    expect(r.status).toBe(200);
+    expect(r.headers.get("x-forge-pointer")).toMatch(new RegExp(`^(cached|revalidated|changed); v=${v + 2}$`));
+    // Scopes are separate pointers (LOOM-19 sessions): a scope nobody linked has version 0.
+    expect((await h.pointer(host.base, { scope: "session:none" })).pointer.version).toBe(0);
+  });
+
   it("refuses a request no entry point claims", async () => {
     const r = await call("GET", "/v1/not-a-route");
     expect(r.status).toBe(404);

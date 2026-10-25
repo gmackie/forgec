@@ -15,7 +15,8 @@ export const h = harness as {
   prepare(o?: { force?: boolean }): void;
   startWorker(o: { kind?: "host" | "whole-app"; port?: number; vars?: Record<string, string>; log?: (s: string) => void }): Promise<{ base: string; state: string; output(): string; stop(): Promise<void> }>;
   seedKit(base: string): Promise<{ libraries: Record<string, string>; apps: Record<string, string> }>;
-  linkManifest(base: string, o?: { manifestText?: string; modulesDir?: string | null; skipModules?: string[] }): Promise<{ status: number; body: Record<string, unknown> }>;
+  linkManifest(base: string, o?: { manifestText?: string; modulesDir?: string | null; skipModules?: string[]; ifMatch?: number; scope?: string }): Promise<{ status: number; body: Record<string, unknown> }>;
+  pointer(base: string, o?: { scope?: string }): Promise<{ scope: string; ttlMs: number; pointer: { version: number; manifestHash?: string; closures?: Record<string, string>; history: Array<{ version: number; manifestHash: string }> }; isolate: Record<string, { version: number }> }>;
   stats(base: string): Promise<{ manifestHash: string; closures: Array<{ id: string; closureHash: string; label: string; cold: number; warm: number; buildMs: number[] }>; denials: string[]; fallbacks: string[]; refused: string[] }>;
   resetStats(base: string): Promise<void>;
   evictHostCache(base: string): Promise<void>;

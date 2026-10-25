@@ -4,13 +4,39 @@
 //     to the packed script holding the workflow (linker A's advance endpoint) when the child cannot load;
 //   - a guard on `PUT /_linker/manifest`: a dynamic swap may not need a binding this script was not
 //     deployed with (the child would get no handle, and the runtime would quietly do without);
-//   - `GET /_linker/tier`: the tier's configuration and its workflow fallbacks (admin token).
+//   - `GET /_linker/tier`: the tier's configuration and its workflow fallbacks (admin token);
+//   - FORG-47: the `TierStats` Durable Object, where the router and every tier-host isolate report their
+//     counts (./stats.ts), and the dynamic entry points recorded in the manifest pointer on each swap.
 // Requests reach it only from linker C's router, which falls back to the packed script whenever the
 // answer carries B's refusal header (REFUSED_HEADER): a refusal made before any unit code ran.
 // Because this script binds FORGE_DISPATCH, B hands every post-commit dispatch to linker A's dispatch
 // owner and probes each child before use (packages/linker-dynamic/src/host.ts).
+import { DurableObject } from "cloudflare:workers";
 import { LinkError } from "@forgegraph/linker-dynamic";
 import dynamic, { advanceWorkflow, type HostEnv } from "@forgegraph/linker-dynamic/host";
+import { applyDelta, emptyState, StatsReporter, type StatsDelta, type TierStatsState } from "./stats.ts";
+
+/** The shared tier stats (binding FORGE_TIER_STATS, object "tier"). `since` is this object's clock. */
+export class TierStats extends DurableObject {
+  private async state(): Promise<TierStatsState> {
+    const s = await this.ctx.storage.get<TierStatsState>("stats");
+    if (s) return s;
+    const fresh = emptyState(Date.now());
+    await this.ctx.storage.put("stats", fresh);
+    return fresh;
+  }
+  async add(d: StatsDelta): Promise<void> {
+    await this.ctx.storage.put("stats", applyDelta(await this.state(), d, Date.now()));
+  }
+  async read(): Promise<TierStatsState> {
+    return this.state();
+  }
+  async reset(): Promise<TierStatsState> {
+    const fresh = emptyState(Date.now());
+    await this.ctx.storage.put("stats", fresh);
+    return fresh;
+  }
+}
 
 export interface TierConfig {
   script: string;
@@ -37,7 +63,13 @@ type State = { status: string; dueAt?: string };
 const HANDLE_TYPES = new Set(["d1", "r2", "queue-producer", "workflow"]);
 
 export function tier(config: TierConfig) {
-  const stats = { workflowAdvances: { dynamic: 0, fallback: 0 }, fallbacks: [] as Array<{ at: string; className: string; reason: string; detail: string }> };
+  const stats = new StatsReporter("tier");
+  /** The shared workflow counts, in the shape `GET /_linker/tier` answered before FORG-47. */
+  const tierStats = async (env: HostEnv) => {
+    const r = await stats.read(env as unknown as Record<string, unknown>);
+    const b = r.body as Partial<TierStatsState> & Record<string, unknown>;
+    return b.workflowAdvances ? { scope: b.scope, since: b.since, workflowAdvances: b.workflowAdvances, fallbacks: b.workflowFallbacks ?? [] } : b;
+  };
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
   const dynamicSet = new Set(config.dynamic);
 
@@ -62,7 +94,7 @@ export function tier(config: TierConfig) {
       async fetch(request: Request, env: HostEnv, ctx: Exports): Promise<Response> {
         const url = new URL(request.url);
         const admin = !!env.LINKER_ADMIN_TOKEN && request.headers.get("x-linker-admin") === env.LINKER_ADMIN_TOKEN;
-        if (url.pathname === "/_linker/tier" && request.method === "GET") return admin ? json({ config, stats }) : json({ code: "Forbidden" }, 403);
+        if (url.pathname === "/_linker/tier" && request.method === "GET") return admin ? json({ config, stats: await tierStats(env) }) : json({ code: "Forbidden" }, 403);
         if (url.pathname === "/_linker/manifest" && request.method === "PUT" && admin) {
           const text = await request.text();
           const missing = missingBindings(text, env);
@@ -70,7 +102,8 @@ export function tier(config: TierConfig) {
             const detail = `the dynamic tier ${config.script} is not deployed with ${missing.join("; ")}: re-link linker C to move these bindings`;
             return new Response(JSON.stringify({ type: "https://forge.dev/errors/linker/TierBindingMissing", title: "TierBindingMissing", status: 409, code: "TierBindingMissing", detail, problems: missing }), { status: 409, headers: { "content-type": "application/problem+json" } });
           }
-          return dynamic.fetch(new Request(request, { body: text }), env, ctx);
+          // The pointer records which entry points this tier serves dynamically, with their closures.
+          return dynamic.fetch(new Request(request, { body: text }), { ...env, LINKER_TIER_DYNAMIC: config.dynamic }, ctx);
         }
         return dynamic.fetch(request, env, ctx);
       },
@@ -88,14 +121,16 @@ export function tier(config: TierConfig) {
           const advance = async (): Promise<State> => {
             try {
               const st = await advanceWorkflow(self.env, self.ctx, className, tenant, id);
-              stats.workflowAdvances.dynamic++;
+              stats.record(self.env as unknown as Record<string, unknown>, self.ctx, (d) => d.workflowAdvances.dynamic++);
               return st;
             } catch (e) {
               // A LinkError is raised before the child runs any unit code: replaying the step packed is safe.
               if (!(e instanceof LinkError)) throw e;
-              stats.workflowAdvances.fallback++;
-              stats.fallbacks.push({ at: new Date().toISOString(), className, reason: e.code, detail: e.message.slice(0, 300) });
-              if (stats.fallbacks.length > 50) stats.fallbacks.shift();
+              const reason = typeof e.extra["reason"] === "string" ? `${e.code}/${e.extra["reason"]}` : e.code;
+              stats.record(self.env as unknown as Record<string, unknown>, self.ctx, (d) => {
+                d.workflowAdvances.fallback++;
+                d.workflowFallbacks.push({ at: new Date().toISOString(), className, reason, detail: e.message.slice(0, 300) });
+              }, true);
               console.warn(`linker-tiered: FALLBACK workflow ${wf.entryPoint} (${tenant}/${id}) -> packed ${wf.packedScript}: ${e.code}`);
               const packed = (self.env as Record<string, unknown>)[wf.packed] as Fetcher | undefined;
               if (!packed) throw new Error(`linker-tiered: no ${wf.packed} service binding`);
