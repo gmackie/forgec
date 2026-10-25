@@ -46,14 +46,17 @@ implementing `GroupingStrategy` and registering it in `STRATEGIES`. Cloudflare's
 The runtime Worker (`<package>-runtime`) carries the engine, every feature and Effect, and has no
 bindings and no app code, so it can only use what the calling script hands it, and an app edit never
 re-uploads it. Function units and externals run in the script and reach the engine back over RPC.
-A shared request may make at most 29 cross-script calls, counted conservatively: the call that would
-be the 30th is refused, and the request fails closed with `RpcBudgetExceeded` (Workers allows 32
-invocations per request; `InvocationBudget` in `src/shared/script.ts`). Eight groups keep the
-in-process host. Four cannot leave their isolate: the Workflows class, the realtime Durable Object, the
-WebSocket upgrade route and the dispatch owner. Four have work per invocation the link cannot bound:
-workflow start and signal routes, queue consumers and crons. `link.json` records `runtime.mode` and the
-reason. Results:
-`research/composable-units/r3-runtime-cost/`.
+A shared request is guarded by nesting depth, not by calls (FORG-49): the router is Workers stage 1,
+every call a script makes starts the stage after its own, and the call that would start stage 30 is
+refused, so the request fails closed with `RpcBudgetExceeded` (500). Workers refuses a request nested
+more than 32 stages; FORG-38 measured that deployed, and measured sequential calls and stub callbacks
+not adding up (`research/composable-units/r4-deployed/`). Depth crosses fetch hops in the
+`x-forge-depth` header and RPC hops in the capability stub (`DepthGuard` in `src/shared/script.ts`);
+the limit is `LinkOptions.maxDepth` (`--max-depth`). Four groups keep the in-process host, because
+they cannot leave their isolate: the Workflows class, the realtime Durable Object, the WebSocket
+upgrade route and the dispatch owner. Queue consumers, crons and workflow start and signal routes are
+shared. `link.json` records `runtime.mode` and the reason. Results:
+`research/composable-units/r3-runtime-cost/` and `research/composable-units/r4-depth-guard/`.
 
 `src/local.ts` serves linked output in workerd through Miniflare, for tests and the research run.
 
