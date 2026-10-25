@@ -34,9 +34,13 @@ const ACME_VARS = { FORGE_AUTH: "dev-headers", FORGE_CORS: "http://localhost:517
 const OBSERVABILITY = { enabled: true, head_sampling_rate: 1 };
 const run = (cmd, args, cwd = root) => execFileSync(cmd, args, { cwd, stdio: "inherit", env: process.env });
 
-/** What `pnpm --filter "@forgegraph/linker-tiered^..." run build` does: the runtime's dist/ (linker A imports it) and B's libraries. */
+/**
+ * What `pnpm --filter "@forgegraph/linker-tiered^..." run build` does, without pnpm (the agent's is a
+ * corepack shim): the dist/ of the runtime and its one workspace dependency (linker A imports the
+ * runtime's dist), then B's libraries.
+ */
 function workspaceDeps() {
-  run("node", [join(root, "packages/runtime/node_modules/typescript/bin/tsc"), "-p", "tsconfig.build.json"], join(root, "packages/runtime"));
+  for (const p of ["packages/contracts/capability-manifest", "packages/runtime"]) run("node", [join(root, p, "node_modules/typescript/bin/tsc"), "-p", "tsconfig.build.json"], join(root, p));
   run("node", [join(root, "packages/linker-dynamic/scripts/build-libs.mjs")]);
 }
 
