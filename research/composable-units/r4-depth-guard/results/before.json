@@ -1,0 +1,1780 @@
+{
+  "version": "r4-depth-guard-measure/1",
+  "issue": "FORG-49",
+  "local": true,
+  "commit": "6b30f4d",
+  "dirty": false,
+  "toolchain": {
+    "forgec": "0.5.0",
+    "bundler": "esbuild@0.27.7",
+    "units": "@forgegraph/units@0.5.0",
+    "node": "v24.14.0",
+    "linker": "@forgegraph/linker-packed@0.5.0"
+  },
+  "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9",
+  "bundling": "esbuild, minified, format esm, platform neutral, conditions source/workerd/worker/browser/import, cloudflare:* and node:* external; gzip -9 (FORG-29/37/42)",
+  "sizes": {
+    "single": {
+      "scripts": 1,
+      "uploads": 1,
+      "router": null,
+      "runtimeWorker": null,
+      "raw": {
+        "count": 1,
+        "min": 543002,
+        "median": 543002,
+        "max": 543002
+      },
+      "gzip": {
+        "count": 1,
+        "min": 116442,
+        "median": 116442,
+        "max": 116442
+      },
+      "scriptsCarryingEngine": 1,
+      "scriptsCarryingEffect": 1,
+      "inProcess": [],
+      "inProcessRaw": 0,
+      "deployRaw": 543002,
+      "deployGzip": 116442,
+      "perScript": [
+        {
+          "name": "acme-commerce-all",
+          "members": "92 members",
+          "raw": 543002,
+          "gzip": 116442,
+          "runtime": "in-process"
+        }
+      ]
+    },
+    "per-entry-point": {
+      "scripts": 87,
+      "uploads": 88,
+      "router": {
+        "raw": 7577,
+        "gzip": 1933
+      },
+      "runtimeWorker": null,
+      "raw": {
+        "count": 87,
+        "min": 247850,
+        "median": 286459,
+        "max": 541770
+      },
+      "gzip": {
+        "count": 87,
+        "min": 79019,
+        "median": 82780,
+        "max": 115871
+      },
+      "scriptsCarryingEngine": 87,
+      "scriptsCarryingEffect": 87,
+      "inProcess": [],
+      "inProcessRaw": 0,
+      "deployRaw": 26006029,
+      "deployGzip": 7419587,
+      "perScript": [
+        {
+          "name": "acme-commerce-nightlyreconciliation-04c042",
+          "members": [
+            "@acme/commerce/_/NightlyReconciliation"
+          ],
+          "raw": 290573,
+          "gzip": 84864,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-forge-sweep-24ec0b",
+          "members": [
+            "forge:sweep",
+            "projection:CustomerOrderSummary"
+          ],
+          "raw": 333568,
+          "gzip": 95926,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-forgerealtime-90f206",
+          "members": [
+            "ForgeRealtime"
+          ],
+          "raw": 285823,
+          "gzip": 82826,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-delete-v1-customers-id-865077",
+          "members": [
+            "DELETE /v1/customers/{id}"
+          ],
+          "raw": 292264,
+          "gzip": 82311,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-delete-v1-departments-id-f492ac",
+          "members": [
+            "DELETE /v1/departments/{id}"
+          ],
+          "raw": 265581,
+          "gzip": 80579,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-delete-v1-order-documents-id-4182d4",
+          "members": [
+            "DELETE /v1/order-documents/{id}"
+          ],
+          "raw": 308444,
+          "gzip": 86978,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-delete-v1-orders-id-8f6f3d",
+          "members": [
+            "DELETE /v1/orders/{id}"
+          ],
+          "raw": 308399,
+          "gzip": 86976,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-delete-v1-site-policies-id-6ff684",
+          "members": [
+            "DELETE /v1/site-policies/{id}"
+          ],
+          "raw": 275810,
+          "gzip": 81293,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-delete-v1-sites-id-8ab91c",
+          "members": [
+            "DELETE /v1/sites/{id}"
+          ],
+          "raw": 292338,
+          "gzip": 82415,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-forge-objects-token-ee9303",
+          "members": [
+            "GET /_forge/objects/{token}"
+          ],
+          "raw": 249006,
+          "gzip": 80238,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-forge-discovery-102862",
+          "members": [
+            "GET /forge/discovery"
+          ],
+          "raw": 541755,
+          "gzip": 115866,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-forge-openapi-json-dd823b",
+          "members": [
+            "GET /forge/openapi.json"
+          ],
+          "raw": 541764,
+          "gzip": 115871,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-forge-workspace-json-cd5a71",
+          "members": [
+            "GET /forge/workspace.json"
+          ],
+          "raw": 541770,
+          "gzip": 115871,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea",
+          "members": [
+            "GET /v1/caches/current-site-policy"
+          ],
+          "raw": 286459,
+          "gzip": 84798,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-changesets-id-03c07e",
+          "members": [
+            "GET /v1/changesets/{id}"
+          ],
+          "raw": 335497,
+          "gzip": 89805,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-changesets-id-preview-3d7025",
+          "members": [
+            "GET /v1/changesets/{id}/preview"
+          ],
+          "raw": 335521,
+          "gzip": 89816,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-customer-order-summaries-status-312396",
+          "members": [
+            "GET /v1/customer-order-summaries/status"
+          ],
+          "raw": 292894,
+          "gzip": 85371,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-customer-order-summaries-id-06679c",
+          "members": [
+            "GET /v1/customer-order-summaries/{id}"
+          ],
+          "raw": 292886,
+          "gzip": 85369,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-5bc671",
+          "members": [
+            "GET /v1/customers"
+          ],
+          "raw": 255218,
+          "gzip": 80004,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-queries-by-code-de4fe5",
+          "members": [
+            "GET /v1/customers/queries/by-code"
+          ],
+          "raw": 255229,
+          "gzip": 80005,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-queries-by-tier-33dddc",
+          "members": [
+            "GET /v1/customers/queries/by-tier"
+          ],
+          "raw": 255229,
+          "gzip": 80005,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-id-859df7",
+          "members": [
+            "GET /v1/customers/{id}"
+          ],
+          "raw": 255281,
+          "gzip": 80012,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-5a7635",
+          "members": [
+            "GET /v1/departments"
+          ],
+          "raw": 265510,
+          "gzip": 80574,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-queries-by-customer-9931ae",
+          "members": [
+            "GET /v1/departments/queries/by-customer"
+          ],
+          "raw": 265531,
+          "gzip": 80577,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-id-94b682",
+          "members": [
+            "GET /v1/departments/{id}"
+          ],
+          "raw": 265575,
+          "gzip": 80582,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-id-ancestors-e358ff",
+          "members": [
+            "GET /v1/departments/{id}/ancestors"
+          ],
+          "raw": 265514,
+          "gzip": 80575,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-id-children-419b77",
+          "members": [
+            "GET /v1/departments/{id}/children"
+          ],
+          "raw": 265511,
+          "gzip": 80576,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-live-orders-c072a7",
+          "members": [
+            "GET /v1/live/orders"
+          ],
+          "raw": 285795,
+          "gzip": 82780,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-7008be",
+          "members": [
+            "GET /v1/order-documents"
+          ],
+          "raw": 308369,
+          "gzip": 86970,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-queries-by-order-e2499a",
+          "members": [
+            "GET /v1/order-documents/queries/by-order"
+          ],
+          "raw": 308377,
+          "gzip": 86973,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-id-e9b35d",
+          "members": [
+            "GET /v1/order-documents/{id}"
+          ],
+          "raw": 308438,
+          "gzip": 86979,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-id-content-d0b378",
+          "members": [
+            "GET /v1/order-documents/{id}/content"
+          ],
+          "raw": 308346,
+          "gzip": 86968,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-ba0b2c",
+          "members": [
+            "GET /v1/orders"
+          ],
+          "raw": 281899,
+          "gzip": 81846,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-queries-by-customer-ed5c4c",
+          "members": [
+            "GET /v1/orders/queries/by-customer"
+          ],
+          "raw": 281925,
+          "gzip": 81848,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-queries-by-site-status-c57bcb",
+          "members": [
+            "GET /v1/orders/queries/by-site-status"
+          ],
+          "raw": 281934,
+          "gzip": 81850,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-id-2d0e31",
+          "members": [
+            "GET /v1/orders/{id}"
+          ],
+          "raw": 281959,
+          "gzip": 81856,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-95bbdb",
+          "members": [
+            "GET /v1/schedules/nightly-reconciliation"
+          ],
+          "raw": 290580,
+          "gzip": 84816,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-e6b603",
+          "members": [
+            "GET /v1/site-policies"
+          ],
+          "raw": 275737,
+          "gzip": 81285,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-effective-by-site-4b1aed",
+          "members": [
+            "GET /v1/site-policies/effective/by-site"
+          ],
+          "raw": 275750,
+          "gzip": 81286,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-queries-by-site-c0df71",
+          "members": [
+            "GET /v1/site-policies/queries/by-site"
+          ],
+          "raw": 275744,
+          "gzip": 81287,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-id-db0b1f",
+          "members": [
+            "GET /v1/site-policies/{id}"
+          ],
+          "raw": 275804,
+          "gzip": 81294,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-a9083b",
+          "members": [
+            "GET /v1/sites"
+          ],
+          "raw": 265327,
+          "gzip": 80566,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-queries-by-customer-b2abb6",
+          "members": [
+            "GET /v1/sites/queries/by-customer"
+          ],
+          "raw": 265354,
+          "gzip": 80568,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-queries-by-customer-code-a50f4f",
+          "members": [
+            "GET /v1/sites/queries/by-customer-code"
+          ],
+          "raw": 265369,
+          "gzip": 80569,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-id-18c7c2",
+          "members": [
+            "GET /v1/sites/{id}"
+          ],
+          "raw": 265386,
+          "gzip": 80576,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-views-pending-orders-7c7782",
+          "members": [
+            "GET /v1/views/pending-orders"
+          ],
+          "raw": 292941,
+          "gzip": 85283,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-workflows-process-order-id-76eb96",
+          "members": [
+            "GET /v1/workflows/process-order/{id}"
+          ],
+          "raw": 310755,
+          "gzip": 88794,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-patch-v1-customers-id-a19e97",
+          "members": [
+            "PATCH /v1/customers/{id}"
+          ],
+          "raw": 255285,
+          "gzip": 80011,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-patch-v1-departments-id-93fb26",
+          "members": [
+            "PATCH /v1/departments/{id}"
+          ],
+          "raw": 265579,
+          "gzip": 80582,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-patch-v1-order-documents-id-f2787a",
+          "members": [
+            "PATCH /v1/order-documents/{id}"
+          ],
+          "raw": 308442,
+          "gzip": 86979,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-patch-v1-orders-id-c8bd2f",
+          "members": [
+            "PATCH /v1/orders/{id}"
+          ],
+          "raw": 281963,
+          "gzip": 81854,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-patch-v1-site-policies-id-25dc21",
+          "members": [
+            "PATCH /v1/site-policies/{id}"
+          ],
+          "raw": 275808,
+          "gzip": 81293,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-patch-v1-sites-id-f8a7c7",
+          "members": [
+            "PATCH /v1/sites/{id}"
+          ],
+          "raw": 265390,
+          "gzip": 80575,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-export-e88510",
+          "members": [
+            "POST /v1/admin/export"
+          ],
+          "raw": 334130,
+          "gzip": 89641,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-fence-cfcde5",
+          "members": [
+            "POST /v1/admin/fence"
+          ],
+          "raw": 334127,
+          "gzip": 89642,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-import-6d6745",
+          "members": [
+            "POST /v1/admin/import"
+          ],
+          "raw": 334130,
+          "gzip": 89644,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-inspect-7d553f",
+          "members": [
+            "POST /v1/admin/inspect"
+          ],
+          "raw": 328968,
+          "gzip": 88124,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-subjects-locate-99dbef",
+          "members": [
+            "POST /v1/admin/subjects/locate"
+          ],
+          "raw": 328992,
+          "gzip": 88130,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-verify-760020",
+          "members": [
+            "POST /v1/admin/verify"
+          ],
+          "raw": 334130,
+          "gzip": 89645,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-changesets-d4dc90",
+          "members": [
+            "POST /v1/changesets"
+          ],
+          "raw": 335487,
+          "gzip": 89805,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-changesets-id-approve-c1a763",
+          "members": [
+            "POST /v1/changesets/{id}/approve"
+          ],
+          "raw": 335524,
+          "gzip": 89818,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-changesets-id-commit-ec9a99",
+          "members": [
+            "POST /v1/changesets/{id}/commit"
+          ],
+          "raw": 335521,
+          "gzip": 89817,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-customer-order-summaries-rebuild-0a84e8",
+          "members": [
+            "POST /v1/customer-order-summaries/rebuild"
+          ],
+          "raw": 292900,
+          "gzip": 85375,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-customers-b01b8e",
+          "members": [
+            "POST /v1/customers"
+          ],
+          "raw": 255220,
+          "gzip": 80004,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-customers-id-restore-c67045",
+          "members": [
+            "POST /v1/customers/{id}/restore"
+          ],
+          "raw": 255221,
+          "gzip": 80006,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-departments-965f9d",
+          "members": [
+            "POST /v1/departments"
+          ],
+          "raw": 265512,
+          "gzip": 80575,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-departments-id-move-24a6b1",
+          "members": [
+            "POST /v1/departments/{id}/move"
+          ],
+          "raw": 265502,
+          "gzip": 80576,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-imports-inspect-ff77f4",
+          "members": [
+            "POST /v1/imports/inspect"
+          ],
+          "raw": 341492,
+          "gzip": 92021,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-imports-stage-865a08",
+          "members": [
+            "POST /v1/imports/stage"
+          ],
+          "raw": 341486,
+          "gzip": 92018,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-order-documents-dcce15",
+          "members": [
+            "POST /v1/order-documents"
+          ],
+          "raw": 308371,
+          "gzip": 86972,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-order-documents-id-finalize-99d42d",
+          "members": [
+            "POST /v1/order-documents/{id}/finalize"
+          ],
+          "raw": 308352,
+          "gzip": 86969,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-order-documents-id-upload-6608dc",
+          "members": [
+            "POST /v1/order-documents/{id}/upload"
+          ],
+          "raw": 308346,
+          "gzip": 86970,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-292d83",
+          "members": [
+            "POST /v1/orders"
+          ],
+          "raw": 281901,
+          "gzip": 81849,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-id-actions-approve-311eae",
+          "members": [
+            "POST /v1/orders/{id}/actions/approve"
+          ],
+          "raw": 281929,
+          "gzip": 81853,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-id-actions-cancel-f293bb",
+          "members": [
+            "POST /v1/orders/{id}/actions/cancel"
+          ],
+          "raw": 281926,
+          "gzip": 81854,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-id-actions-complete-2b8d43",
+          "members": [
+            "POST /v1/orders/{id}/actions/complete"
+          ],
+          "raw": 281932,
+          "gzip": 81854,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-order-process-745789",
+          "members": [
+            "POST /v1/orders/{order}/process"
+          ],
+          "raw": 311781,
+          "gzip": 89223,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-order-submit-19d055",
+          "members": [
+            "POST /v1/orders/{order}/submit"
+          ],
+          "raw": 288592,
+          "gzip": 83334,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1",
+          "members": [
+            "POST /v1/schedules/nightly-reconciliation/tick"
+          ],
+          "raw": 290722,
+          "gzip": 84890,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-site-policies-e288dc",
+          "members": [
+            "POST /v1/site-policies"
+          ],
+          "raw": 275739,
+          "gzip": 81286,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-sites-985075",
+          "members": [
+            "POST /v1/sites"
+          ],
+          "raw": 265329,
+          "gzip": 80567,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+          "members": [
+            "POST /v1/workflows/process-order/signals/{message}"
+          ],
+          "raw": 311833,
+          "gzip": 89241,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-workflows-process-order-id-cancel-4ffe45",
+          "members": [
+            "POST /v1/workflows/process-order/{id}/cancel"
+          ],
+          "raw": 310756,
+          "gzip": 88795,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-put-forge-objects-token-e15b5c",
+          "members": [
+            "PUT /_forge/objects/{token}"
+          ],
+          "raw": 249006,
+          "gzip": 80240,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-fulfill-order-4ca05b",
+          "members": [
+            "fulfill-order"
+          ],
+          "raw": 286753,
+          "gzip": 82855,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-processorder-c5fc00",
+          "members": "5 members",
+          "raw": 311786,
+          "gzip": 89271,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-forge-residual-8b7058",
+          "members": [
+            "forge:residual"
+          ],
+          "raw": 247850,
+          "gzip": 79019,
+          "runtime": "in-process"
+        }
+      ]
+    },
+    "per-entry-point-shared": {
+      "scripts": 87,
+      "uploads": 89,
+      "router": {
+        "raw": 7577,
+        "gzip": 1933
+      },
+      "runtimeWorker": {
+        "raw": 306202,
+        "gzip": 97672
+      },
+      "raw": {
+        "count": 87,
+        "min": 12010,
+        "median": 50848,
+        "max": 333568
+      },
+      "gzip": {
+        "count": 87,
+        "min": 4482,
+        "median": 8102,
+        "max": 95926
+      },
+      "scriptsCarryingEngine": 8,
+      "scriptsCarryingEffect": 10,
+      "inProcess": [
+        {
+          "members": [
+            "@acme/commerce/_/NightlyReconciliation"
+          ],
+          "reason": "cron",
+          "raw": 290573,
+          "gzip": 84864
+        },
+        {
+          "members": [
+            "forge:sweep",
+            "projection:CustomerOrderSummary"
+          ],
+          "reason": "dispatch owner",
+          "raw": 333568,
+          "gzip": 95926
+        },
+        {
+          "members": [
+            "ForgeRealtime"
+          ],
+          "reason": "realtime object",
+          "raw": 285823,
+          "gzip": 82826
+        },
+        {
+          "members": [
+            "GET /v1/live/orders"
+          ],
+          "reason": "websocket upgrade",
+          "raw": 285795,
+          "gzip": 82780
+        },
+        {
+          "members": [
+            "POST /v1/orders/{order}/process"
+          ],
+          "reason": "workflow start or signal",
+          "raw": 311781,
+          "gzip": 89223
+        },
+        {
+          "members": [
+            "POST /v1/workflows/process-order/signals/{message}"
+          ],
+          "reason": "workflow start or signal",
+          "raw": 311833,
+          "gzip": 89241
+        },
+        {
+          "members": [
+            "fulfill-order"
+          ],
+          "reason": "queue consumer",
+          "raw": 286753,
+          "gzip": 82855
+        },
+        {
+          "members": "5 members",
+          "reason": "workflow class",
+          "raw": 311786,
+          "gzip": 89271
+        }
+      ],
+      "inProcessRaw": 2417912,
+      "deployRaw": 7422587,
+      "deployGzip": 1515468,
+      "perScript": [
+        {
+          "name": "acme-commerce-nightlyreconciliation-04c042",
+          "members": [
+            "@acme/commerce/_/NightlyReconciliation"
+          ],
+          "raw": 290573,
+          "gzip": 84864,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-forge-sweep-24ec0b",
+          "members": [
+            "forge:sweep",
+            "projection:CustomerOrderSummary"
+          ],
+          "raw": 333568,
+          "gzip": 95926,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-forgerealtime-90f206",
+          "members": [
+            "ForgeRealtime"
+          ],
+          "raw": 285823,
+          "gzip": 82826,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-delete-v1-customers-id-865077",
+          "members": [
+            "DELETE /v1/customers/{id}"
+          ],
+          "raw": 60119,
+          "gzip": 8323,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-delete-v1-departments-id-f492ac",
+          "members": [
+            "DELETE /v1/departments/{id}"
+          ],
+          "raw": 33438,
+          "gzip": 6604,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-delete-v1-order-documents-id-4182d4",
+          "members": [
+            "DELETE /v1/order-documents/{id}"
+          ],
+          "raw": 61780,
+          "gzip": 8702,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-delete-v1-orders-id-8f6f3d",
+          "members": [
+            "DELETE /v1/orders/{id}"
+          ],
+          "raw": 61726,
+          "gzip": 8700,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-delete-v1-site-policies-id-6ff684",
+          "members": [
+            "DELETE /v1/site-policies/{id}"
+          ],
+          "raw": 43669,
+          "gzip": 7311,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-delete-v1-sites-id-8ab91c",
+          "members": [
+            "DELETE /v1/sites/{id}"
+          ],
+          "raw": 60189,
+          "gzip": 8442,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-forge-objects-token-ee9303",
+          "members": [
+            "GET /_forge/objects/{token}"
+          ],
+          "raw": 12010,
+          "gzip": 4482,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-forge-discovery-102862",
+          "members": [
+            "GET /forge/discovery"
+          ],
+          "raw": 240077,
+          "gzip": 20935,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-forge-openapi-json-dd823b",
+          "members": [
+            "GET /forge/openapi.json"
+          ],
+          "raw": 240089,
+          "gzip": 20941,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-forge-workspace-json-cd5a71",
+          "members": [
+            "GET /forge/workspace.json"
+          ],
+          "raw": 240097,
+          "gzip": 20942,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-caches-current-site-policy-24a0ea",
+          "members": [
+            "GET /v1/caches/current-site-policy"
+          ],
+          "raw": 44408,
+          "gzip": 7528,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-changesets-id-03c07e",
+          "members": [
+            "GET /v1/changesets/{id}"
+          ],
+          "raw": 82310,
+          "gzip": 9845,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-changesets-id-preview-3d7025",
+          "members": [
+            "GET /v1/changesets/{id}/preview"
+          ],
+          "raw": 82342,
+          "gzip": 9855,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-customer-order-summaries-status-312396",
+          "members": [
+            "GET /v1/customer-order-summaries/status"
+          ],
+          "raw": 50848,
+          "gzip": 8103,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-customer-order-summaries-id-06679c",
+          "members": [
+            "GET /v1/customer-order-summaries/{id}"
+          ],
+          "raw": 50836,
+          "gzip": 8102,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-5bc671",
+          "members": [
+            "GET /v1/customers"
+          ],
+          "raw": 23067,
+          "gzip": 6014,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-queries-by-code-de4fe5",
+          "members": [
+            "GET /v1/customers/queries/by-code"
+          ],
+          "raw": 23094,
+          "gzip": 6015,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-queries-by-tier-33dddc",
+          "members": [
+            "GET /v1/customers/queries/by-tier"
+          ],
+          "raw": 23094,
+          "gzip": 6015,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-customers-id-859df7",
+          "members": [
+            "GET /v1/customers/{id}"
+          ],
+          "raw": 23133,
+          "gzip": 6023,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-5a7635",
+          "members": [
+            "GET /v1/departments"
+          ],
+          "raw": 33361,
+          "gzip": 6597,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-queries-by-customer-9931ae",
+          "members": [
+            "GET /v1/departments/queries/by-customer"
+          ],
+          "raw": 33402,
+          "gzip": 6599,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-id-94b682",
+          "members": [
+            "GET /v1/departments/{id}"
+          ],
+          "raw": 33429,
+          "gzip": 6607,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-id-ancestors-e358ff",
+          "members": [
+            "GET /v1/departments/{id}/ancestors"
+          ],
+          "raw": 33378,
+          "gzip": 6598,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-departments-id-children-419b77",
+          "members": [
+            "GET /v1/departments/{id}/children"
+          ],
+          "raw": 33374,
+          "gzip": 6599,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-live-orders-c072a7",
+          "members": [
+            "GET /v1/live/orders"
+          ],
+          "raw": 285795,
+          "gzip": 82780,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-7008be",
+          "members": [
+            "GET /v1/order-documents"
+          ],
+          "raw": 61699,
+          "gzip": 8694,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-queries-by-order-e2499a",
+          "members": [
+            "GET /v1/order-documents/queries/by-order"
+          ],
+          "raw": 61724,
+          "gzip": 8699,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-id-e9b35d",
+          "members": [
+            "GET /v1/order-documents/{id}"
+          ],
+          "raw": 61771,
+          "gzip": 8704,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-order-documents-id-content-d0b378",
+          "members": [
+            "GET /v1/order-documents/{id}/content"
+          ],
+          "raw": 61687,
+          "gzip": 8699,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-ba0b2c",
+          "members": [
+            "GET /v1/orders"
+          ],
+          "raw": 49745,
+          "gzip": 7858,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-queries-by-customer-ed5c4c",
+          "members": [
+            "GET /v1/orders/queries/by-customer"
+          ],
+          "raw": 49791,
+          "gzip": 7859,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-queries-by-site-status-c57bcb",
+          "members": [
+            "GET /v1/orders/queries/by-site-status"
+          ],
+          "raw": 49803,
+          "gzip": 7861,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-orders-id-2d0e31",
+          "members": [
+            "GET /v1/orders/{id}"
+          ],
+          "raw": 49808,
+          "gzip": 7866,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-schedules-nightly-reconciliation-95bbdb",
+          "members": [
+            "GET /v1/schedules/nightly-reconciliation"
+          ],
+          "raw": 51146,
+          "gzip": 8130,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-e6b603",
+          "members": [
+            "GET /v1/site-policies"
+          ],
+          "raw": 43590,
+          "gzip": 7303,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-effective-by-site-4b1aed",
+          "members": [
+            "GET /v1/site-policies/effective/by-site"
+          ],
+          "raw": 43621,
+          "gzip": 7305,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-queries-by-site-c0df71",
+          "members": [
+            "GET /v1/site-policies/queries/by-site"
+          ],
+          "raw": 43613,
+          "gzip": 7306,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-site-policies-id-db0b1f",
+          "members": [
+            "GET /v1/site-policies/{id}"
+          ],
+          "raw": 43660,
+          "gzip": 7312,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-a9083b",
+          "members": [
+            "GET /v1/sites"
+          ],
+          "raw": 33172,
+          "gzip": 6577,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-queries-by-customer-b2abb6",
+          "members": [
+            "GET /v1/sites/queries/by-customer"
+          ],
+          "raw": 33219,
+          "gzip": 6581,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-queries-by-customer-code-a50f4f",
+          "members": [
+            "GET /v1/sites/queries/by-customer-code"
+          ],
+          "raw": 33239,
+          "gzip": 6581,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-sites-id-18c7c2",
+          "members": [
+            "GET /v1/sites/{id}"
+          ],
+          "raw": 33234,
+          "gzip": 6586,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-views-pending-orders-7c7782",
+          "members": [
+            "GET /v1/views/pending-orders"
+          ],
+          "raw": 50884,
+          "gzip": 8010,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-get-v1-workflows-process-order-id-76eb96",
+          "members": [
+            "GET /v1/workflows/process-order/{id}"
+          ],
+          "raw": 60800,
+          "gzip": 9565,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-patch-v1-customers-id-a19e97",
+          "members": [
+            "PATCH /v1/customers/{id}"
+          ],
+          "raw": 23139,
+          "gzip": 6022,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-patch-v1-departments-id-93fb26",
+          "members": [
+            "PATCH /v1/departments/{id}"
+          ],
+          "raw": 33435,
+          "gzip": 6606,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-patch-v1-order-documents-id-f2787a",
+          "members": [
+            "PATCH /v1/order-documents/{id}"
+          ],
+          "raw": 61777,
+          "gzip": 8703,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-patch-v1-orders-id-c8bd2f",
+          "members": [
+            "PATCH /v1/orders/{id}"
+          ],
+          "raw": 49814,
+          "gzip": 7866,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-patch-v1-site-policies-id-25dc21",
+          "members": [
+            "PATCH /v1/site-policies/{id}"
+          ],
+          "raw": 43666,
+          "gzip": 7312,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-patch-v1-sites-id-f8a7c7",
+          "members": [
+            "PATCH /v1/sites/{id}"
+          ],
+          "raw": 33240,
+          "gzip": 6585,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-export-e88510",
+          "members": [
+            "POST /v1/admin/export"
+          ],
+          "raw": 82307,
+          "gzip": 9849,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-fence-cfcde5",
+          "members": [
+            "POST /v1/admin/fence"
+          ],
+          "raw": 82303,
+          "gzip": 9850,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-import-6d6745",
+          "members": [
+            "POST /v1/admin/import"
+          ],
+          "raw": 82307,
+          "gzip": 9851,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-inspect-7d553f",
+          "members": [
+            "POST /v1/admin/inspect"
+          ],
+          "raw": 82297,
+          "gzip": 9846,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-subjects-locate-99dbef",
+          "members": [
+            "POST /v1/admin/subjects/locate"
+          ],
+          "raw": 82329,
+          "gzip": 9852,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-admin-verify-760020",
+          "members": [
+            "POST /v1/admin/verify"
+          ],
+          "raw": 82307,
+          "gzip": 9852,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-changesets-d4dc90",
+          "members": [
+            "POST /v1/changesets"
+          ],
+          "raw": 82298,
+          "gzip": 9842,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-changesets-id-approve-c1a763",
+          "members": [
+            "POST /v1/changesets/{id}/approve"
+          ],
+          "raw": 82346,
+          "gzip": 9857,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-changesets-id-commit-ec9a99",
+          "members": [
+            "POST /v1/changesets/{id}/commit"
+          ],
+          "raw": 82342,
+          "gzip": 9855,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-customer-order-summaries-rebuild-0a84e8",
+          "members": [
+            "POST /v1/customer-order-summaries/rebuild"
+          ],
+          "raw": 50856,
+          "gzip": 8108,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-customers-b01b8e",
+          "members": [
+            "POST /v1/customers"
+          ],
+          "raw": 23070,
+          "gzip": 6014,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-customers-id-restore-c67045",
+          "members": [
+            "POST /v1/customers/{id}/restore"
+          ],
+          "raw": 23082,
+          "gzip": 6015,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-departments-965f9d",
+          "members": [
+            "POST /v1/departments"
+          ],
+          "raw": 33364,
+          "gzip": 6598,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-departments-id-move-24a6b1",
+          "members": [
+            "POST /v1/departments/{id}/move"
+          ],
+          "raw": 33362,
+          "gzip": 6598,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-imports-inspect-ff77f4",
+          "members": [
+            "POST /v1/imports/inspect"
+          ],
+          "raw": 82328,
+          "gzip": 9858,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-imports-stage-865a08",
+          "members": [
+            "POST /v1/imports/stage"
+          ],
+          "raw": 82320,
+          "gzip": 9856,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-order-documents-dcce15",
+          "members": [
+            "POST /v1/order-documents"
+          ],
+          "raw": 61702,
+          "gzip": 8697,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-order-documents-id-finalize-99d42d",
+          "members": [
+            "POST /v1/order-documents/{id}/finalize"
+          ],
+          "raw": 61695,
+          "gzip": 8701,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-order-documents-id-upload-6608dc",
+          "members": [
+            "POST /v1/order-documents/{id}/upload"
+          ],
+          "raw": 61687,
+          "gzip": 8701,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-292d83",
+          "members": [
+            "POST /v1/orders"
+          ],
+          "raw": 49748,
+          "gzip": 7860,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-id-actions-approve-311eae",
+          "members": [
+            "POST /v1/orders/{id}/actions/approve"
+          ],
+          "raw": 49795,
+          "gzip": 7864,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-id-actions-cancel-f293bb",
+          "members": [
+            "POST /v1/orders/{id}/actions/cancel"
+          ],
+          "raw": 49791,
+          "gzip": 7865,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-id-actions-complete-2b8d43",
+          "members": [
+            "POST /v1/orders/{id}/actions/complete"
+          ],
+          "raw": 49799,
+          "gzip": 7865,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-order-process-745789",
+          "members": [
+            "POST /v1/orders/{order}/process"
+          ],
+          "raw": 311781,
+          "gzip": 89223,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-orders-order-submit-19d055",
+          "members": [
+            "POST /v1/orders/{order}/submit"
+          ],
+          "raw": 145444,
+          "gzip": 40349,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1",
+          "members": [
+            "POST /v1/schedules/nightly-reconciliation/tick"
+          ],
+          "raw": 142186,
+          "gzip": 39815,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-site-policies-e288dc",
+          "members": [
+            "POST /v1/site-policies"
+          ],
+          "raw": 43593,
+          "gzip": 7304,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-sites-985075",
+          "members": [
+            "POST /v1/sites"
+          ],
+          "raw": 33175,
+          "gzip": 6578,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2",
+          "members": [
+            "POST /v1/workflows/process-order/signals/{message}"
+          ],
+          "raw": 311833,
+          "gzip": 89241,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-post-v1-workflows-process-order-id-cancel-4ffe45",
+          "members": [
+            "POST /v1/workflows/process-order/{id}/cancel"
+          ],
+          "raw": 60809,
+          "gzip": 9575,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-put-forge-objects-token-e15b5c",
+          "members": [
+            "PUT /_forge/objects/{token}"
+          ],
+          "raw": 12010,
+          "gzip": 4484,
+          "runtime": "shared"
+        },
+        {
+          "name": "acme-commerce-fulfill-order-4ca05b",
+          "members": [
+            "fulfill-order"
+          ],
+          "raw": 286753,
+          "gzip": 82855,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-processorder-c5fc00",
+          "members": "5 members",
+          "raw": 311786,
+          "gzip": 89271,
+          "runtime": "in-process"
+        },
+        {
+          "name": "acme-commerce-forge-residual-8b7058",
+          "members": [
+            "forge:residual"
+          ],
+          "raw": 15697,
+          "gzip": 5046,
+          "runtime": "shared"
+        }
+      ]
+    }
+  },
+  "bodyEdit": {
+    "edit": "impl/rebuild-order-summary.ts `{ rebuilt: true }` -> `{ rebuilt: false }`",
+    "single": {
+      "uploads": 1,
+      "reuploaded": 1,
+      "reuploadedRaw": 543002,
+      "reuploadedGzip": 116443,
+      "changed": [
+        "acme-commerce-all (543002)"
+      ]
+    },
+    "per-entry-point": {
+      "uploads": 88,
+      "reuploaded": 6,
+      "reuploadedRaw": 1850263,
+      "reuploadedGzip": 533416,
+      "changed": [
+        "acme-commerce-nightlyreconciliation-04c042 (290573)",
+        "acme-commerce-forge-sweep-24ec0b (333568)",
+        "acme-commerce-post-v1-orders-order-process-745789 (311781)",
+        "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1 (290722)",
+        "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2 (311833)",
+        "acme-commerce-processorder-c5fc00 (311786)"
+      ]
+    },
+    "per-entry-point-shared": {
+      "uploads": 89,
+      "reuploaded": 6,
+      "reuploadedRaw": 1701727,
+      "reuploadedGzip": 488341,
+      "changed": [
+        "acme-commerce-nightlyreconciliation-04c042 (290573)",
+        "acme-commerce-forge-sweep-24ec0b (333568)",
+        "acme-commerce-post-v1-orders-order-process-745789 (311781)",
+        "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1 (142186)",
+        "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2 (311833)",
+        "acme-commerce-processorder-c5fc00 (311786)"
+      ]
+    }
+  }
+}

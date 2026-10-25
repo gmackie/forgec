@@ -7,6 +7,10 @@ Effect into each of its 87 scripts. The median script was 285,719 B raw (82,560 
 was 25.94 MB (7.40 MB gzip), about 48× a single Worker. This spike measures three ways not to pay that
 per script, and adopts one of them as a working strategy, **`per-entry-point-shared`**.
 
+> **Superseded in part (FORG-49).** The invocation budget below was replaced by a depth guard, and
+> queue consumers, crons and workflow start and signal routes are shared again: see
+> [R4, depth guard](../r4-depth-guard/README.md). `rpc-trace.ts` here reads the old trace format.
+
 The branch is off main `479be5c`, with main `63f8118` merged in (FORG-41 and FORG-43). All results below
 are from the merged tree. Everything ran locally. Nothing was deployed.
 

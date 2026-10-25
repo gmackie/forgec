@@ -1,0 +1,163 @@
+{
+  "version": "r4-depth-guard-trace/1",
+  "issue": "FORG-49",
+  "local": true,
+  "how": "the 15 conformance scenarios against per-entry-point-shared in local workerd with FORGE_RPC_TRACE=1. depth = the Workers stage the shared script ran at (router 1, so a routed request is 2; a queue batch or cron is 1); deepest = the deepest stage it started (the runtime Worker, a dispatch hand-off or a Durable Object, all one stage below the script); calls = its cross-script calls (the runtime call, callbacks, unit deps calls, hand-offs), which nothing limits.",
+  "maxDepth": 29,
+  "scenariosFailed": [],
+  "requests": 247,
+  "byKind": {
+    "http": {
+      "count": 240,
+      "depth": {
+        "min": 2,
+        "median": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "deepest": {
+        "min": 3,
+        "median": 3,
+        "p95": 3,
+        "max": 3
+      },
+      "calls": {
+        "min": 1,
+        "median": 4,
+        "p95": 13,
+        "max": 40
+      }
+    },
+    "queue": {
+      "count": 7,
+      "depth": {
+        "min": 1,
+        "median": 1,
+        "p95": 1,
+        "max": 1
+      },
+      "deepest": {
+        "min": 2,
+        "median": 2,
+        "p95": 2,
+        "max": 2
+      },
+      "calls": {
+        "min": 8,
+        "median": 8,
+        "p95": 9,
+        "max": 9
+      }
+    },
+    "cron": {
+      "count": 0,
+      "depth": {
+        "min": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "deepest": {
+        "min": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0
+      },
+      "calls": {
+        "min": 0,
+        "median": 0,
+        "p95": 0,
+        "max": 0
+      }
+    }
+  },
+  "deepest": {
+    "min": 2,
+    "median": 3,
+    "p95": 3,
+    "max": 3
+  },
+  "calls": {
+    "min": 1,
+    "median": 4,
+    "p95": 13,
+    "max": 40
+  },
+  "over29Calls": [
+    {
+      "calls": 30,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/process",
+      "script": "acme-commerce-post-v1-orders-order-process-745789"
+    },
+    {
+      "calls": 40,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/process",
+      "script": "acme-commerce-post-v1-orders-order-process-745789"
+    }
+  ],
+  "refused": [],
+  "top": [
+    {
+      "calls": 40,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/process",
+      "script": "acme-commerce-post-v1-orders-order-process-745789"
+    },
+    {
+      "calls": 30,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/process",
+      "script": "acme-commerce-post-v1-orders-order-process-745789"
+    },
+    {
+      "calls": 26,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/process",
+      "script": "acme-commerce-post-v1-orders-order-process-745789"
+    },
+    {
+      "calls": 26,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/process",
+      "script": "acme-commerce-post-v1-orders-order-process-745789"
+    },
+    {
+      "calls": 25,
+      "deepest": 3,
+      "what": "POST /v1/workflows/process-order/signals/PaymentCaptured",
+      "script": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2"
+    },
+    {
+      "calls": 22,
+      "deepest": 3,
+      "what": "POST /v1/workflows/process-order/signals/PaymentCaptured",
+      "script": "acme-commerce-post-v1-workflows-process-order-signals-me-19dca2"
+    },
+    {
+      "calls": 20,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/process",
+      "script": "acme-commerce-post-v1-orders-order-process-745789"
+    },
+    {
+      "calls": 19,
+      "deepest": 3,
+      "what": "POST /v1/schedules/nightly-reconciliation/tick",
+      "script": "acme-commerce-post-v1-schedules-nightly-reconciliation-t-0698e1"
+    },
+    {
+      "calls": 16,
+      "deepest": 3,
+      "what": "POST /v1/changesets/{id}/commit",
+      "script": "acme-commerce-post-v1-changesets-id-commit-ec9a99"
+    },
+    {
+      "calls": 14,
+      "deepest": 3,
+      "what": "POST /v1/orders/{id}/submit",
+      "script": "acme-commerce-post-v1-orders-order-submit-19d055"
+    }
+  ]
+}
