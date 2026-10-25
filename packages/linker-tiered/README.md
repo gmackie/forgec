@@ -67,12 +67,33 @@ on every refusal it makes *before a request reaches unit code*, and strips it fr
 | `LoaderUnavailable` | no Worker Loader binding, or `LOADER.get` throws |
 | `LoadFailed` | the child does not start: the tier host probes each child (`Forge.ping`) before forwarding |
 | `MissingModule`, `ModuleDigestMismatch`, `MissingLibrary`, `BuildMismatch` | the child's code cannot be assembled from the unit store |
+| `LinkerRefused/PointerUnavailable` | FORG-47: the tier host's copy of the manifest pointer is older than its bound and the pointer's Durable Object cannot be read (also `LinkerRefused/NoPointerBinding`). B sends the reason in `x-forge-linker-refused-reason`; the router counts `<code>/<reason>` |
 
 On a miss the router replays the request to the packed script, sets `x-forge-tier: packed-fallback`
 and `x-forge-tier-miss: <code>`, logs `linker-tiered: FALLBACK <entry> -> packed (<code>)` and counts
-it (`GET /_forge/tiered/stats` with `x-forge-tier-token`, per router isolate: `dynamic`, `packed`,
-`fallback`, `errors`, `byReason`, `byEntryPoint`, the last 50). Every other answer says
+it (`GET /_forge/tiered/stats` with `x-forge-tier-token`: `dynamic`, `packed`, `fallback`, `errors`,
+`byReason`, `byEntryPoint`, the last 50; see "Stats" below). Every other answer says
 `x-forge-tier: dynamic` or `packed`.
+
+### Stats (FORG-47)
+
+Deployed, the router runs as several isolates, so counters held in one isolate's memory answered for that
+isolate only, and their `since` read 1970 (taken at module scope, where the Workers clock reads 0;
+`research/composable-units/r4-deployed`). The counts now live in one Durable Object, `TierStats`
+(exported by the tier host script, binding `FORGE_TIER_STATS`, object `tier`; the router binds it by
+`script_name`). `src/stats.ts`:
+
+- Each router and tier-host isolate counts locally and reports a delta from `ctx.waitUntil`, after its
+  answer: at most once per `TIER_STATS_FLUSH_MS` (default 1000) for ordinary requests, at once for a
+  fallback or an error. No request waits on the DO; the shared counts lag by at most the flush interval
+  per isolate, and a stats read flushes its own isolate first.
+- `since` is the DO's clock when the counts were created or last reset (`DELETE`).
+- The answer adds `scope: "shared"`, `flushes`, `updatedAt`, the workflow counts (`workflowAdvances`,
+  `workflowFallbacks`) and `isolates` (each reporting isolate, router or tier, with its totals).
+- A failed flush keeps its delta for the next flush and logs `linker-tiered: stats flush failed`; a read
+  while the DO is down answers 503 `StatsUnavailable` with the isolate's own counts. A link from before
+  FORG-47 (no binding) answers per isolate and says `scope: "isolate"`.
+- `GET /_linker/tier` on the tier host answers the same shared workflow counts.
 
 Not a miss: a 403 `CapabilityDenied` from a child (a policy answer, and falling back would hand the
 request to a script with other capabilities), any 4xx or 5xx the runtime answers, and an exception
@@ -89,7 +110,12 @@ or not as a whole.
 ## Updating the dynamic tier
 
 The tier host keeps B's `/_linker/*` administration: `PUT /_linker/blobs` for new module bytes and
-`PUT /_linker/manifest` for the new manifest. That is the whole deploy for an implementation change in
+`PUT /_linker/manifest` for the new manifest. Since FORG-47 the manifest is a pointer in a Durable
+Object (`ManifestPointer`, exported by the tier host script), shared by every tier-host isolate: a swap
+is a compare-and-swap (`If-Match: "<version>"`; a stale one answers 409 `StalePointer`), and every
+isolate serves it within `LINKER_POINTER_TTL_MS` (default 1000 ms). The tier host records its dynamic
+entry points and their closures in the pointer (`dynamic`). See
+`research/composable-units/t4-linker-dynamic/README.md` ("The manifest pointer"). That is the whole deploy for an implementation change in
 a dynamic closure: no script in the tiered link is uploaded. The tier host refuses (409
 `TierBindingMissing`) a manifest whose dynamic entry points need a binding it was not deployed with,
 because B's child would get no handle and the runtime would quietly do without (a memory object store,
@@ -133,7 +159,8 @@ entry points declare plus the manifest's host vars and secrets (acme: no `BLOBS`
 | `src/policy.ts` | the policy and its resolution |
 | `src/link.ts` | `linkTiered`: A's link, the router, the tier host, `tiered.json` |
 | `src/host.ts` | the tier host's runtime part (bundled into the tier host script) |
-| `src/local.ts` | Miniflare serving (on A's `serve`), B's host for the differential, seeding the unit store |
+| `src/stats.ts` | FORG-47: the shared tier stats (aggregation and each isolate's batched reporter; the `TierStats` DO is in `src/host.ts`) |
+| `src/local.ts` | Miniflare serving (on A's `serve`), B's host for the differential, seeding the unit store; `replicas` runs several router and tier-host isolates over one pointer |
 
 Seams in the other two linkers, all additive:
 
@@ -149,6 +176,10 @@ Seams in the other two linkers, all additive:
 pnpm --filter @forgegraph/linker-tiered test        # policy + link (Node), then workerd (Miniflare)
 TIERED_DIFFERENTIAL=1 pnpm --filter @forgegraph/linker-tiered exec vitest run test/differential.test.ts
 ```
+
+`test/pointer.test.ts` (FORG-47) runs B's host as 4 isolates and C as 3 router and tier-host pairs over one
+pointer: swaps reaching every isolate within the bound, a stale compare-and-swap, and an isolate whose
+pointer DO is down. Results: `research/composable-units/r4-manifest-pointer/`.
 
 The differential needs `research/composable-units/r3-linker-tiered/run.sh`'s links first. Results:
 `research/composable-units/r3-linker-tiered/`.

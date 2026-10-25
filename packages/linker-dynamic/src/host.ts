@@ -8,9 +8,13 @@ import { capabilityDenied, capabilityDeniedError } from "@forgegraph/runtime/err
 import { childMain, childSource, COMPATIBILITY_DATE, type LinkerKit } from "./child.ts";
 import { digest, LINK_DOMAIN } from "./hash.ts";
 import { LinkError, matchRoute, resolveManifest, type ClosureManifest, type EntryPoint, type Resolved } from "./manifest.ts";
+import { expectedVersion, LinkedCache, PointerCache, readFresh, scopeOf, swap, ttlOf, type Pointer, type PointerEnv, type PointerRead } from "./pointer.ts";
 import { derivePolicy, objectRoutePolicy, privilegedPolicy, SWEEP_SERVICE, type Policy, type SqlSchema } from "./policy.ts";
 import { sqlDenial, type GatePolicy } from "./sql-gate.ts";
 import { R2BlobStore, verifiedBlob, type BlobStore, type R2BucketLike } from "./store.ts";
+
+/** The pointer's Durable Object class: a host script exports it and binds it as LINKER_POINTER. */
+export { ManifestPointer } from "./pointer-object.ts";
 
 interface D1StatementLike {
   bind(...values: unknown[]): D1StatementLike;
@@ -25,7 +29,7 @@ interface R2ObjectLike {
   body?: ReadableStream;
 }
 
-export interface HostEnv {
+export interface HostEnv extends PointerEnv {
   LOADER: WorkerLoaderLike;
   /** The content-addressed unit store (blobs/<hex>, kit.json, pointer). */
   UNITS: R2BucketLike;
@@ -40,6 +44,8 @@ export interface HostEnv {
    * before use, so a child that cannot load is refused (a LinkError the router falls back on).
    */
   FORGE_DISPATCH?: { fetch(input: Request | string, init?: RequestInit): Promise<Response> };
+  /** Set by linker C's tier host on a manifest swap: the entry points it serves dynamically (recorded in the pointer). */
+  LINKER_TIER_DYNAMIC?: string[];
   [binding: string]: unknown;
 }
 
@@ -64,30 +70,38 @@ interface ClosureStats {
 }
 
 // ---------------------------------------------------------------------------------- host state
-// One host isolate's view. The pointer is re-read from the store when this isolate has none; a
-// PUT through /_linker/manifest swaps it here and in the store.
-let linked: Linked | null = null;
+// One host isolate's view. The current manifest is named by the pointer's Durable Object (FORG-47,
+// ./pointer.ts): this isolate caches it for at most LINKER_POINTER_TTL_MS and keeps the linked state of
+// the last few manifests it served, so a swap-back is not a re-link.
+const pointers = new PointerCache();
+const linkedByPointer = new LinkedCache<Linked>();
 const codeCache = new Map<string, WorkerLoaderCode>();
 const stats = { closures: new Map<string, ClosureStats>(), denials: [] as string[], fallbacks: [] as string[], refused: [] as string[] };
 
 const json = (body: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...headers } });
 /** Set on every refusal made before a request reached unit code: what linker C's router falls back on. */
 export const REFUSED_HEADER = "x-forge-linker-refused";
-const problem = (e: LinkError) => json(e.problem(), e.status, { "content-type": "application/problem+json", [REFUSED_HEADER]: e.code });
+/** FORG-47: why a LinkerRefused was refused (`PointerUnavailable`, `NoPointerBinding`), for C's router to count. */
+export const REFUSED_REASON_HEADER = "x-forge-linker-refused-reason";
+const problem = (e: LinkError) => json(e.problem(), e.status, { "content-type": "application/problem+json", [REFUSED_HEADER]: e.code, ...(typeof e.extra["reason"] === "string" ? { [REFUSED_REASON_HEADER]: e.extra["reason"] } : {}) });
 const recordDenial = (msg: string) => {
   stats.denials.push(msg);
   console.warn(`linker: ${msg}`);
 };
 
-async function loadKit(store: R2BucketLike): Promise<LinkerKit | null> {
-  const o = await store.get("kit.json");
-  return o ? (JSON.parse(new TextDecoder().decode(await o.arrayBuffer())) as LinkerKit) : null;
-}
-
 /** Resolves a manifest and checks every blob it can reach exists, before it may serve. */
-async function link(store: BlobStore, kit: LinkerKit, manifest: ClosureManifest): Promise<Linked> {
+async function link(store: BlobStore, kit: LinkerKit, manifest: ClosureManifest, checkStore = true): Promise<Linked> {
   const resolved = await resolveManifest(manifest);
   const missing: string[] = [];
+  // A reader of the pointer skips the existence checks: the writer made them before the swap, blobs are
+  // immutable, and every blob a child loads is verified then (a missing one is a refusal, not a guess).
+  if (!checkStore) {
+    const app = kit.apps[manifest.buildHash];
+    if (!app) throw new LinkError("BuildMismatch", [`no app bundle for buildHash ${manifest.buildHash}`]);
+    const appBundle = JSON.parse(new TextDecoder().decode(await verifiedBlob(store, app, "app bundle"))) as { buildHash: string; sql: SqlSchema };
+    if (appBundle.buildHash !== manifest.buildHash) throw new LinkError("BuildMismatch", [`app bundle ${app} has buildHash ${appBundle.buildHash}, manifest has ${manifest.buildHash}`]);
+    return { resolved, kit, schema: appBundle.sql };
+  }
   for (const [blob, m] of Object.entries(manifest.modules)) if (!(await store.has(blob))) missing.push(`module ${blob} (${m.path}) is not in the unit store`);
   const app = kit.apps[manifest.buildHash];
   if (!app) missing.push(`no app bundle for buildHash ${manifest.buildHash}`);
@@ -99,16 +113,24 @@ async function link(store: BlobStore, kit: LinkerKit, manifest: ClosureManifest)
   return { resolved, kit, schema: appBundle.sql };
 }
 
-async function current(env: HostEnv): Promise<Linked | null> {
-  if (linked) return linked;
-  const pointer = await env.UNITS.get("pointer/current");
-  const kit = await loadKit(env.UNITS);
-  if (!pointer || !kit) return null;
+/** The manifest and kit a pointer names, linked (no store checks: see link()). */
+async function materialise(env: HostEnv, p: Pointer): Promise<Linked> {
   const store = new R2BlobStore(env.UNITS);
-  const digestText = new TextDecoder().decode(await pointer.arrayBuffer()).trim();
-  const manifest = JSON.parse(new TextDecoder().decode(await verifiedBlob(store, digestText, "manifest"))) as ClosureManifest;
-  linked = await link(store, kit, manifest);
-  return linked;
+  const text = async (d: string, what: string) => new TextDecoder().decode(await verifiedBlob(store, d, what));
+  const kit = JSON.parse(await text(p.kitBlob!, "kit")) as LinkerKit;
+  const manifest = JSON.parse(await text(p.manifestBlob!, "manifest")) as ClosureManifest;
+  return link(store, kit, manifest, false);
+}
+
+/** The pointer this request serves (revalidated past the bound; LinkerRefused when it cannot be) and its linked state. */
+async function resolveCurrent(env: HostEnv, scope = scopeOf(env)): Promise<{ linked: Linked | null; read: PointerRead }> {
+  const read = await pointers.read(env, scope);
+  if (!read.pointer.version || !read.pointer.manifestBlob) return { linked: null, read };
+  return { linked: await linkedByPointer.get(read.pointer, () => materialise(env, read.pointer)), read };
+}
+
+async function current(env: HostEnv): Promise<Linked | null> {
+  return (await resolveCurrent(env)).linked;
 }
 
 /** Bindings a child may hold as plain values: the manifest's host secrets and vars. */
@@ -219,17 +241,33 @@ async function admin(request: Request, env: HostEnv, url: URL): Promise<Response
       return json({ ok: true });
     }
     if (route === "PUT /_linker/manifest") {
+      // FORG-47: a compare-and-swap of the shared pointer. `If-Match: "<version>"` names the version
+      // replaced; without it, the version read just before the swap. The kit staged by PUT /_linker/kit
+      // is pinned (as a blob) with the manifest, so the pointer alone says what serves.
+      const scope = scopeOf(env, url.searchParams.get("scope"));
+      const expect = expectedVersion(request);
       const text = await request.text();
-      const kit = await loadKit(env.UNITS);
-      if (!kit) return json({ code: "NoKit" }, 409);
+      const kitObject = await env.UNITS.get("kit.json");
+      if (!kitObject) return json({ code: "NoKit" }, 409);
+      const kitBytes = new Uint8Array(await kitObject.arrayBuffer());
+      const kit = JSON.parse(new TextDecoder().decode(kitBytes)) as LinkerKit;
       const next = await link(store, kit, JSON.parse(text) as ClosureManifest);
       const blob = await store.put(new TextEncoder().encode(text));
-      await env.UNITS.put("pointer/current", blob);
-      const previous = linked?.resolved.manifest.manifestHash ?? null;
-      linked = next;
-      return json({ manifestHash: next.resolved.manifest.manifestHash, previous, blob, entryPoints: next.resolved.manifest.entryPoints.length });
+      const kitBlob = await store.put(kitBytes);
+      const m = next.resolved.manifest;
+      const closures = Object.fromEntries(m.entryPoints.map((e) => [e.id, e.closureHash]));
+      const dynamic = env.LINKER_TIER_DYNAMIC ? Object.fromEntries(env.LINKER_TIER_DYNAMIC.filter((id) => closures[id]).map((id) => [id, closures[id]!])) : null;
+      const r = await swap(env, scope, expect, { manifestHash: m.manifestHash, manifestBlob: blob, kitBlob, closures, dynamic });
+      pointers.remember(r.pointer);
+      linkedByPointer.prime(r.pointer, next);
+      return json({ manifestHash: m.manifestHash, previous: r.previous.manifestHash ?? null, blob, kitBlob, entryPoints: m.entryPoints.length, scope, version: r.pointer.version, previousVersion: r.previous.version }, 200, { etag: `"${r.pointer.version}"` });
     }
-    if (route === "GET /_linker/stats") return json({ manifestHash: linked?.resolved.manifest.manifestHash ?? null, closures: [...stats.closures].map(([id, s]) => ({ id, ...s })), denials: stats.denials, fallbacks: stats.fallbacks, refused: stats.refused, hostCodeCache: codeCache.size });
+    if (route === "GET /_linker/pointer") {
+      const scope = scopeOf(env, url.searchParams.get("scope"));
+      const pointer = await readFresh(env, scope);
+      return json({ scope, ttlMs: ttlOf(env), pointer, isolate: pointers.view(), cache: pointers.stats }, 200, { etag: `"${pointer.version}"` });
+    }
+    if (route === "GET /_linker/stats") return json({ manifestHash: pointers.view()[scopeOf(env)]?.manifestHash ?? null, pointer: { scope: scopeOf(env), ttlMs: ttlOf(env), isolate: pointers.view(), cache: pointers.stats }, closures: [...stats.closures].map(([id, s]) => ({ id, ...s })), denials: stats.denials, fallbacks: stats.fallbacks, refused: stats.refused, hostCodeCache: codeCache.size });
     if (route === "POST /_linker/stats/reset") {
       stats.closures.clear();
       stats.denials.length = 0;
@@ -264,8 +302,9 @@ export default {
     if (url.pathname.startsWith("/_linker/")) return admin(request, env, url);
     const t0 = performance.now();
     try {
-      const l = await current(env);
-      if (!l) return json({ code: "NoManifest", detail: "no Closure Manifest has been linked" }, 503, { [REFUSED_HEADER]: "NoManifest" });
+      const { linked: l, read } = await resolveCurrent(env);
+      const pointerHeaders = { "x-forge-pointer": `${read.how}; v=${read.pointer.version}`, "x-forge-pointer-ms": read.ms.toFixed(2) };
+      if (!l) return json({ code: "NoManifest", detail: "no Closure Manifest has been linked" }, 503, { [REFUSED_HEADER]: "NoManifest", ...pointerHeaders });
       const m = l.resolved.manifest;
       let entry: EntryPoint | null = null;
       let policy: Policy;
@@ -298,6 +337,7 @@ export default {
       out.headers.set("x-forge-closure", closureHash);
       out.headers.set("x-forge-isolate", cold ? "cold" : "warm");
       out.headers.set("x-forge-link-ms", (performance.now() - t0).toFixed(2));
+      for (const [k, v] of Object.entries(pointerHeaders)) out.headers.set(k, v);
       if (policy.privileged) out.headers.set("x-forge-linker", "fallback-whole-app");
       // The runtime's dispatch() (FORG-29) runs in the dispatch child, which holds the whole app and
       // every subscription's transport: the post-commit outbox sweep after a committed write, and the

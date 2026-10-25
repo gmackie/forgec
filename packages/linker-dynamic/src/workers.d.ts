@@ -12,6 +12,19 @@ declare module "cloudflare:workers" {
     constructor(ctx: ExecutionContextLike, env: Env);
     abstract run(event: { payload: Params; instanceId?: string }, step: WorkflowStepLike): Promise<unknown>;
   }
+  export abstract class DurableObject<Env = unknown> {
+    protected ctx: DurableObjectStateLike;
+    protected env: Env;
+    constructor(ctx: DurableObjectStateLike, env: Env);
+  }
+  export interface DurableObjectStateLike {
+    readonly storage: {
+      get<T = unknown>(key: string): Promise<T | undefined>;
+      put<T>(key: string, value: T): Promise<void>;
+      delete(key: string): Promise<boolean>;
+    };
+    blockConcurrencyWhile<T>(fn: () => Promise<T>): Promise<T>;
+  }
   export interface WorkflowStepLike {
     do<T>(name: string, fn: () => Promise<T>): Promise<T>;
     sleep(name: string, ms: number): Promise<void>;

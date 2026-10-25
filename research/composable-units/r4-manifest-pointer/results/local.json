@@ -1,0 +1,89 @@
+{
+  "version": "r4-manifest-pointer-local/1",
+  "issue": "FORG-47",
+  "measured": true,
+  "local": true,
+  "date": "2026-10-25T18:05:03.988Z",
+  "node": "v24.14.0",
+  "ttlMs": 500,
+  "statsFlushMs": 200,
+  "b.pointerRead": {
+    "cachedMs": {
+      "n": 16,
+      "median": 0
+    },
+    "revalidatedMs": {
+      "n": 14,
+      "median": 0,
+      "max": 2
+    },
+    "note": "x-forge-pointer-ms: wall time of the DO read inside the host (0 on a cache hit)"
+  },
+  "b.visibility": {
+    "isolates": 3,
+    "swapMs": [
+      1,
+      171,
+      250
+    ],
+    "swapBackMs": [
+      466,
+      0,
+      399
+    ],
+    "boundMs": 500,
+    "note": "ms from the PUT's answer to the first request on each isolate that served the new version (polled every ~25 ms); the writer's own isolate sees it at once"
+  },
+  "b.staleCas": {
+    "status": 409,
+    "body": {
+      "type": "https://forge.dev/errors/linker/StalePointer",
+      "title": "StalePointer",
+      "status": 409,
+      "code": "StalePointer",
+      "detail": "scope default: the swap replaces version 1, but the pointer is at version 3 (sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9); read it again and retry",
+      "problems": [
+        "scope default: the swap replaces version 1, but the pointer is at version 3 (sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9); read it again and retry"
+      ],
+      "scope": "default",
+      "expected": 1,
+      "current": 3,
+      "manifestHash": "sha256:60d3da697b5b861c696c1545fd124b7dda44dc36eca4616dd2ba11680d9947f9"
+    }
+  },
+  "b.pointerDown": {
+    "request": {
+      "status": 503,
+      "code": "LinkerRefused",
+      "reason": "PointerUnavailable"
+    },
+    "swap": {
+      "status": 503,
+      "code": "LinkerRefused"
+    }
+  },
+  "c.visibility": {
+    "isolates": 2,
+    "swapMs": [
+      0,
+      0
+    ],
+    "restoreMs": [
+      0,
+      3
+    ],
+    "boundMs": 500
+  },
+  "c.stats": {
+    "scope": "shared",
+    "since": "2026-10-25T18:06:19.804Z",
+    "dynamic": 26,
+    "packed": 35,
+    "fallback": 4,
+    "byReason": {
+      "LoadFailed": 2,
+      "LinkerRefused/PointerUnavailable": 2
+    },
+    "routerIsolates": 3
+  }
+}

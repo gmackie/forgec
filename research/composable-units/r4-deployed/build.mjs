@@ -95,6 +95,9 @@ if (target === "linker-b") {
     compatibility_date: "2026-09-25",
     workers_dev: true,
     worker_loaders: [{ binding: "LOADER" }],
+    // FORG-47: the shared manifest pointer (packages/linker-dynamic/src/pointer.ts).
+    durable_objects: { bindings: [{ name: "LINKER_POINTER", class_name: "ManifestPointer" }] },
+    migrations: [{ tag: "forge-linker-pointer-v1", new_sqlite_classes: ["ManifestPointer"] }],
     vars: ACME_VARS,
     r2_buckets: [{ binding: "UNITS", bucket_name: R2.unitsB }],
     d1_databases: [acmeD1],
@@ -193,7 +196,15 @@ if (target.startsWith("c-")) {
   if (cfg.d1_databases) next.d1_databases = [acmeD1];
   if (cfg.queues?.producers?.length) next.queues = queueProducer;
   if (services.length) next.services = services;
-  const dropped = ["durable_objects", "migrations", "workflows", "triggers"].filter((k) => cfg[k]);
+  // FORG-47: keep the linker's own Durable Objects (the tier host's ManifestPointer and TierStats, which the
+  // router binds by script_name); drop the app's (REALTIME), whose scripts the cut does not deploy.
+  const LINKER_CLASSES = new Set(["ManifestPointer", "TierStats"]);
+  const linkerDos = (cfg.durable_objects?.bindings ?? []).filter((d) => LINKER_CLASSES.has(d.class_name)).map((d) => (d.script_name ? { ...d, script_name: WORKERS[lab[d.script_name]] } : d));
+  if (linkerDos.length) next.durable_objects = { bindings: linkerDos };
+  const linkerMigrations = (cfg.migrations ?? []).filter((m) => (m.new_sqlite_classes ?? []).every((c) => LINKER_CLASSES.has(c)));
+  if (linkerMigrations.length) next.migrations = linkerMigrations;
+  const dropped = ["workflows", "triggers"].filter((k) => cfg[k]);
+  if ((cfg.durable_objects?.bindings ?? []).length > linkerDos.length) dropped.push("durable_objects (app)");
   if (cfg.queues?.consumers) dropped.push("queues.consumers");
   if (cfg.r2_buckets?.some((b) => b.binding !== "UNITS")) dropped.push("r2_buckets (BLOBS)");
   const droppedServices = (cfg.services ?? []).filter((s) => !lab[s.service]).length;

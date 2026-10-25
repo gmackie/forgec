@@ -7,6 +7,9 @@
   "main": "acme.ts",
   "compatibility_date": "2026-09-25",
   "worker_loaders": [{ "binding": "LOADER" }],
+  // FORG-47: the current-manifest pointer, shared by every host isolate (src/pointer.ts).
+  "durable_objects": { "bindings": [{ "name": "LINKER_POINTER", "class_name": "ManifestPointer" }] },
+  "migrations": [{ "tag": "forge-linker-pointer-v1", "new_sqlite_classes": ["ManifestPointer"] }],
   "vars": { "FORGE_AUTH": "dev-headers", "FORGE_CORS": "http://localhost:5173,https://forge-acme-workspace.example.workers.dev" },
   "r2_buckets": [
     { "binding": "UNITS", "bucket_name": "forge-units" },
