@@ -148,11 +148,12 @@ const outputs = new Map();
  * The admin PUTs below are idempotent (blobs are content-addressed, the kit is written whole), so
  * the harness retries exactly those failures, at most PUT_ATTEMPTS times with backoff, and logs
  * each retry with its error and wrangler's own report. Anything else fails at once. Manifest links
- * are not retried (a repeat would change `previous`), and the host (src/) never retries.
+ * are not retried (a repeat would change `previous`), and the host (src/) never retries. App calls
+ * in test/host.test.ts reuse these two checks (FORG-51).
  */
 const PUT_ATTEMPTS = Math.max(1, Number(process.env.LINKER_HARNESS_PUT_ATTEMPTS ?? 3));
-const droppedHop = (status, text) => (status === 500 && text.includes("Network connection lost")) || (status === 503 && text.includes("restarted mid-request"));
-const droppedSocket = (e) => e instanceof TypeError && /ECONNRESET|EPIPE|UND_ERR_SOCKET|UND_ERR_CLOSED/.test(String(e.cause?.code ?? ""));
+export const droppedHop = (status, text) => (status === 500 && text.includes("Network connection lost")) || (status === 503 && text.includes("restarted mid-request"));
+export const droppedSocket = (e) => e instanceof TypeError && /ECONNRESET|EPIPE|UND_ERR_SOCKET|UND_ERR_CLOSED/.test(String(e.cause?.code ?? ""));
 
 async function idempotentPut(base, path, body, what) {
   for (let attempt = 1; ; attempt++) {
