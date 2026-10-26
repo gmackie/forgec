@@ -108,13 +108,27 @@ function generated(n: number): PriceCartInput[] {
 /** The reference: the cart logic over an in-memory catalog, outside any unit or Worker. */
 const reference = (input: PriceCartInput) => priceCartIn(input, byId);
 
-async function worker<T>(bound: BoundUnit, f: (mf: Miniflare) => Promise<T>): Promise<T> {
+/**
+ * FORG-51: each phase is logged with its duration as it ends, so a run that hits its timeout on a
+ * loaded CI runner shows where the time went (workerd start, the D1 seed, or the calls).
+ */
+async function worker<T>(bound: BoundUnit, f: (mf: Miniflare) => Promise<T>, label = bound.kind): Promise<T> {
+  let at = performance.now();
+  const phase = (name: string) => {
+    const now = performance.now();
+    console.log(`[wasm-async] ${label}: ${name} ${Math.round(now - at)} ms`);
+    at = now;
+  };
   const mf = new Miniflare({ modules: bound.modules, compatibilityDate: "2026-07-01", d1Databases: ["DB"] });
   try {
     const db = await mf.getD1Database("DB");
+    phase("workerd start");
     await db.exec(D1_RESOURCE_HOST_SCHEMA);
     await db.batch(CATALOG.map((p) => db.prepare("INSERT INTO forge_harness_records (resource, id, body) VALUES (?, ?, ?)").bind(PRODUCT, p.id, JSON.stringify(p))));
-    return await f(mf);
+    phase("D1 seed");
+    const out = await f(mf);
+    phase("calls");
+    return out;
   } finally {
     await mf.dispose();
   }
@@ -125,7 +139,7 @@ async function run(bound: BoundUnit, inputs: unknown[]): Promise<unknown[]> {
     const res = await mf.dispatchFetch("http://unit/batch", { method: "POST", body: JSON.stringify(inputs) });
     expect(res.status, await res.clone().text()).toBe(200);
     return (await res.json()) as unknown[];
-  });
+  }, `${bound.kind} x${inputs.length}`);
 }
 
 // ------------------------------------------------------------------ concurrency (FORG-41)
@@ -263,7 +277,8 @@ describe("PriceCart as a js-module and as a wasm-component with a capability imp
       // The generated carts exercise every outcome too.
       const seen = new Set(b.slice(CASES.length).map((x) => ((x as { ok: boolean }).ok ? "ok" : (x as { code: string }).code)));
       expect([...seen].sort()).toEqual(["CartTooLarge", "EmptyCart", "InactiveProduct", "NotFound", "ok"]);
-    }, 120_000);
+      // About 4 s on a developer machine; one run took over 120 s on a loaded shared runner (FORG-51).
+    }, 300_000);
 
     describe("concurrent calls on one isolate (FORG-41)", async () => {
       const C = 8;

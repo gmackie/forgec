@@ -21,6 +21,8 @@ export const h = harness as {
   resetStats(base: string): Promise<void>;
   evictHostCache(base: string): Promise<void>;
   sealVariant(edit: (implDir: string) => void): Promise<{ dir: string; manifest: ClosureManifest; text: string }>;
+  droppedHop(status: number, text: string): boolean;
+  droppedSocket(e: unknown): boolean;
 };
 
 export const acmeManifestText = () => readFileSync(join(h.unitsOut, "manifest.json"), "utf8");

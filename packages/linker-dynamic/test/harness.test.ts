@@ -6,6 +6,7 @@ import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 // @ts-expect-error untyped harness module
 import { putBlob, startWorker } from "../scripts/harness.mjs";
+import { appCall } from "./app-call.ts";
 
 const put = putBlob as (base: string, bytes: Uint8Array) => Promise<string>;
 const LOST = "Error: Network connection lost.\n    at async Object.fetch (entry.worker.js:5216:22)";
@@ -77,5 +78,39 @@ describe("harness admin PUT retry (FORG-45)", () => {
   it("refuses to start wrangler on a port something already serves", async () => {
     const port = (server.address() as AddressInfo).port;
     await expect((startWorker as (o: { port: number }) => Promise<unknown>)({ port })).rejects.toThrow(`port ${port} is already in use`);
+  });
+});
+
+describe("test app-call retry (FORG-51)", () => {
+  const callWith = async (queued: typeof answers, key?: string) => {
+    answers = queued;
+    requests = 0;
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      const result = await appCall(base, "POST", "/v1/orders", { a: 1 }, { headers: { "content-type": "application/json" }, ...(key ? { key } : {}) }).then((r) => ({ status: r.status }), (e: Error) => ({ error: e.message }));
+      return { ...result, requests, warnings: warn.mock.calls.map((c) => String(c[0])) };
+    } finally {
+      warn.mockRestore();
+    }
+  };
+
+  it("retries a dropped hop under an Idempotency-Key, logging the method and path", async () => {
+    const r = await callWith([[500, LOST]], "k1");
+    expect(r).toMatchObject({ status: 200, requests: 2 });
+    expect(r.warnings).toEqual([expect.stringMatching(/^\[app-call\] POST \/v1\/orders: attempt 1 of 3 lost its connection \(500 Error: Network connection lost\.\); retrying with its Idempotency-Key in 250 ms\.$/)]);
+  });
+
+  it("retries a reset socket under a key, and gives up after three attempts", async () => {
+    expect(await callWith(["reset"], "k2")).toMatchObject({ status: 200, requests: 2 });
+    const r = await callWith([[500, LOST], [500, LOST], [500, LOST]], "k3");
+    expect(r).toMatchObject({ error: "POST /v1/orders lost its connection: 500 Error: Network connection lost. (attempt 3)", requests: 3 });
+    expect(r.warnings.at(-1)).toMatch(/attempt 3 of 3 .* giving up\.$/);
+  });
+
+  it("logs but never retries a call without a key, and passes any other answer through", async () => {
+    const r = await callWith([[500, LOST]]);
+    expect(r).toMatchObject({ error: "POST /v1/orders lost its connection: 500 Error: Network connection lost. (attempt 1)", requests: 1 });
+    expect(r.warnings).toEqual([expect.stringMatching(/POST \/v1\/orders: attempt 1 of 1 lost its connection .* no Idempotency-Key, so not retried\.$/)]);
+    expect(await callWith([[422, JSON.stringify({ code: "ValidationFailed" })]], "k4")).toMatchObject({ status: 422, requests: 1, warnings: [] });
   });
 });

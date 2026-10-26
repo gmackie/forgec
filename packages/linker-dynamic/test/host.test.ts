@@ -3,10 +3,12 @@
 import { createServer, request, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ClosureManifest } from "../src/manifest.ts";
+import { appCall, type Reply } from "./app-call.ts";
 import { acmeManifest, acmeManifestText, entry, h, hostileAdapter, rehash, sealVariant, stableJson } from "./fixtures.ts";
 
 const SUBMIT = "POST /v1/orders/{order}/submit";
@@ -18,27 +20,24 @@ let swapped: Awaited<ReturnType<typeof sealVariant>>;
 
 const tenant = `t-${Math.random().toString(36).slice(2, 8)}`;
 const H = { "x-forge-tenant": tenant, "x-forge-actor": "tester", "content-type": "application/json" };
-const call = async (method: string, path: string, body?: unknown) => {
-  const r = await fetch(`${host.base}${path}`, { method, headers: H, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
-  const text = await r.text();
-  let json: any = null;
-  try {
-    json = JSON.parse(text);
-  } catch {
-    json = text;
-  }
-  return { status: r.status, json, isolate: r.headers.get("x-forge-isolate"), closure: r.headers.get("x-forge-closure"), entry: r.headers.get("x-forge-entry") };
+const call = (method: string, path: string, body?: unknown, { key, tenant: t = tenant }: { key?: string; tenant?: string } = {}) =>
+  appCall(host.base, method, path, body, { headers: { ...H, "x-forge-tenant": t }, ...(key ? { key } : {}) });
+/** Asserts a call's status, naming the call and its response body when it is not the one expected. */
+const expectStatus = (r: Reply, status: number) => expect(r.status, `${r.method} ${r.path} answered ${JSON.stringify(r.json)}`).toBe(status);
+/** Creates a record under a fresh Idempotency-Key, asserting 201, and returns its id. */
+const create = async (path: string, body: unknown, t = tenant): Promise<string> => {
+  const r = await call("POST", path, body, { key: randomUUID(), tenant: t });
+  expectStatus(r, 201);
+  return r.json.id as string;
 };
 const link = (m: ClosureManifest | string, modulesDir?: string, skipModules: string[] = []) =>
   h.linkManifest(host.base, { manifestText: typeof m === "string" ? m : stableJson(m), ...(modulesDir ? { modulesDir } : {}), skipModules });
 
-/** A fresh customer, enabled site and draft order (subtotal + 1.00 tax). */
-async function draftOrder(code: string, subtotal = "10.00") {
-  const c = await call("POST", "/v1/customers", { code, name: "Probe" });
-  const s = await call("POST", "/v1/sites", { customer: c.json.id, code: "hq", name: "HQ", timezone: "UTC" });
-  const o = await call("POST", "/v1/orders", { customer: c.json.id, site: s.json.id, subtotal, tax: "1.00", requestedOn: "2026-09-20" });
-  expect(o.status).toBe(201);
-  return o.json.id as string;
+/** A fresh customer, enabled site and draft order (subtotal + tax). */
+async function draftOrder(code: string, subtotal = "10.00", tax = "1.00") {
+  const customer = await create("/v1/customers", { code, name: "Probe" });
+  const site = await create("/v1/sites", { customer, code: "hq", name: "HQ", timezone: "UTC" });
+  return create("/v1/orders", { customer, site, subtotal, tax, requestedOn: "2026-09-20" });
 }
 
 beforeAll(async () => {
@@ -69,15 +68,21 @@ describe("Linker B host on local workerd", () => {
     expect(r.status).toBe(200);
     expect(r.body["manifestHash"]).toBe(acmeManifest().manifestHash);
     const first = await call("GET", "/v1/customers");
-    expect(first.status).toBe(200);
+    expectStatus(first, 200);
     expect(first.isolate).toBe("cold");
     expect(first.entry).toBe("GET /v1/customers");
     expect(first.closure).toBe(entry(acmeManifest(), "GET /v1/customers").closureHash);
     const second = await call("GET", "/v1/customers");
     expect(second.isolate).toBe("warm");
     const order = await draftOrder("ACME1");
+    // FORG-51: app calls retry a dropped hop only under an Idempotency-Key, because a repeat replays.
+    const key = randomUUID();
+    const once = await call("POST", "/v1/customers", { code: "KEY1", name: "Keyed" }, { key });
+    const again = await call("POST", "/v1/customers", { code: "KEY1", name: "Keyed" }, { key });
+    expectStatus(once, 201);
+    expect([again.status, again.json.id]).toEqual([once.status, once.json.id]);
     const submitted = await call("POST", `/v1/orders/${order}/submit`, { expectedVersion: 1 });
-    expect(submitted.status).toBe(200);
+    expectStatus(submitted, 200);
     expect(submitted.json.status).toBe("Submitted");
     const got = await call("GET", `/v1/orders/${order}`);
     expect(got.json.status).toBe("Submitted");
@@ -112,7 +117,7 @@ describe("Linker B host on local workerd", () => {
 
   it("refuses a request no entry point claims", async () => {
     const r = await call("GET", "/v1/not-a-route");
-    expect(r.status).toBe(404);
+    expectStatus(r, 404);
     expect(r.json.code).toBe("UnknownEntryPoint");
     // FORG-33: changesets were refused here before; they are an entry point with their own closure now.
     const changesets = await call("POST", "/v1/changesets", { mode: "atomic", operations: [] });
@@ -205,7 +210,7 @@ describe("Linker B host on local workerd", () => {
     const order = await draftOrder("UND1");
     const r = await call("POST", `/v1/orders/${order}/submit`, { expectedVersion: 1 });
     // FORG-34: a policy denial, not an outage (it was 503 StorageUnavailable, and retried).
-    expect(r.status).toBe(403);
+    expectStatus(r, 403);
     expect(r.json).toMatchObject({ code: "CapabilityDenied", retryable: false, capability: "resource:@acme/commerce/_/Order#write", entryPoint: `http-route:${SUBMIT}` });
     expect((await call("GET", `/v1/orders/${order}`)).json.status).toBe("Draft");
     expect((await h.stats(host.base)).denials.some((d) => d.includes(`http-route:${SUBMIT} has no capability to write order_`))).toBe(true);
@@ -215,14 +220,11 @@ describe("Linker B host on local workerd", () => {
     // finalize reads the uploaded bytes from BLOBS. Without its r2 binding the runtime used to fall
     // back to an in-memory object store and answer 422 (no bytes); now the child's stub refuses it.
     const finalize = async (code: string) => {
-      const c = await call("POST", "/v1/customers", { code, name: "Blob" });
-      const s = await call("POST", "/v1/sites", { customer: c.json.id, code: "hq", name: "HQ", timezone: "UTC" });
-      const o = await call("POST", "/v1/orders", { customer: c.json.id, site: s.json.id, subtotal: "1.00", tax: "0.00", requestedOn: "2026-09-20" });
-      const doc = await call("POST", "/v1/order-documents", { order: o.json.id, kind: "quote", label: "Q1" });
-      expect(doc.status).toBe(201);
-      const begin = await fetch(`${host.base}/v1/order-documents/${doc.json.id}/upload`, { method: "POST", headers: { ...H, "if-match": '"1"' }, body: JSON.stringify({ expectedVersion: 1, mediaType: "application/pdf", byteCount: 5 }) });
-      expect(begin.status).toBe(200);
-      const r = await fetch(`${host.base}/v1/order-documents/${doc.json.id}/finalize`, { method: "POST", headers: { ...H, "if-match": '"2"' }, body: JSON.stringify({ expectedVersion: 2 }) });
+      const order = await draftOrder(code, "1.00", "0.00");
+      const doc = await create("/v1/order-documents", { order, kind: "quote", label: "Q1" });
+      const begin = await fetch(`${host.base}/v1/order-documents/${doc}/upload`, { method: "POST", headers: { ...H, "if-match": '"1"' }, body: JSON.stringify({ expectedVersion: 1, mediaType: "application/pdf", byteCount: 5 }) });
+      expect(begin.status, `upload: ${await begin.clone().text()}`).toBe(200);
+      const r = await fetch(`${host.base}/v1/order-documents/${doc}/finalize`, { method: "POST", headers: { ...H, "if-match": '"2"' }, body: JSON.stringify({ expectedVersion: 2 }) });
       return { status: r.status, json: (await r.json()) as Record<string, unknown> };
     };
     expect((await link(acmeManifestText())).status).toBe(200);
@@ -249,11 +251,10 @@ describe("Linker B host on local workerd", () => {
     expect(entry(m, "POST /v1/orders").closure.some((u) => m.units[u]!.symbol.includes("CustomerOrderSummary"))).toBe(false);
     await h.resetStats(host.base);
     const t = `d-${Math.random().toString(36).slice(2, 8)}`;
-    const post = async (path: string, body: unknown) => (await fetch(`${host.base}${path}`, { method: "POST", headers: { ...H, "x-forge-tenant": t }, body: JSON.stringify(body) })).json() as Promise<{ id: string }>;
-    const c = await post("/v1/customers", { code: "DSP1", name: "Dispatch" });
-    const s = await post("/v1/sites", { customer: c.id, code: "hq", name: "HQ", timezone: "UTC" });
-    const o = await fetch(`${host.base}/v1/orders`, { method: "POST", headers: { ...H, "x-forge-tenant": t }, body: JSON.stringify({ customer: c.id, site: s.id, subtotal: "10.00", tax: "1.00", requestedOn: "2026-09-20" }) });
-    expect(o.status).toBe(201);
+    const customer = await create("/v1/customers", { code: "DSP1", name: "Dispatch" }, t);
+    const site = await create("/v1/sites", { customer, code: "hq", name: "HQ", timezone: "UTC" }, t);
+    const o = await fetch(`${host.base}/v1/orders`, { method: "POST", headers: { ...H, "x-forge-tenant": t }, body: JSON.stringify({ customer, site, subtotal: "10.00", tax: "1.00", requestedOn: "2026-09-20" }) });
+    expect(o.status, `POST /v1/orders answered ${await o.clone().text()}`).toBe(201);
     expect(o.headers.get("x-forge-linker")).toBeNull(); // served by the narrowed child, not a fallback
     const d1Dir = join(host.state, "v3", "d1", "miniflare-D1DatabaseObject");
     const file = readdirSync(d1Dir).find((f) => f.endsWith(".sqlite"))!;
@@ -311,7 +312,7 @@ describe("Linker B host on local workerd", () => {
     const order = await draftOrder("SWP1");
     await call("GET", "/v1/customers");
     const before = await call("POST", `/v1/orders/${order}/submit`, { expectedVersion: 1 });
-    expect(before.status).toBe(200);
+    expectStatus(before, 200);
     const r = await link(swapped.text, join(swapped.dir, "modules"));
     expect(r.status).toBe(200);
     // Parse the acme manifest once (FORG-45): re-reading it per entry point and per closure unit
@@ -331,6 +332,6 @@ describe("Linker B host on local workerd", () => {
     expect(after.isolate).toBe("cold");
     expect(after.closure).toBe(entry(swapped.manifest, SUBMIT).closureHash);
     // 1500 is declined by the original adapter (limit 1000) and authorized by the swapped one (limit 2000).
-    expect(after.status).toBe(200);
+    expectStatus(after, 200);
   });
 });
