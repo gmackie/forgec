@@ -1,0 +1,16 @@
+{
+  "name": "@forgegraph/system-composition",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./action-center": "./src/action-center.mjs",
+    "./change-intelligence": "./src/change-intelligence.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check-catalog.mjs"
+  }
+}
