@@ -119,6 +119,14 @@ export class SqliteActionLedger {
       state: row.state, receiptId: row.receipt_id ?? null,
     } : null;
   }
+  /** Lock-protected source revision/assignee/action check at command admission. */
+  #projectionCurrent(command) {
+    const row=this.#db.prepare('SELECT revision, stale, record FROM action_projections WHERE tenant=? AND source=? AND subject=?')
+      .get(command.tenant,command.source,command.subject);
+    if(!row || row.stale || row.revision!==command.revision)return false;
+    const record=parse(row.record);
+    return record.status==='pending' && record.actions?.includes(command.action)===true && record.assignees?.includes(command.actor)===true;
+  }
   reserveIntent(command) {
     for (const field of ['tenant', 'actor', 'source', 'subject', 'action', 'purpose', 'idempotencyKey']) required(command[field], field);
     if (!Number.isSafeInteger(command.revision) || command.revision < 1) throw new TypeError('invalid command revision');
@@ -127,6 +135,7 @@ export class SqliteActionLedger {
     const backendKey = digest({ version: 1, terms });
     const requestHash = digest({ terms, input: command.input ?? null });
     return this.#atomic(() => {
+      if(command.requireProjection===true && !this.#projectionCurrent(command))throw new Error('stale action revision');
       const previousKey = this.#db.prepare('SELECT * FROM action_command_intents WHERE tenant=? AND actor=? AND client_key=?').get(tenant, actor, idempotencyKey);
       if (previousKey) {
         if (previousKey.request_hash !== requestHash) throw new Error('idempotency_conflict');
@@ -145,10 +154,15 @@ export class SqliteActionLedger {
       return { intent: this.#intent(this.#db.prepare('SELECT * FROM action_command_intents WHERE backend_key=?').get(backendKey)), created: true };
     });
   }
-  claimIntent(backendKey) {
+  claimIntent(backendKey, {requireProjection=false}={}) {
     return this.#atomic(() => {
-      const result = this.#db.prepare("UPDATE action_command_intents SET state='in_progress', updated_at=? WHERE backend_key=? AND state='reserved'").run(this.now(), backendKey);
-      return result.changes === 1;
+      const row=this.#db.prepare('SELECT * FROM action_command_intents WHERE backend_key=?').get(backendKey);
+      if(!row || row.state!=='reserved')return false;
+      if(requireProjection && !this.#projectionCurrent({tenant:row.tenant,source:row.source,subject:row.subject,revision:row.revision,action:row.action,actor:row.actor})){
+        this.#db.prepare("UPDATE action_command_intents SET state='superseded', updated_at=? WHERE backend_key=? AND state='reserved'").run(this.now(),backendKey);
+        return false;
+      }
+      return this.#db.prepare("UPDATE action_command_intents SET state='in_progress', updated_at=? WHERE backend_key=? AND state='reserved'").run(this.now(),backendKey).changes===1;
     });
   }
   /** A reserved-only claim can be invalidated without a remote effect. */

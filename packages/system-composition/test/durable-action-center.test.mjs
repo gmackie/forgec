@@ -148,3 +148,15 @@ test('unknown provider reconciliation of in-progress command becomes uncertain, 
   assert.equal((await center.reconcileIntent({tenant:'t1',backendKey:intent.backendKey,operator:'ops'})).state,'uncertain');
   assert.equal(store.getIntent(intent.backendKey).state,'uncertain');store.close();
 });
+
+test('current provider projection is checked atomically at reservation and claim',async()=>{
+  let sends=0;const {store,center}=mk({dispatch:async()=>{sends++;return {accepted:true,receiptId:'ok'};}});
+  center.ingest('approvals','rev1',action());
+  const {intent}=store.reserveIntent({...args(),requireProjection:true});
+  center.ingest('approvals','rev2',action({revision:2}));
+  assert.equal(store.claimIntent(intent.backendKey,{requireProjection:true}),false);
+  assert.equal(store.getIntent(intent.backendKey).state,'superseded');
+  assert.throws(()=>store.reserveIntent({...args(),requireProjection:true}),/stale action revision/);
+  assert.equal((await center.invoke(args({revision:2,idempotencyKey:'fresh'}))).state,'acknowledged');
+  assert.equal(sends,1);store.close();
+});

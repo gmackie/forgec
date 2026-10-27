@@ -53,9 +53,11 @@ export class DurableActionCenter {
     if (entry.record.revision !== command.revision) throw new Error('stale action revision');
     if (!entry.record.assignees.includes(command.actor) || !entry.record.actions.includes(command.action)) throw new Error('action not available');
     if (await this.#authorize({ tenant: command.tenant, actor: command.actor, purpose: command.purpose, operation: command.action, record: entry.record }) !== true) throw new Error('not authorized');
-    const { intent, created } = this.#ledger.reserveIntent(command);
+    const { intent, created } = this.#ledger.reserveIntent({...command,requireProjection:true});
     if (!created) return { state: intent.state, backendKey: intent.backendKey, replay: true, receiptId: intent.receiptId };
-    if (!this.#ledger.claimIntent(intent.backendKey)) return { state: 'in_progress', backendKey: intent.backendKey, replay: true };
+    if (!this.#ledger.claimIntent(intent.backendKey,{requireProjection:true})) {
+      return {state:this.#ledger.getIntent(intent.backendKey)?.state??'unknown',backendKey:intent.backendKey,replay:true};
+    }
     return this.#dispatchClaimed(command, intent.backendKey);
   }
   async #dispatchClaimed(command, backendKey) {
@@ -102,7 +104,9 @@ export class DurableActionCenter {
       if (this.#ledger.abandonReserved(backendKey)) return {state:'superseded',backendKey,blocked:'actor-no-longer-authorized'};
       return {state:this.#ledger.getIntent(backendKey)?.state??'unknown',backendKey};
     }
-    if (!this.#ledger.claimIntent(backendKey)) return {state:'in_progress',backendKey,replay:true};
+    if (!this.#ledger.claimIntent(backendKey,{requireProjection:true})) {
+      return {state:this.#ledger.getIntent(backendKey)?.state??'unknown',backendKey,replay:true};
+    }
     return this.#dispatchClaimed(intent,backendKey);
   }
 
