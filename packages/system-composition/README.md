@@ -32,6 +32,16 @@ or create an MCP server. A locally passing Foundation acceptance entry does not
 establish production or hosted-provider readiness; every plan explicitly reports
 unverified hosted/application integration.
 
+## Exercise the cross-system composition fixture
+
+```sh
+node packages/system-composition/examples/change-lifecycle.mjs
+```
+
+This checks a synthetic policy-review workflow from Action Center invitation to
+actual decision, deploy acknowledgement, and reconciliation observation. It
+proves the boundary contract under fixture inputs, **not** real deployment.
+
 ## Scaffold a concrete Forge package
 
 ```sh
