@@ -183,3 +183,7 @@ remains available, while relocations require a matching semantic ID or byte
 hash. Ambiguous, missing and deleted/replaced locations are explicit, never
 silently guessed. Loom's P1 semantic index is still required for production
 resolver precision; the test fixture is not that implementation.
+
+## ForgeGraph read-only integration
+
+`createForgeGraphReader` calls the real `/api/fg/changesets/:id` and `/api/fg/evidence?changesetId=:id` APIs with an actor-scoped host credential. It requires a second host-validated repository-scope check because the current ForgeGraph bearer changeset GET does not enforce workspace membership itself. Results are allowlisted and marked `deploymentVerified: false`: a merged changeset, passing build and successful test do not prove production deployment. Some evidence routes require a session rather than a bearer; no credential escalation is attempted.
