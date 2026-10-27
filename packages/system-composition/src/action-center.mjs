@@ -12,6 +12,28 @@ const required = (v, label) => {
 };
 const keyOf = (tenant, source, subject) => JSON.stringify([tenant, source, subject]);
 
+/** Shared canonical event validation for ephemeral and durable projections. */
+export function normalizeActionEvent(producerId, producer, event) {
+  required(event?.tenant, 'tenant'); required(event?.subject, 'subject');
+  required(event?.kind, 'kind'); required(event?.label, 'label');
+  if (!Number.isSafeInteger(event.revision) || event.revision < 1) throw new TypeError('revision must be positive safe integer');
+  if (!statuses.has(event.status)) throw new TypeError('invalid action status');
+  if (!Array.isArray(event.assignees) || !event.assignees.length || event.assignees.some(a => typeof a !== 'string' || !a.trim()) || new Set(event.assignees).size !== event.assignees.length) throw new TypeError('invalid assignees');
+  if (!Array.isArray(event.actions) || event.actions.some(a => !scopes.has(a))) throw new TypeError('invalid action verbs');
+  if (event.status === 'pending' && !event.actions.length) throw new TypeError('pending action must have an available command');
+  if (event.dueAt !== undefined && (!Number.isFinite(Date.parse(event.dueAt)))) throw new TypeError('invalid deadline');
+  if (Array.isArray(producer.kinds) && !producer.kinds.includes(event.kind)) throw new Error('producer does not own action kind');
+  // Normalize only display-safe metadata. Never mirror raw payload, source
+  // documents, credentials, or evidence into the read model.
+  const normalized = {
+    tenant: event.tenant, source: producerId, subject: event.subject,
+    kind: event.kind, label: event.label, status: event.status,
+    revision: event.revision, assignees: [...event.assignees], actions: [...new Set(event.actions)],
+    ...(event.dueAt ? { dueAt: event.dueAt } : {}),
+  };
+  return normalized;
+}
+
 export class ActionCenter {
   #producers;
   #authorize;
@@ -28,23 +50,7 @@ export class ActionCenter {
   ingest(producerId, event) {
     const producer = this.#producers.get(producerId);
     if (!producer) throw new Error('unknown trusted producer');
-    required(event?.tenant, 'tenant'); required(event?.subject, 'subject');
-    required(event?.kind, 'kind'); required(event?.label, 'label');
-    if (!Number.isSafeInteger(event.revision) || event.revision < 1) throw new TypeError('revision must be positive safe integer');
-    if (!statuses.has(event.status)) throw new TypeError('invalid action status');
-    if (!Array.isArray(event.assignees) || !event.assignees.length || event.assignees.some(a => typeof a !== 'string' || !a.trim()) || new Set(event.assignees).size !== event.assignees.length) throw new TypeError('invalid assignees');
-    if (!Array.isArray(event.actions) || event.actions.some(a => !scopes.has(a))) throw new TypeError('invalid action verbs');
-    if (event.status === 'pending' && !event.actions.length) throw new TypeError('pending action must have an available command');
-    if (event.dueAt !== undefined && (!Number.isFinite(Date.parse(event.dueAt)))) throw new TypeError('invalid deadline');
-    if (Array.isArray(producer.kinds) && !producer.kinds.includes(event.kind)) throw new Error('producer does not own action kind');
-    // Normalize only display-safe metadata. Never mirror raw payload, source
-    // documents, credentials, or evidence into the read model.
-    const normalized = {
-      tenant: event.tenant, source: producerId, subject: event.subject,
-      kind: event.kind, label: event.label, status: event.status,
-      revision: event.revision, assignees: [...event.assignees], actions: [...new Set(event.actions)],
-      ...(event.dueAt ? { dueAt: event.dueAt } : {}),
-    };
+    const normalized = normalizeActionEvent(producerId, producer, event);
     const id = keyOf(normalized.tenant, producerId, normalized.subject);
     const hash = digest(normalized);
     const previous = this.#records.get(id);
