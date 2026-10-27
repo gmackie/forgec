@@ -32,6 +32,20 @@ or create an MCP server. A locally passing Foundation acceptance entry does not
 establish production or hosted-provider readiness; every plan explicitly reports
 unverified hosted/application integration.
 
+## Scaffold a concrete Forge package
+
+```sh
+node packages/system-composition/scripts/scaffold-system.mjs change-intelligence examples/my-change-system
+cd examples/my-change-system
+forgec lock . && forgec check . && forgec build .
+```
+
+The scaffold creates the `.forge` imports and explicit `deploy = true`
+dependencies for the selected roots, but intentionally omits business records,
+handlers, approvals, and policies. It will refuse to overwrite a directory.
+Compiler compatibility is not claimed until the generated output has actually
+passed `forgec` on the target revision.
+
 ## Expected production wiring
 
 - KanBanger/WorkGraph owns SDLC task and work/document facts.
