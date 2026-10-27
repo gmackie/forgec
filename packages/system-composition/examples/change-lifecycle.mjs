@@ -23,7 +23,7 @@ const change = {
 assert.equal(assessChange(change).verdict, 'incomplete');
 const forwarded=[];
 const inbox=new ActionCenter({
-  producers: {approvals:{kinds:['approval']}},
+  producers: {approvals:{kinds:['approval'],purposes:{decide:'approvals.decide'}}},
   authorize: async ({tenant,actor,purpose}) => tenant==='acme' && actor==='reviewer' && ['work.read','approvals.decide'].includes(purpose),
   dispatch: async operation => {forwarded.push(operation);return {providerReceipt:'pending-approval'};},
 });

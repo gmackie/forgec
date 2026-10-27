@@ -142,3 +142,24 @@ applications; end-to-end tests from UI and MCP through policy to durable
 business facts and external verification; documented migrations; passing
 release-specific hosted provider evidence; no silent missing proofs. A catalog
 or passing isolated Node test is **not** that state.
+
+## Current checkpoint — 2026-10-27, durable local backend
+
+The first follow-on slice to PR #242 now includes the Node SQLite action ledger,
+trusted-producer HMAC ingest, actor/purpose-bound REST and MCP entrypoints,
+revision-gated change evidence collector, WorkGraph source reference resolver,
+actor-scoped KanBanger API reader, and non-SDLC Commitments/Exceptions
+read-through inspectors. Cross-domain **local** tests are passing (64 passing,
+one repository-only skip in the isolated artifact); the job added to
+`.forgejo/workflows/ci.yml` is designed to make that repository integration
+test mandatory on Forgejo. Source and doc changes are additive; runtime and
+Foundation records are not migrated or replaced. See
+`docs/systems/backend-trust-boundaries.md` for explicit security contracts.
+
+**Still open:** actual provider API bindings for Approvals/Gatekeeper/ForgeGraph
+and Loom P1, a certifiable hosted ledger implementation, authenticated
+request-to-provider evidence from real deployments, package compiler/lockfile
+verification against this commit, real non-SDLC end-to-end provider tests,
+UI/Application Studio and ten individually accepted release packages. The
+result is a working local composition backend, **not** a production-ready
+installation of all systems.

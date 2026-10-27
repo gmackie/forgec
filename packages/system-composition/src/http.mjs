@@ -51,15 +51,19 @@ const guard=async(authenticate,request)=>verifiedPrincipal(await authenticate(re
 /** Callable under a Fetch API runtime (Node, Workers, etc.). No cookie
  * authentication is supplied: the host's authenticate() must validate CSRF/
  * token/issuer/audience/scopes and return a verified principal. */
-export function createSystemHttpHandler({ gateway, actionCenter, authenticate, verifyProducer, allowOrigins=[] }) {
-  if (typeof authenticate!=='function') throw new TypeError('trusted authenticate port required');
+export function createSystemHttpHandler({ gateway, actionCenter, authenticate, verifyProducer, canDiscover=async()=>false, allowOrigins=[] }) {
+  if (typeof authenticate!=='function' || typeof canDiscover!=='function') throw new TypeError('trusted authenticate/discovery ports required');
   return async request=>{
     try {
       checkOrigin(request,allowOrigins);
       const url=new URL(request.url);
       if (request.method==='GET' && url.pathname==='/v1/systems') {
-        await guard(authenticate,request);
-        return reply(200,{operations:gateway.operations().map(({inputSchema,...fields})=>fields)});
+        const principal=await guard(authenticate,request);
+        const operations=[];
+        for (const {inputSchema,...fields} of gateway.operations()) {
+          if (await canDiscover({principal,systemId:fields.system,operationId:fields.name})===true) operations.push(fields);
+        }
+        return reply(200,{operations});
       }
       if (request.method==='POST' && url.pathname.startsWith('/v1/systems/')) {
         const segments=url.pathname.split('/').filter(Boolean);

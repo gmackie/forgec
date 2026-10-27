@@ -5,7 +5,7 @@ const event = (patch = {}) => ({ tenant: 'org-1', subject: 'req-1', kind: 'appro
 function fixture() {
   const dispatched = [];
   const center = new ActionCenter({
-    producers: { approvals: { kinds: ['approval'] } },
+    producers: { approvals: { kinds: ['approval'], purposes: {decide:'approvals.decide'} } },
     authorize: async ({ actor, tenant, purpose }) => actor === 'alice' && tenant === 'org-1' && purpose !== 'wrong',
     dispatch: async call => { dispatched.push(call); return { upstreamId: 'receipt-1' }; },
   });

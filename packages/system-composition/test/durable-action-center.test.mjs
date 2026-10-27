@@ -10,7 +10,7 @@ const action = (patch={}) => ({tenant:'t1',subject:'s1',kind:'approval',label:'R
 const args = (patch={}) => ({tenant:'t1',actor:'a1',source:'approvals',subject:'s1',revision:1,action:'decide',purpose:'approvals.decide',idempotencyKey:'req-1',...patch});
 const mk = ({ledger,dispatch=async()=>({accepted:true,receiptId:'provider-1'}),reconcile=async()=>({confirmed:true,receiptId:'recovered'}),authorize=async({tenant,actor,purpose})=>tenant==='t1' && purpose!=='wrong' && (actor==='a1'||(actor==='ops'&&purpose==='action.reconcile'))}={}) => {
   const store = ledger ?? new SqliteActionLedger();
-  return {store, center:new DurableActionCenter({producers:{approvals:{kinds:['approval']}},ledger:store,authorize,dispatch,reconcile})};
+  return {store, center:new DurableActionCenter({producers:{approvals:{kinds:['approval'],purposes:{decide:'approvals.decide',respond:'approvals.respond'}}},ledger:store,authorize,dispatch,reconcile})};
 };
 
 test('SQLite ledger persists across shutdown/restart and owns full projection history', async () => {
@@ -110,7 +110,7 @@ test('client idempotency key cannot be replayed with another business operation'
   const {store,center}=mk();
   center.ingest('approvals','e1',action({actions:['decide','respond']}));
   await center.invoke(args());
-  await assert.rejects(()=>center.invoke(args({action:'respond'})),/idempotency_conflict/);
+  await assert.rejects(()=>center.invoke(args({action:'respond',purpose:'approvals.respond'})),/idempotency_conflict/);
   store.close();
 });
 
@@ -120,4 +120,31 @@ test('failing event transaction does not retain inconsistent or conflicting revi
   assert.throws(()=>center.ingest('approvals','e2',action({label:'altered'})),/conflicting source revision/);
   assert.equal(center.ingest('approvals','e2',action({revision:2})).accepted,true);
   store.close();
+});
+
+test('post-crash reserved command may resume once only with fresh source and policy checks',async()=>{
+  let calls=0;
+  const {store,center}=mk({dispatch:async()=>{calls++;return {accepted:true,receiptId:'restarted'};},authorize:async x=>x.tenant==='t1' && (x.actor==='a1'||(x.actor==='ops'&&x.purpose==='action.resume'))});
+  center.ingest('approvals','e1',action());
+  // Crash after durable intent reservation but before claim: no external call.
+  const {intent}=store.reserveIntent(args());
+  const a=await center.resumeReserved({tenant:'t1',backendKey:intent.backendKey,operator:'ops'});
+  assert.equal(a.state,'acknowledged');assert.equal(calls,1);
+  assert.equal((await center.resumeReserved({tenant:'t1',backendKey:intent.backendKey,operator:'ops'})).state,'acknowledged');
+  assert.equal(calls,1);store.close();
+});
+test('resumption fails closed when source revision changes or operator lacks scope',async()=>{
+  let calls=0;const {store,center}=mk({dispatch:async()=>{calls++;return {accepted:true,receiptId:'never'};},authorize:async x=>x.tenant==='t1' && (x.actor==='a1'||(x.actor==='ops'&&x.purpose==='action.resume'))});
+  center.ingest('approvals','e1',action());const {intent}=store.reserveIntent(args());
+  await assert.rejects(()=>center.resumeReserved({tenant:'t1',backendKey:intent.backendKey,operator:'outsider'}),/not authorized/);
+  center.ingest('approvals','e2',action({revision:2,status:'resolved',actions:[]}));
+  const res=await center.resumeReserved({tenant:'t1',backendKey:intent.backendKey,operator:'ops'});
+  assert.equal(res.state,'superseded');assert.equal(res.blocked,'source-state-changed');assert.equal(calls,0);assert.equal(store.listRecovery({tenant:'t1'}).length,0);store.close();
+});
+test('unknown provider reconciliation of in-progress command becomes uncertain, never retry',async()=>{
+  const {store,center}=mk({reconcile:async()=>({confirmed:false})});
+  center.ingest('approvals','e1',action());const {intent}=store.reserveIntent(args());
+  store.claimIntent(intent.backendKey);
+  assert.equal((await center.reconcileIntent({tenant:'t1',backendKey:intent.backendKey,operator:'ops'})).state,'uncertain');
+  assert.equal(store.getIntent(intent.backendKey).state,'uncertain');store.close();
 });

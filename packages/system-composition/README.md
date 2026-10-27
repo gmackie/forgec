@@ -71,3 +71,115 @@ This package intentionally does not change the `.forge` DSL, canonical Foundatio
 schemas, provider storage adapters or production deployment. Those require
 separately verified compiler/runtime migrations and staged rollout. See
 `docs/systems/composition-roadmap.md` for the integration acceptance matrix.
+
+## Second slice: durable Node backend and authorized API/MCP entrypoints
+
+The original `ActionCenter` is an ephemeral in-process projection retained for
+compatibility tests. **`DurableActionCenter` + `SqliteActionLedger`** is the
+local/Node durable implementation. It enforces transactional receipt deduplication,
+revision gap fencing, immutable command terms, logical-op deduplication and a
+persistent backend idempotency key. Ambiguous remote outcomes remain `uncertain`;
+retry never dispatches them again. An operator may safely resume an unclaimed
+`reserved` intent after *fresh* source and policy checks. A claimed, uncertain
+operation must instead be reconciled against the authoritative provider.
+
+Example application wiring (the host supplies authenticated principal and
+purpose-bound capabilities):
+
+```js
+import {SqliteActionLedger} from './src/sqlite-ledger.mjs';
+import {DurableActionCenter} from './src/durable-action-center.mjs';
+import {createSystemHttpHandler,createMcpHttpHandler} from './src/http.mjs';
+
+const ledger = new SqliteActionLedger({filename:'./actions.sqlite'});
+const actions = new DurableActionCenter({
+  ledger,
+  producers: {approvals: {
+    kinds:['approval'],
+    purposes: {decide:'approvals.decide'},
+  }},
+  authorize: trustedPolicyCheck,
+  dispatch: trustedApprovalProvider,
+  reconcile: trustedApprovalStatusLookup,
+});
+const handleApi = createSystemHttpHandler({
+  gateway, actionCenter:actions, authenticate:trustedOAuthMiddleware,
+  verifyProducer:trustedProducerSignatureVerification,
+});
+const handleMcp = createMcpHttpHandler({
+  gateway, authenticate:trustedOAuthMiddleware,
+  canDiscover:trustedToolDiscoveryPolicy,
+});
+```
+
+This example documents host-injected ports, **not** runnable globals. Never
+replace the trusted functions with unverified request fields. Installable
+`SystemGateway` operations use the catalog's immutable owner and purpose, a
+closed input JSON Schema and a trusted application decoder/projector. Commands
+require a durable ledger, logical subject key, business revision and
+idempotency key. MCP descriptors come from these exact bindings; REST and MCP
+invoke one gateway and must not gain alternate database or authorization paths.
+
+The HTTP handler supports a deliberately small MCP 2026-07-28 JSON-RPC subset;
+full interoperability, capabilities beyond tools, TLS/issuer deployment, origin
+configuration and transport tests against third-party MCP clients remain
+deployment acceptance requirements. Production should prefer the repository's
+existing `@forgegraph/interfaces/mcp` runtime projection where its feature
+profile suffices. Do not claim the small HTTP adapter is an independently
+certified general MCP server.
+
+The `createKanbangerReader` adapter calls the **actual** Effect API paths
+`/api/workspaces/:workspaceId/issues/:issueId`,
+`/api/workspaces/:workspaceId/issues/:issueId/delivery` and
+`/api/workspaces/:workspaceId/delivery/needs-me` using an actor-scoped
+credential furnished by the host. Each read rechecks policy and suppresses
+arbitrary delivery payloads. It does not promote KanBanger's reported PR,
+check or deploy states to ForgeGraph authoritative evidence. A real ForgeGraph
+read adapter and original-source/plan revision corroboration are still needed
+for change completion.
+
+`ChangeControlCollector`, `CommitmentInspector` and `ExceptionInspector` are
+read-only cross-provider projections. They reject inconsistent tenants,
+revisions, unverified evidence or mid-read source changes. In particular:
+
+- a reported PR merge is not verified production deployment;
+- a completed task is not contractual acceptance;
+- a provider command receipt is not proven fulfillment or payment;
+- an uncertain remediation may only be cleared after authoritative observation;
+- Gatekeeper authorization and recorded human approval are different facts.
+
+### Running the local tests
+
+```sh
+node --test packages/system-composition/test/*.test.mjs
+node packages/system-composition/scripts/check-catalog.mjs
+```
+
+The second command intentionally requires the full Forge source checkout.
+The Forgejo `systems` CI job executes it against real Foundation contracts
+and is included in the central deploy-status report. The isolated Node tests
+exercise a real SQLite file, restart/recovery, HMAC-signed producer ingress,
+unauthorized user/tenant paths, and a real loopback HTTP request.
+
+### Provider and production gaps
+
+- Node SQLite is a **local/Node profile**. Do not deploy `node:sqlite` into a
+  Cloudflare Worker. A separately implemented Durable Object/D1 or hosted SQL
+  adapter must prove atomic projection writes, intent CAS, migrations and
+  provider-specific concurrency under real workloads.
+- Cross-system provider requests are outside SQLite transactions. An
+  `acknowledged` state means only that the downstream provider accepted the
+  dispatch; it is never a business decision or a verification of effects.
+- Real KanBanger/ForgeGraph/Loom/Approvals/Gatekeeper deployments, credential
+  exchange, signoff semantics and backward-compatible migrations are not
+  configured by this library and require staging verification.
+- No background process, scheduled worker, production webhook credential or
+  remote side effect is created by importing this package.
+
+`SourceReferenceResolver` implements a read-only, revision-aware resolution
+boundary for WorkGraph-owned immutable code/IaC anchors. It checks both task
+and path-level source authorization; exact historical snapshot identity
+remains available, while relocations require a matching semantic ID or byte
+hash. Ambiguous, missing and deleted/replaced locations are explicit, never
+silently guessed. Loom's P1 semantic index is still required for production
+resolver precision; the test fixture is not that implementation.

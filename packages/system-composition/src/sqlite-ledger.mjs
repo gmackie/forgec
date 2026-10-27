@@ -151,6 +151,10 @@ export class SqliteActionLedger {
       return result.changes === 1;
     });
   }
+  /** A reserved-only claim can be invalidated without a remote effect. */
+  abandonReserved(backendKey) {
+    return this.#atomic(() => this.#db.prepare("UPDATE action_command_intents SET state='superseded', updated_at=? WHERE backend_key=? AND state='reserved'").run(this.now(),backendKey).changes===1);
+  }
   settleIntent(backendKey, { state, receiptId = null }) {
     if (!['acknowledged', 'uncertain', 'rejected'].includes(state)) throw new TypeError('invalid settlement state');
     if (receiptId !== null) required(receiptId, 'provider receipt');

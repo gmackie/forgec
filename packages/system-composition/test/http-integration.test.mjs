@@ -14,7 +14,7 @@ const now=1800000000;
 function env() {
   const ledger=new SqliteActionLedger();let forwarded=0;
   const authenticate=async request=>request.headers.get('authorization')==='Bearer alice' ? {verified:true,tenant:'t1',actor:'alice'} : null;
-  const actionCenter=new DurableActionCenter({ledger,producers:{approvals:{kinds:['approval']}},authorize:async x=>x.actor==='alice',dispatch:async()=>({accepted:true,receiptId:'provider-receipt'})});
+  const actionCenter=new DurableActionCenter({ledger,producers:{approvals:{kinds:['approval'],purposes:{decide:'approvals.decide',respond:'approvals.respond'}}},authorize:async x=>x.actor==='alice',dispatch:async()=>({accepted:true,receiptId:'provider-receipt'})});
   const gateway=new SystemGateway({catalog,ledger,authorize:async ctx=>ctx.actor==='alice',bindings:{'action-center/list-pending':{
     owner:'routing',inputSchema:{type:'object',properties:{},additionalProperties:false},validate:x=>{if(Object.keys(x??{}).length)throw TypeError('unexpected input');return {};},execute:async()=>{forwarded++;return [{count:1}]},project:x=>x,
   }}});

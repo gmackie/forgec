@@ -43,6 +43,9 @@ export class ActionCenter {
     if (!producers || typeof producers !== 'object' || !Object.keys(producers).length) throw new TypeError('trusted producers required');
     if (typeof authorize !== 'function' || typeof dispatch !== 'function') throw new TypeError('authorization and dispatch ports required');
     this.#producers = new Map(Object.entries(producers));
+    for (const [name, producer] of this.#producers) {
+      if (!producer?.purposes || typeof producer.purposes!=='object' || Object.keys(producer.purposes).length===0) throw new TypeError(`trusted action purposes required for ${name}`);
+    }
     this.#authorize = authorize;
     this.#dispatch = dispatch;
   }
@@ -51,6 +54,7 @@ export class ActionCenter {
     const producer = this.#producers.get(producerId);
     if (!producer) throw new Error('unknown trusted producer');
     const normalized = normalizeActionEvent(producerId, producer, event);
+    if (normalized.actions.some(verb=>!producer.purposes[verb])) throw new Error('producer action has no trusted purpose');
     const id = keyOf(normalized.tenant, producerId, normalized.subject);
     const hash = digest(normalized);
     const previous = this.#records.get(id);
@@ -85,7 +89,9 @@ export class ActionCenter {
   /** Command does not mark the projection resolved. A source update must do so. */
   async invoke({ tenant, actor, source, subject, revision, action, purpose, idempotencyKey }) {
     for (const [v, label] of [[tenant, 'tenant'], [actor, 'actor'], [source, 'source'], [subject, 'subject'], [action, 'action'], [purpose, 'purpose'], [idempotencyKey, 'idempotency key']]) required(v, label);
-    if (!this.#producers.has(source)) throw new Error('unknown trusted producer');
+    const producer=this.#producers.get(source);
+    if (!producer) throw new Error('unknown trusted producer');
+    if (producer.purposes[action]!==purpose) throw new Error('not authorized: action purpose mismatch');
     const entry = this.#records.get(keyOf(tenant, source, subject));
     if (!entry || entry.stale || entry.record.status !== 'pending') throw new Error('action not available');
     if (revision !== entry.record.revision) throw new Error('stale action revision');
