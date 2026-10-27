@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "systems": [
+    {
+      "id": "change-intelligence",
+      "description": "Revision-pinned impact, risk, approval, implementation and outcome evidence across source, policy and infrastructure changes.",
+      "foundation": ["change", "risk", "configuration", "reconciliation", "lineage", "evidence", "assurance"],
+      "ports": [
+        {"id": "work", "authority": "KanBanger / WorkGraph", "mode": "query"},
+        {"id": "source", "authority": "Loom / SCM", "mode": "query"},
+        {"id": "delivery", "authority": "ForgeGraph", "mode": "events"},
+        {"id": "approvals", "authority": "Approvals service", "mode": "command"}
+      ],
+      "operations": [
+        {"id": "assess-impact", "kind": "query", "owner": "change", "purpose": "change.review"},
+        {"id": "review-approval", "kind": "command", "owner": "approvals", "purpose": "change.approve"},
+        {"id": "verify-outcome", "kind": "query", "owner": "reconciliation", "purpose": "change.verify"}
+      ],
+      "invariants": ["Approval pins exactly the reviewed source revision and plan digest", "Source change does not imply deployed effect", "Unknown or stale source mapping never becomes a confident impact"]
+    },
+    {
+      "id": "action-center",
+      "description": "Authorized human and agent action inbox projected from independent systems without taking over their business authority.",
+      "foundation": ["routing", "participation", "decision", "service-level", "notifications", "case-management"],
+      "ports": [
+        {"id": "work", "authority": "WorkGraph", "mode": "command"},
+        {"id": "approvals", "authority": "Approvals service", "mode": "command"},
+        {"id": "review", "authority": "SCM and document providers", "mode": "command"}
+      ],
+      "operations": [
+        {"id": "list-pending", "kind": "query", "owner": "routing", "purpose": "work.read"},
+        {"id": "respond-to-approval", "kind": "command", "owner": "approvals", "purpose": "approvals.decide"},
+        {"id": "accept-assignment", "kind": "command", "owner": "routing", "purpose": "work.accept"}
+      ],
+      "invariants": ["Projection is not approval/task/case authority", "All actions revalidate source revision and policy at the issuing service", "No cross-tenant or unreadable action metadata leaks"]
+    },
+    {
+      "id": "commitments",
+      "description": "Accepted promises, obligations, evidence-backed acceptance and settlement across organizations.",
+      "foundation": ["agreement-catalog", "entitlement", "fulfillment", "service-level", "settlement", "decision", "evidence"],
+      "ports": [{"id": "work", "authority": "WorkGraph", "mode": "command"}],
+      "operations": [
+        {"id": "list-obligations", "kind": "query", "owner": "agreement-catalog", "purpose": "commitment.read"},
+        {"id": "record-fulfillment", "kind": "command", "owner": "fulfillment", "purpose": "commitment.fulfill"},
+        {"id": "evaluate-settlement", "kind": "query", "owner": "settlement", "purpose": "commitment.settle"}
+      ],
+      "invariants": ["Closing a task does not satisfy an obligation", "Acceptance must refer to exact terms and evidence", "Settlement does not follow merely from a fulfillment dispatch"]
+    },
+    {
+      "id": "exception-operations",
+      "description": "Discrepancy detection, investigation, controlled remediation and verified convergence between systems.",
+      "foundation": ["integration", "reconciliation", "master-data", "case-management", "assurance", "change"],
+      "ports": [{"id": "upstream", "authority": "External systems of record", "mode": "command"}],
+      "operations": [
+        {"id": "detect-discrepancy", "kind": "query", "owner": "reconciliation", "purpose": "exception.observe"},
+        {"id": "open-investigation", "kind": "command", "owner": "case-management", "purpose": "exception.investigate"},
+        {"id": "execute-correction", "kind": "command", "owner": "upstream", "purpose": "exception.remediate"}
+      ],
+      "invariants": ["Never infer cross-system atomicity", "An uncertain external effect requires re-observation", "Correction preserves immutable original observations"]
+    },
+    {
+      "id": "external-collaboration",
+      "description": "Constrained cross-organization participation, exchange, decisions and deliverable acceptance.",
+      "foundation": ["party", "participation", "intake", "artifact", "consent", "agreement-catalog", "decision"],
+      "ports": [{"id": "counterparty", "authority": "Externally authenticated participants", "mode": "command"}],
+      "operations": [
+        {"id": "submit-material", "kind": "command", "owner": "intake", "purpose": "collaboration.submit"},
+        {"id": "request-signoff", "kind": "command", "owner": "decision", "purpose": "collaboration.decide"}
+      ],
+      "invariants": ["Participation does not imply data access", "Accept only pinned terms and evidence", "Do not expose one participant's private evidence to another"]
+    },
+    {
+      "id": "resource-operations",
+      "description": "Forecast need, reserve constrained capacity, dispatch eligible actors and verify actual work.",
+      "foundation": ["demand", "capacity", "availability", "allocation", "scheduling", "routing", "operations", "fulfillment", "usage"],
+      "ports": [{"id": "workers", "authority": "Domain execution agents and technicians", "mode": "command"}],
+      "operations": [
+        {"id": "find-capacity", "kind": "query", "owner": "availability", "purpose": "resource.plan"},
+        {"id": "reserve", "kind": "command", "owner": "allocation", "purpose": "resource.allocate"},
+        {"id": "dispatch", "kind": "command", "owner": "routing", "purpose": "resource.dispatch"},
+        {"id": "verify-work", "kind": "query", "owner": "operations", "purpose": "resource.verify"}
+      ],
+      "invariants": ["Reservation and consumption are separate facts", "Routed assignment requires current eligibility", "Job dispatch does not prove business completion"]
+    },
+    {
+      "id": "knowledge-governance",
+      "description": "Author, pin, distribute and retire authoritative knowledge, procedures, rules and configuration.",
+      "foundation": ["specification", "knowledge", "configuration", "classification", "records", "lineage", "publication"],
+      "ports": [{"id": "content", "authority": "Domain-managed content repository", "mode": "query"}],
+      "operations": [
+        {"id": "resolve-config", "kind": "query", "owner": "configuration", "purpose": "knowledge.resolve"},
+        {"id": "publish-knowledge", "kind": "command", "owner": "knowledge", "purpose": "knowledge.publish"},
+        {"id": "review-retention", "kind": "query", "owner": "records", "purpose": "records.review"}
+      ],
+      "invariants": ["Source definitions and effective values are separately versioned", "Published content is revision-pinned", "Disposition decision never deletes its own audit evidence"]
+    },
+    {
+      "id": "agent-operations",
+      "description": "Bounded delegated agent actions with exact approval, quota, execution and recovery boundaries.",
+      "foundation": ["delegation", "decision", "quota", "usage", "fulfillment", "evidence", "operations"],
+      "ports": [{"id": "gatekeeper", "authority": "Gatekeeper PDP and trusted command dispatcher", "mode": "command"}],
+      "operations": [
+        {"id": "review-operation", "kind": "query", "owner": "delegation", "purpose": "agent.review"},
+        {"id": "authorize-dispatch", "kind": "command", "owner": "gatekeeper", "purpose": "agent.execute"}
+      ],
+      "invariants": ["Delegation does not grant OAuth scope or bypass current policy", "Retries share a stable provider idempotency key", "Cancellation request is not proof of rollback"]
+    },
+    {
+      "id": "business-economics",
+      "description": "Connect quote, subscription, usage, entitlements, ledger, invoices, settlement and internal chargebacks.",
+      "foundation": ["quotation-pricing", "billing", "usage", "quota", "ledger", "settlement", "subscription"],
+      "ports": [{"id": "payments", "authority": "Payment/ERP provider", "mode": "command"}],
+      "operations": [
+        {"id": "inspect-consumption", "kind": "query", "owner": "usage", "purpose": "economics.usage"},
+        {"id": "record-billing", "kind": "command", "owner": "billing", "purpose": "economics.bill"},
+        {"id": "collect-payment", "kind": "command", "owner": "payments", "purpose": "economics.collect"}
+      ],
+      "invariants": ["Ledger postings require balanced immutable groups", "Usage correction preserves original observations", "Payment intent and confirmed settlement are different facts"]
+    },
+    {
+      "id": "process-simulation",
+      "description": "Compare workflow, policy and configuration revisions against controlled synthetic or historical scenarios before rollout.",
+      "foundation": ["evaluation", "risk", "change", "experiment", "specification", "lineage"],
+      "ports": [{"id": "sandbox", "authority": "Isolated simulated execution environment", "mode": "command"}],
+      "operations": [
+        {"id": "run-scenario", "kind": "command", "owner": "sandbox", "purpose": "simulation.run"},
+        {"id": "compare-verdicts", "kind": "query", "owner": "evaluation", "purpose": "simulation.compare"}
+      ],
+      "invariants": ["Simulation cannot write production state", "Historical replay is explicitly bounded by available facts", "Simulation result does not automatically approve deployment"]
+    }
+  ]
+}

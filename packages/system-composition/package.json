@@ -1,0 +1,32 @@
+{
+  "name": "@forgegraph/system-composition",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "exports": {
+    ".": "./src/index.mjs",
+    "./action-center": "./src/action-center.mjs",
+    "./change-intelligence": "./src/change-intelligence.mjs",
+    "./scaffold": "./src/scaffold.mjs",
+    "./durable-action-center": "./src/durable-action-center.mjs",
+    "./sqlite-ledger": "./src/sqlite-ledger.mjs",
+    "./change-control": "./src/change-control.mjs",
+    "./system-gateway": "./src/system-gateway.mjs",
+    "./http": "./src/http.mjs",
+    "./producer-hmac": "./src/producer-hmac.mjs",
+    "./kanbanger-http": "./src/kanbanger-http.mjs",
+    "./commitment-view": "./src/commitment-view.mjs",
+    "./exception-view": "./src/exception-view.mjs",
+    "./source-reference": "./src/source-reference.mjs",
+    "./forgegraph-http": "./src/forgegraph-http.mjs"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check-catalog.mjs",
+    "scaffold": "node scripts/scaffold-system.mjs",
+    "demo": "node examples/change-lifecycle.mjs"
+  }
+}
