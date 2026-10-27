@@ -241,11 +241,26 @@ jobs:
             exit 1
           }
 
+  # Independent, dependency-free regression gate for composed systems.
+  systems:
+    name: composed business systems
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: https://github.com/actions/checkout@v4
+      - uses: https://github.com/actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Validate against real 74-package Foundation contract graph
+        run: node packages/system-composition/scripts/check-catalog.mjs
+      - name: Run durable/authorization, HTTP/MCP, and cross-domain tests
+        run: node --test packages/system-composition/test/*.test.mjs
+
   # ForgeGraph's deploy gate waits for this report; without it every deploy needs --break-glass.
   report:
     name: report to ForgeGraph
     # Every job listed here gates the deploy: the report is success only when all succeed.
-    needs: [compiler, units, console, acceptance]
+    needs: [compiler, units, console, acceptance, systems]
     if: always()
     runs-on: ubuntu-latest
     # Report needs only shell/curl, not a host-local forgegraph-act image.
@@ -259,6 +274,7 @@ jobs:
           UNITS: ${{ needs.units.result }}
           CONSOLE: ${{ needs.console.result }}
           ACCEPTANCE: ${{ needs.acceptance.result }}
+          SYSTEMS: ${{ needs.systems.result }}
           # Untrusted (a PR branch name is chosen by its author): only ever read from the
           # environment and serialised by node, never expanded into the script (FORG-39).
           BRANCH: ${{ github.head_ref || github.ref_name }}
@@ -271,13 +287,13 @@ jobs:
             echo "::warning::FORGEGRAPH_TOKEN is not set; run forge ci provision"
             exit 0
           fi
-          RESULTS="$COMPILER $UNITS $CONSOLE $ACCEPTANCE"
-          echo "compiler=$COMPILER units=$UNITS console=$CONSOLE acceptance=$ACCEPTANCE"
+          RESULTS="$COMPILER $UNITS $CONSOLE $ACCEPTANCE $SYSTEMS"
+          echo "compiler=$COMPILER units=$UNITS console=$CONSOLE acceptance=$ACCEPTANCE systems=$SYSTEMS"
           case " $RESULTS " in
             *" cancelled "*) ANY_CANCELLED=1 ;;
             *) ANY_CANCELLED=0 ;;
           esac
-          if [ "$RESULTS" = "success success success success" ]; then STATUS=success
+          if [ "$RESULTS" = "success success success success success" ]; then STATUS=success
           elif [ "$ANY_CANCELLED" = 1 ]; then STATUS=cancelled
           else STATUS=failure; fi
           export STATUS
