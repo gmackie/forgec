@@ -11,6 +11,30 @@ that composes:
 
 It does not replace OAuth, register an agent automatically, or add a trust-on-first-use path.
 
+## Start with only an origin
+
+An agent that knows only `https://api.example.com` may inspect the
+**public API inventory**, but it must not turn untrusted catalog entries
+into OAuth issuer trust or resource permissions.
+
+```ts
+import {previewPublicCatalog} from "@forgegraph/interfaces/discovery";
+
+const preview=await previewPublicCatalog({
+  origin:"https://api.example.com",
+  // Optional, operator-reviewed origins for cross-origin documentation.
+  allowedLinkOrigins:["https://docs.example.com"],
+});
+// preview.reviewRequired === true
+```
+
+The client makes **one** credential-free request to
+`/.well-known/api-catalog`; it does not follow nested catalogs or fetch
+OpenAPI from unreviewed links. The operator then reviews the resource
+identifier and OAuth issuer before invoking the fully pinned `discoverApi`
+flow below. Private catalogs are a separate authenticated capability,
+not accessible through this public preview.
+
 ## Example
 
 ```ts

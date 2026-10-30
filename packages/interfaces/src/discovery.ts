@@ -162,6 +162,46 @@ export function authorizationServerUrl(issuer:string):string {
   return u.origin+"/.well-known/oauth-authorization-server"+
     (u.pathname==="/"?"":u.pathname);
 }
+export interface PublicCatalogPreview {
+  readonly catalogUrl:string;
+  readonly services:readonly ApiServiceLinks[];
+  readonly nestedCatalogs:readonly string[];
+  /** Untrusted links, not approved API operations or OAuth issuers. */
+  readonly reviewRequired:true;
+}
+export interface PublicCatalogPreviewOptions {
+  readonly origin:string;
+  /** Operator-reviewed cross-origin link targets; defaults to origin only. */
+  readonly allowedLinkOrigins?:readonly string[];
+  readonly fetcher?:typeof fetch;
+  readonly timeoutMs?:number;
+}
+/**
+ * Safe first step for an agent that knows an API origin but no OAuth issuer:
+ * read only that origin's public RFC 9727 catalog without credentials.
+ *
+ * It does NOT fetch service-desc, select issuers, register OAuth clients, or
+ * create a policy/source binding. An operator must separately approve the
+ * resource and issuer before calling discoverApi or oauthPkceClient.
+ */
+export async function previewPublicCatalog(
+  options:PublicCatalogPreviewOptions
+):Promise<PublicCatalogPreview> {
+  const root=origin(options.origin);
+  const extras=(options.allowedLinkOrigins??[]).map(origin);
+  if(extras.length>32||new Set(extras).size!==extras.length)
+    return fail("invalid_link_origin_allowlist");
+  const allowed=new Set([root,...extras]);
+  const timeout=options.timeoutMs??3000;
+  if(!Number.isInteger(timeout)||timeout<100||timeout>15000)
+    return fail("invalid_timeout");
+  const url=root+"/.well-known/api-catalog";
+  const result=await getJson(url,"application/linkset+json",
+    "application/linkset+json",options.fetcher??fetch,timeout,131072);
+  const contents=parseCatalog(url,result,allowed);
+  return {catalogUrl:url,...contents,reviewRequired:true};
+}
+
 /** Reviewed single-hop discovery; never sends bearer credentials or registers issuers. */
 export async function discoverApi(trust:DiscoveryTrust):Promise<DiscoverySnapshot> {
   const apiOrigin=origin(trust.origin);
